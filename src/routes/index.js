@@ -1,6 +1,6 @@
 import express from "express";
 
-// Examples Import Route
+// Examples Import Route :
 // import users from "./users.js";
 // import posts from "./posts.js";
 // import accounts from "./accounts.js";
