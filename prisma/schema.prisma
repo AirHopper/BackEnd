@@ -8,8 +8,40 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+model Account {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  email     String   @unique
+  password  String
+  role      Role     @default(buyer)
+
+  user User?
+
+  @@map("accounts")
+}
+
 model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  username    String
+  phoneNumber String   @map("phone_number")
+  gender      Gender?
+  address     String?
+
+  account   Account @relation(fields: [accountId], references: [id])
+  accountId Int     @unique
+
+  @@map("users")
+}
+
+enum Role {
+  buyer
+  admin
+}
+
+enum Gender {
+  male
+  female
 }
