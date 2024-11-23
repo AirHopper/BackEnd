@@ -9,12 +9,15 @@ datasource db {
 }
 
 model Account {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  email     String   @unique
-  password  String
-  role      Role     @default(buyer)
+  id            Int       @id @default(autoincrement())
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  email         String    @unique
+  password      String
+  role          Role      @default(buyer)
+  otpCode       String?   @map("otp_code")
+  otpExpiration DateTime? @map("otp_expiration")
+  isVerified    Boolean   @default(false) @map("is_verified")
 
   user User?
 
