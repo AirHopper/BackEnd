@@ -50,12 +50,14 @@ try {
 export const login = async (req, res, next) => {
   try {
     const data = await loginUser(req.body);
+    // Send response or redirect to Homepage (after user login)
     res.status(200).json({
       success: true,
       message: "User login successfully",
       data: data,
       error: null,
     })
+    // res.redirect(`/?token=${data.token}}`);
   } catch (error) {
     console.log(error);
     next(error)
@@ -70,12 +72,14 @@ export const googlePage = async (req, res) => {
 export const googleLogin = async (req, res, next) => {
   try {
     const data = await googleLoginUser(req.query);
-    res.status(200).json({
-      success: true,
-      message: "Retrieved user info from google successfully",
-      data: data,
-      error: null,
-    })
+    // Send response or redirect to Homepage (after user login)
+    // res.status(200).json({
+    //   success: true,
+    //   message: "User login with google successfully",
+    //   data: data,
+    //   error: null,
+    // })
+    res.redirect(`/?token=${data.token}}`);
   } catch (error) {
     console.log(error);
     next(error);

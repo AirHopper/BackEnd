@@ -5,6 +5,7 @@ import { getToken, verifyToken } from '../utils/jwt.js';
 import { generateOTP } from '../utils/otpgenerator.js';
 import { sendEmail } from '../utils/nodemailer.js';
 import { setUpOauth2Client, getUserInfo } from '../utils/googleapis.js';
+import { generateStrongPassword } from '../utils/passwordgenerator.js';
 
 
 // Check email or phone number
@@ -169,9 +170,37 @@ export const googleLoginUser = async (userData) => {
     const data = await getUserInfo(oauth2Client);
 
     // Check if user is already have an account or not
+    let account = await prisma.account.findUnique({
+      where: {
+        email: data.email
+      },
+      include: { user: true },
+    })
 
-    // Send data
-    return data;
+    // Generate random password and hash it
+    const password = await generateStrongPassword();
+    const hashedPassword = await hashPassword(password);
+
+    // If not exist, create one
+    if (!account) { 
+      account = await prisma.account.create({
+        data: {
+          email: data.email,
+          password: hashedPassword,
+          isVerified: true,
+          user: {
+            create: {
+              username: `${data.given_name} ${data.family_name}`,
+            },
+          },
+        },
+        include: { user: true },
+      });
+    }
+
+    // Get token
+    const token = getToken(account.id, account.email);
+    return { ...account, token };
   } catch (error) {
     throw error;
   }
