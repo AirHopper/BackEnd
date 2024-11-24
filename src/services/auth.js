@@ -114,7 +114,7 @@ export const verifyEmailUser = async (userData) => {
     });
 
     // Send data
-    ["password", "otpCode", "otpExpiration"].forEach((key) => delete account[key]);
+    ["password", "otpCode", "otpExpiration"].forEach((key) => delete updatedAccount[key]);
     return updatedAccount;
   } catch (error) {
     throw error;
@@ -127,33 +127,36 @@ export const loginUser = async (userData) => {
   const { identifier, password } = userData;
 
   try {
-    let user;
+    let account;
     // Check user is available or not
     if (isValidEmail(identifier)) {
       // Using email
-      user = await prisma.account.findUnique({
+      account = await prisma.account.findUnique({
         where: { email: identifier },
         include: { user: true },
       });
     } else {
       // Using phone number
-      user = await prisma.account.findUnique({
-        where: { phoneNumber: identifier },
-        include: { user: true },
+      let user = await prisma.user.findUnique({
+        where: { phoneNumber: identifier }
       });
+      account = await prisma.account.findUnique({
+        where: { id: user.accountId },
+        include: { user: true }
+      })
     }
 
     // Check password is matching or not
-    if (!user || !comparePassword(password, user.password)) {
+    if (!account || !comparePassword(password, account.password)) {
       throw new customError('Invalid email or password', 400);
     }
 
     // Get Token
-    const token = getToken(user.id, user.email);
+    const token = getToken(account.id, account.email);
 
     // Send data
-    delete user.password;
-    return { ...user, token };
+    ["password", "otpCode", "otpExpiration"].forEach((key) => delete account[key]);
+    return { ...account, token };
   } catch (error) {
     throw error;
   }
