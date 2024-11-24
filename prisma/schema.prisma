@@ -67,15 +67,28 @@ enum RegionType {
   international
 }
 
-model Account {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password  String
-  role      Role
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  User      User?
+enum Continent {
+  Africa
+  Antarctica
+  Asia
+  Europe
+  North_America
+  Oceania
+  South_America
+}
 
+model Account {
+  id            Int       @id @default(autoincrement())
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  email         String    @unique
+  password      String
+  role          Role      @default(buyer)
+  otpCode       String?   @map("otp_code")
+  otpExpiration DateTime? @map("otp_expiration")
+  isVerified    Boolean   @default(false) @map("is_verified")
+
+  user User?
   Notification Notification[]
 
   @@map("accounts")
@@ -104,6 +117,7 @@ model Airport {
   cityCode    String     @map("city_code")
   country     String
   countryCode String     @map("country_code")
+  continent   Continent
   latitude    Decimal
   longitude   Decimal
   type        RegionType
@@ -118,7 +132,7 @@ model Airport {
 model Terminal {
   id        Int    @id @default(autoincrement())
   name      String
-  type      String
+  type      RegionType
   airportId String @map("airport_id")
 
   Airport          Airport  @relation(fields: [airportId], references: [iataCode])
