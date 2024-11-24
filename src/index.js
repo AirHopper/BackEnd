@@ -45,7 +45,7 @@ const start = async () => {
       console.log("================== API - LIST =======================\n");
     }
     server.listen(PORT, () => {
-      console.log(`🚀 [SERVER] is running on port http://localhost:${PORT}`);
+      console.log(`🚀 [SERVER] is running on http://${process.env.APP_URL}`);
     });
   } catch (error) {
     console.log(`⚠️ [ERROR], ${error}`);
