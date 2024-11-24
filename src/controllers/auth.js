@@ -1,67 +1,83 @@
-import AuthService from "../services/auth.js";
+import { resendOTP, registerUser, verifyEmailUser, loginUser, googleLoginUser } from "../services/auth.js";
 
-const auth = new AuthService();
+import { getAuthorizationUrl } from "../utils/googleapis.js";
 
-class AuthController {
-  async resendOTP(req, res, next) {
-    try {
-      const data = await auth.resendOTP(req.body.email);
-      res.status(200).json({
-        success: true,
-        message: "OTP is resent",
-        data: data,
-        error: null,
-      })
-    } catch (error) {
-      console.log(error);
-      next(error);
-    }
-  }
-
-  async register(req, res, next) {
-    try {
-      const data = await auth.register(req.body);
-      res.status(201).json({
-        success: true,
-        message: "User registered successfully",
-        data: data,
-        error: null,
-      })
-    } catch (error) {
-      console.log(error);
-      next(error);
-    }
-  }
-
-  async verifyEmail(req, res, next) {
-    try {
-      const data = await auth.verifyEmail(req.body);
-      res.status(200).json({
-        success: true,
-        message: "Email is verified",
-        data: data,
-        error: null,
-      })
-    } catch (error) {
-      console.log(error);
-      next(error);
-    }
-  }
-
-  async login(req, res, next) {
-    try {
-      const data = await auth.login(req.body);
-      res.status(201).json({
-        success: true,
-        message: "User login successfully",
-        data: data,
-        error: null,
-      })
-    } catch (error) {
-      console.log(error);
-      next(error)
-    }
+export const resendOtp = async (req, res, next) => {
+  try {
+    const data = await resendOTP(req.body.email);
+    res.status(200).json({
+      success: true,
+      message: "OTP is resent",
+      data: data,
+      error: null,
+    })
+  } catch (error) {
+    console.log(error);
+    next(error);
   }
 }
 
-export default AuthController;
+export const register = async (req, res, next) => {
+  try {
+    const data = await registerUser(req.body);
+    res.status(201).json({
+      success: true,
+      message: "User registered successfully",
+      data: data,
+      error: null,
+    })
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+}
+
+export const verifyEmail = async (req, res, next) => {
+try {
+  const data = await verifyEmailUser(req.body);
+  res.status(200).json({
+    success: true,
+    message: "Email is verified",
+    data: data,
+    error: null,
+  })
+} catch (error) {
+  console.log(error);
+  next(error);
+}
+}
+
+export const login = async (req, res, next) => {
+  try {
+    const data = await loginUser(req.body);
+    res.status(200).json({
+      success: true,
+      message: "User login successfully",
+      data: data,
+      error: null,
+    })
+  } catch (error) {
+    console.log(error);
+    next(error)
+  }
+}
+
+// Redirect to Google Login
+export const googlePage = async (req, res) => {
+  res.redirect(await getAuthorizationUrl());
+}
+
+export const googleLogin = async (req, res, next) => {
+  try {
+    const data = await googleLoginUser(req.query);
+    res.status(200).json({
+      success: true,
+      message: "Retrieved user info from google successfully",
+      data: data,
+      error: null,
+    })
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+}
