@@ -8,8 +8,288 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+enum Role {
+  admin
+  buyer
+}
+
+enum GenderType {
+  male
+  female
+}
+
+enum TicketStatus {
+  issued
+  unpaid
+  cancelled
+  paid
+  expired
+}
+
+enum ClassType {
+  economy
+  premium_economy
+  business
+  first_class
+}
+
+enum PassengerType {
+  adult
+  child
+  baby
+}
+
+enum PaymentStatus {
+  pending
+  settlement
+  expire
+  cancel
+  refund
+  partial_refund
+  failed
+}
+
+enum PaymentMethod {
+  credit_card
+  debit_card
+  e_wallet
+  bank_transfer
+  cash
+}
+
+enum TitleType {
+  Mr
+  Ms
+}
+
+enum RegionType {
+  domestic
+  international
+}
+
+model Account {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  role      Role
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  User      User?
+
+  Notification Notification[]
+
+  @@map("accounts")
+}
+
 model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
+  id          Int        @id @default(autoincrement())
+  accountId   Int        @unique @map("account_id")
+  username    String     @unique
+  phoneNumber String     @unique @map("phone_number")
+  gender      GenderType
+  address     String?
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  Account Account  @relation(fields: [accountId], references: [id])
+  Tickets Ticket[]
+
+  @@map("users")
+}
+
+model Airport {
+  iataCode    String     @id @unique @map("iata_code")
+  name        String
+  city        String
+  cityCode    String     @map("city_code")
+  country     String
+  countryCode String     @map("country_code")
+  latitude    Decimal
+  longitude   Decimal
+  type        RegionType
+
+  Terminals       Terminal[]
+  departureRoutes Route[]    @relation("DepartureRoutes")
+  arrivalRoutes   Route[]    @relation("ArrivalRoutes")
+
+  @@map("airports")
+}
+
+model Terminal {
+  id        Int    @id @default(autoincrement())
+  name      String
+  type      String
+  airportId String @map("airport_id")
+
+  Airport          Airport  @relation(fields: [airportId], references: [iataCode])
+  FlightsDeparture Flight[] @relation("DepartureTerminal")
+  FlightsArrival   Flight[] @relation("ArrivalTerminal")
+
+  @@map("terminals")
+}
+
+model Airline {
+  iataCode String @id @unique @map("iata_code")
+  name     String @unique
+
+  Airplanes Airplane[]
+
+  @@map("airlines")
+}
+
+model Airplane {
+  id         Int        @id @default(autoincrement())
+  airlineId  String     @map("airline_id")
+  name       String
+  type       RegionType
+  pricePerKm Decimal    @map("price_per_km")
+
+  Airline Airline  @relation(fields: [airlineId], references: [iataCode])
+  Flights Flight[]
+
+  @@map("airplanes")
+}
+
+model Seat {
+  id         Int     @id @default(autoincrement())
+  flightId   Int     @map("flight_id")
+  seatNumber String  @map("seat_number")
+  isOccupied Boolean @default(false) @map("is_occupied")
+
+  Flight    Flight     @relation(fields: [flightId], references: [id])
+  Passenger Passenger?
+
+  @@map("seats")
+}
+
+model Route {
+  id                 Int    @id @default(autoincrement())
+  departureAirportId String @map("departure_airport_id")
+  arrivalAirportId   String @map("arrival_airport_id")
+  distance           Int
+
+  DepartureAirport Airport  @relation("DepartureRoutes", fields: [departureAirportId], references: [iataCode])
+  ArrivalAirport   Airport  @relation("ArrivalRoutes", fields: [arrivalAirportId], references: [iataCode])
+  Flights          Flight[]
+
+  @@map("routes")
+}
+
+model Flight {
+  id                  Int       @id @default(autoincrement())
+  routeId             Int       @map("route_id")
+  class               ClassType
+  isActive            Boolean   @default(true) @map("is_active")
+  airplaneId          Int       @map("airplane_id")
+  departureTime       DateTime  @map("departure_time")
+  arrivalTime         DateTime  @map("arrival_time")
+  duration            Int
+  price               Decimal
+  capacity            Int?
+  baggage             Int
+  cabinBaggage        Int
+  entertainment       Boolean
+  createdAt           DateTime  @default(now()) @map("created_at")
+  departureTerminalId Int       @map("departure_terminal_id")
+  arrivalTerminalId   Int       @map("arrival_terminal_id")
+  discountId          Int?      @map("discount_id")
+
+  Route             Route     @relation(fields: [routeId], references: [id])
+  Airplane          Airplane  @relation(fields: [airplaneId], references: [id])
+  DepartureTerminal Terminal  @relation("DepartureTerminal", fields: [departureTerminalId], references: [id])
+  ArrivalTerminal   Terminal  @relation("ArrivalTerminal", fields: [arrivalTerminalId], references: [id])
+  Discount          Discount? @relation(fields: [discountId], references: [id])
+  Tickets           Ticket[]
+  Seats             Seat[]
+
+  @@map("flights")
+}
+
+model Ticket {
+  id           Int          @id @default(autoincrement())
+  flightId     Int          @map("flight_id")
+  userId       Int          @map("user_id")
+  paymentId    Int          @unique @map("payment_id")
+  qrCodeUrl    String       @map("qr_code_url")
+  bookingDate  DateTime     @default(now()) @map("booking_date")
+  ticketStatus TicketStatus @default(issued) @map("ticket_status")
+
+  Flight     Flight      @relation(fields: [flightId], references: [id])
+  User       User        @relation(fields: [userId], references: [id])
+  Payment    Payment     @relation(fields: [paymentId], references: [id])
+  Passengers Passenger[]
+
+  @@map("tickets")
+}
+
+model Payment {
+  id            Int                 @id @default(autoincrement())
+  method        PaymentMethod // credit_card, e_wallet, etc.
+  status        PaymentStatus       @default(pending) // Midtrans status: pending, settlement, expire, cancel
+  amount        Decimal
+  transactionId String?             @unique @map("transaction_id") // Unique transaction ID from Midtrans
+  orderId       String              @unique @map("order_id") // Your system's unique order ID
+  fraudStatus   String?             @map("fraud_status") // Midtrans fraud status: accept, challenge, deny
+  validUntil    DateTime?           @map("valid_until") // Expiration for pending payments
+  paymentDate   DateTime?           @map("payment_date") // When payment is completed
+  createdAt     DateTime            @default(now()) @map("created_at")
+  updatedAt     DateTime            @updatedAt @map("updated_at")
+  Ticket        Ticket?
+  WebhookLog    PaymentWebhookLog[]
+
+  @@map("payments")
+}
+
+model PaymentWebhookLog {
+  id        Int      @id @default(autoincrement())
+  paymentId Int?     @map("payment_id")
+  event     String // e.g., `payment.success`, `payment.failed`
+  payload   Json // Full webhook payload
+  createdAt DateTime @default(now()) @map("created_at")
+  Payment   Payment? @relation(fields: [paymentId], references: [id])
+
+  @@map("payment_webhook_logs")
+}
+
+model Passenger {
+  id               Int           @id @default(autoincrement())
+  ticketId         Int           @map("ticket_id")
+  seatId           Int           @unique @map("seat_id")
+  type             PassengerType
+  title            TitleType
+  name             String
+  familyName       String?       @map("family_name")
+  dateOfBirth      DateTime      @map("date_of_birth")
+  nationality      String
+  gender           GenderType
+  identifierNumber String        @map("identifier_number")
+  issuedCountry    String        @map("issued_country")
+  idValidUntil     DateTime      @map("id_valid_until")
+
+  Ticket Ticket @relation(fields: [ticketId], references: [id])
+  Seat   Seat   @relation(fields: [seatId], references: [id])
+
+  @@map("passengers")
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  accountId Int      @map("account_id")
+  message   String
+  createdAt DateTime @default(now()) @map("created_at")
+  isRead    Boolean  @default(false) @map("is_read")
+
+  Account Account @relation(fields: [accountId], references: [id])
+
+  @@map("notifications")
+}
+
+model Discount {
+  id        Int      @id @default(autoincrement())
+  discount  Int
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  flights   Flight[]
+
+  @@map("discounts")
 }
