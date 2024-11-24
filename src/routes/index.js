@@ -2,6 +2,7 @@ import express from "express";
 
 // Examples Import Route :
 import auth from "./auth.js";
+import flightRoutes from "./flightRoutes.js";
 // import users from "./users.js";
 // import posts from "./posts.js";
 // import accounts from "./accounts.js";
@@ -12,6 +13,7 @@ export default (app) => {
 
   // Examples Route Usage :
   router.use("/auth", auth);
+  router.use("/flights", flightRoutes);
   //   router.use("/users", users);
   //   router.use("/posts", posts);
   //   router.use("/accounts", accounts);

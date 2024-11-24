@@ -1,4 +1,8 @@
-// import express from 'express';
-// import FlightController from '../controllers/flightController.js';
+import express from "express";
+import { getAll } from "../controllers/flightController.js";
 
-// const router = express.Router();
+const router = express.Router();
+
+router.get("/", getAll);
+
+export default router;

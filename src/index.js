@@ -53,8 +53,3 @@ const start = async () => {
 };
 
 start();
-
-// // Start server
-// server.listen(PORT, () => {
-//   console.log(`Server is running on http://${process.env.APP_URL}`);
-// });
