@@ -6,6 +6,7 @@ import Routes from "./routes/index.js";
 import Middleware from "./middlewares/index.js";
 import Views from "./views/index.js";
 import errorHandler from "./middlewares/errorHandler.js";
+import listEndpoints from "express-list-endpoints";
 
 dotenv.config();
 
@@ -32,7 +33,28 @@ Views(app);
 // Error handling
 app.use(errorHandler);
 
-// Start server
-server.listen(PORT, () => {
-  console.log(`Server is running on http://${process.env.APP_URL}`);
-});
+const start = async () => {
+  try {
+    if (process.env.NODE_ENV == "development") {
+      console.log("================== API - LIST =======================");
+      listEndpoints(app).forEach((route) => {
+        route.methods.forEach((method) => {
+          console.log(`Route => ${method} ${route.path}`);
+        });
+      });
+      console.log("================== API - LIST =======================\n");
+    }
+    server.listen(PORT, () => {
+      console.log(`🚀 [SERVER] is running on port http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.log(`⚠️ [ERROR], ${error}`);
+  }
+};
+
+start();
+
+// // Start server
+// server.listen(PORT, () => {
+//   console.log(`Server is running on http://${process.env.APP_URL}`);
+// });
