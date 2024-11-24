@@ -176,13 +176,3 @@ export const getAllFlights = async (req, res) => {
     throw new AppError("Database query failed", 500, error.message);
   }
 };
-
-// // testing dummy data
-// export const getAllFlights = async () => {
-//   try {
-//     return formattedFlightsDummy;
-//   } catch (error) {
-//     console.error("Database Error:", error); // Log detail error
-//     throw new AppError("Database query failed", 500, error.message);
-//   }
-// };
