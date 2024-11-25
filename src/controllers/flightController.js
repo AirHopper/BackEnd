@@ -1,6 +1,6 @@
-import { getAllFlights } from "../services/flightServices.js";
+import { getAllFlights, getFlightById } from "../services/flightServices.js";
 
-// Get all flights
+//TODO Get all flights
 export const getAll = async (req, res, next) => {
   try {
     const {
@@ -17,3 +17,26 @@ export const getAll = async (req, res, next) => {
     next(error);
   }
 };
+
+// TODO Get flight by ID
+export const getById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const flight = await getFlightById(id);
+    res.status(200).json({
+      success: true,
+      message: "Flight fetched successfully",
+      data: flight,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// TODO Search flights at parameters query
+
+// TODO Create flight
+
+// TODO Update flight
+
+// TODO Delete flight
