@@ -4,13 +4,13 @@ import { getAllFlights } from "../services/flightServices.js";
 export const getAll = async (req, res, next) => {
   try {
     const {
-      flights,
+      formattedFlights,
       // pagination
     } = await getAllFlights();
     res.status(200).json({
       success: true,
       message: "Flights fetched successfully",
-      data: flights,
+      data: formattedFlights,
       // pagination,
     });
   } catch (error) {
