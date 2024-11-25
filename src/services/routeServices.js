@@ -59,6 +59,9 @@ export const createRoute = async (payload) => {
     return newRoute;
   } catch (error) {
     console.error("Error creating route: ", error);
+    if (error.code === "P2002") {
+      throw new AppError("Route already exists", 400);
+    }
     throw error;
   }
 };
@@ -78,6 +81,22 @@ export const getRoutes = async (queryParams) => {
     const routes = await prisma.route.findMany({
       skip,
       take: itemsPerPage,
+      include: {
+        DepartureAirport: {
+          select: {
+            name: true,
+            city: true,
+            country: true,
+          },
+        },
+        ArrivalAirport: {
+          select: {
+            name: true,
+            city: true,
+            country: true,
+          },
+        },
+      },
     });
 
     const totalPages = Math.ceil(totalItems / itemsPerPage);
@@ -102,7 +121,7 @@ export const getRoute = async (id) => {
     const route = await prisma.route.findUnique({ where: { id } });
 
     if (!route) {
-      throw new AppError(`Route ${id} not found`, 404);
+      throw new AppError(`Route with id ${id} not found`, 404);
     }
 
     return route;

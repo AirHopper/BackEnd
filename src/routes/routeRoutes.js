@@ -5,7 +5,7 @@ import {
   getRouteController,
   updateRouteController,
   deleteRouteController,
-} from "../controllers/routeController.js";
+} from "../controllers/routeControllers.js";
 
 const router = express.Router();
 
