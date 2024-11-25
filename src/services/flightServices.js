@@ -380,3 +380,29 @@ export const updateFlight = async (req) => {
 };
 
 // TODO Delete flight
+export const deleteFlight = async (id) => {
+  try {
+    const flightExists = await prisma.Flight.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    if (!flightExists) {
+      throw new AppError("Flight not found", 404);
+    }
+
+    await prisma.Flight.delete({
+      where: {
+        id,
+      },
+    });
+
+    return {
+      message: "Flight deleted successfully",
+    };
+  } catch (error) {
+    console.error("Error deleting flight:", error);
+    throw error;
+  }
+};
