@@ -1,11 +1,11 @@
 import express from "express";
-import { getAll, getById, create, update, destroy } from "../controllers/flightController.js";
+import { getAll, getById, store, update, destroy } from "../controllers/flight.controllers.js";
 
 const router = express.Router();
 
 router.get("/", getAll);
 router.get("/:id", getById);
-router.post("/", create);
+router.post("/", store);
 router.patch("/:id", update);
 router.delete("/:id", destroy);
 

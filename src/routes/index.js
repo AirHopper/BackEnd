@@ -3,7 +3,7 @@ import routes from "./routeRoutes.js";
 
 // Examples Import Route :
 import auth from "./auth.js";
-import flightRoutes from "./flightRoutes.js";
+import flightRoutes from "./flight.routes.js";
 // import users from "./users.js";
 // import posts from "./posts.js";
 // import accounts from "./accounts.js";

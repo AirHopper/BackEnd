@@ -1,4 +1,4 @@
-import { getAllFlights, getFlightById, createFlight, updateFlight, deleteFlight } from "../services/flightServices.js";
+import { getAllFlights, getFlightById, storeFlight, updateFlight, destroyFlight } from "../services/flight.service.js";
 
 //TODO Get all flights
 export const getAll = async (req, res, next) => {
@@ -35,10 +35,10 @@ export const getById = async (req, res, next) => {
 
 // TODO Search flights at parameters query
 
-// TODO Create flight
-export const create = async (req, res, next) => {
+// TODO Store flight
+export const store = async (req, res, next) => {
   try {
-    const flight = await createFlight(req, res);
+    const flight = await storeFlight(req, res);
 
     res.status(201).json({
       success: true,
@@ -65,10 +65,10 @@ export const update = async (req, res, next) => {
   }
 };
 
-// TODO Delete flight
+// TODO Destroy flight
 export const destroy = async (req, res, next) => {
   try {
-    await deleteFlight(req.params.id);
+    await destroyFlight(req.params.id);
     res.status(200).json({
       success: true,
       message: "Flight deleted successfully",

@@ -171,7 +171,7 @@ export const getFlightById = async (id) => {
 // TODO Search flights at parameters query
 
 // TODO Create flight
-export const createFlight = async (req) => {
+export const storeFlight = async (req) => {
   try {
     const { routeId, class: classType, isActive = true, airplaneId, departureTime, arrivalTime, duration, price, capacity = null, baggage, cabinBaggage, entertainment, departureTerminalId, arrivalTerminalId, discountId = null } = req.body;
 
@@ -380,7 +380,7 @@ export const updateFlight = async (req) => {
 };
 
 // TODO Delete flight
-export const deleteFlight = async (id) => {
+export const destroyFlight = async (id) => {
   try {
     const flightExists = await prisma.Flight.findUnique({
       where: {
