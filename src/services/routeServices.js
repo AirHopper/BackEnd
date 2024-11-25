@@ -191,6 +191,9 @@ export const updateRoute = async (id, payload) => {
     return updatedRoute;
   } catch (error) {
     console.error("Error updating route: ", error);
+    if (error.code === "P2002") {
+      throw new AppError("Route already exists", 400);
+    }
     throw error;
   }
 };
