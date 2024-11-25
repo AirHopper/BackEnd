@@ -92,7 +92,7 @@ model Account {
 model User {
   id          Int      @id @default(autoincrement())
   accountId   Int      @unique @map("account_id")
-  username    String   @unique
+  fullName    String   @unique @map("full_name")
   phoneNumber String?  @unique @map("phone_number")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")

@@ -92,7 +92,7 @@ async function main() {
       await prisma.user.create({
         data: {
           accountId: buyerAccount.id,
-          username: "buyerUser",
+          fullname: "buyerUser",
           phoneNumber: "1234567890",
         },
       });
