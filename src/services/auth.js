@@ -17,7 +17,7 @@ export const isValidEmail = (email) => {
 // Register Email and Password
 export const registerUser = async (userData) => {
   // Seperated user data
-  const { email, password, fullname, phoneNumber } = userData;
+  const { email, password, fullName, phoneNumber } = userData;
 
   // Hashing password
   const hashedPassword = await hashPassword(password);
@@ -35,7 +35,7 @@ export const registerUser = async (userData) => {
         otpExpiration: new Date(Date.now() + 10 * 60 * 1000),
         user: {
           create: {
-            fullname,
+            fullName,
             phoneNumber,
           },
         },
@@ -193,7 +193,7 @@ export const googleLoginUser = async (userData) => {
           isVerified: true,
           user: {
             create: {
-              fullname: `${data.given_name} ${data.family_name}`,
+              fullName: `${data.given_name} ${data.family_name}`,
             },
           },
         },
