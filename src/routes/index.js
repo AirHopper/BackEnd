@@ -1,4 +1,5 @@
 import express from "express";
+import routes from "./routeRoutes.js";
 
 // Examples Import Route :
 
@@ -10,6 +11,8 @@ import auth from "./auth.js";
 
 export default (app) => {
   const router = express.Router();
+
+  router.use("/routes", routes);
 
   // Examples Route Usage :
   //   router.use("/users", users);
