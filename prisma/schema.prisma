@@ -103,21 +103,32 @@ model User {
   @@map("users")
 }
 
-model Airport {
-  iataCode    String     @id @unique @map("iata_code")
+model City {
+  code        String    @id @unique
   name        String
-  city        String
-  cityCode    String     @map("city_code")
   country     String
-  countryCode String     @map("country_code")
+  countryCode String    @map("country_code")
   continent   Continent
-  latitude    Decimal
-  longitude   Decimal
-  type        RegionType
+  imageUrl    String?
+  imageId     String?
+
+  Airports Airport[]
+
+  @@map("cities")
+}
+
+model Airport {
+  iataCode  String     @id @unique @map("iata_code")
+  name      String
+  latitude  Decimal
+  longitude Decimal
+  type      RegionType
 
   Terminals       Terminal[]
   departureRoutes Route[]    @relation("DepartureRoutes")
   arrivalRoutes   Route[]    @relation("ArrivalRoutes")
+  City            City       @relation(fields: [cityId], references: [code])
+  cityId          String
 
   @@map("airports")
 }
@@ -193,7 +204,7 @@ model Flight {
   arrivalTime         DateTime  @map("arrival_time")
   duration            Int
   price               Decimal
-  capacity            Int?
+  capacity            Int
   baggage             Int
   cabinBaggage        Int
   entertainment       Boolean
