@@ -267,4 +267,116 @@ export const createFlight = async (req) => {
 };
 
 // TODO Update flight
+export const updateFlight = async (req) => {
+  try {
+    const { id } = req.params;
+    const { routeId, class: classType, isActive, airplaneId, departureTime, arrivalTime, duration, price, capacity, baggage, cabinBaggage, entertainment, departureTerminalId, arrivalTerminalId, discountId } = req.body;
+
+    const flightExists = await prisma.Flight.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    if (!flightExists) {
+      throw new AppError("Flight not found", 404);
+    }
+
+    const updatedRouteId = routeId ?? flightExists.routeId;
+    const updatedClass = classType ?? flightExists.class;
+    const updatedIsActive = isActive ?? flightExists.isActive;
+    const updatedAirplaneId = airplaneId ?? flightExists.airplaneId;
+    const updatedDepartureTime = departureTime ? new Date(departureTime) : flightExists.departureTime;
+    const updatedArrivalTime = arrivalTime ? new Date(arrivalTime) : flightExists.arrivalTime;
+    const updatedDuration = duration ?? flightExists.duration;
+    const updatedPrice = price ?? flightExists.price;
+    const updatedCapacity = capacity ?? flightExists.capacity;
+    const updatedBaggage = baggage ?? flightExists.baggage;
+    const updatedCabinBaggage = cabinBaggage ?? flightExists.cabinBaggage;
+    const updatedEntertainment = entertainment ?? flightExists.entertainment;
+    const updatedDepartureTerminalId = departureTerminalId ?? flightExists.departureTerminalId;
+    const updatedArrivalTerminalId = arrivalTerminalId ?? flightExists.arrivalTerminalId;
+    const updatedDiscountId = discountId ?? flightExists.discountId;
+
+    if (updatedDepartureTime >= updatedArrivalTime) {
+      throw new AppError("Departure time must be earlier than arrival time", 400);
+    }
+
+    const routeExists = await prisma.Route.findUnique({
+      where: {
+        id: updatedRouteId,
+      },
+    });
+    if (!routeExists) {
+      throw new AppError("Route not found", 404);
+    }
+
+    const airplaneExists = await prisma.Airplane.findUnique({
+      where: {
+        id: updatedAirplaneId,
+      },
+    });
+    if (!airplaneExists) {
+      throw new AppError("Airplane not found", 404);
+    }
+
+    const departureTerminalExists = await prisma.Terminal.findUnique({
+      where: {
+        id: updatedDepartureTerminalId,
+      },
+    });
+    if (!departureTerminalExists) {
+      throw new AppError("Departure terminal not found", 404);
+    }
+
+    const arrivalTerminalExists = await prisma.Terminal.findUnique({
+      where: {
+        id: updatedArrivalTerminalId,
+      },
+    });
+    if (!arrivalTerminalExists) {
+      throw new AppError("Arrival terminal not found", 404);
+    }
+
+    if (updatedDiscountId) {
+      const discountExists = await prisma.Discount.findUnique({
+        where: {
+          id: updatedDiscountId,
+        },
+      });
+      if (!discountExists) {
+        throw new AppError("Discount not found", 404);
+      }
+    }
+
+    const updatedFlight = await prisma.Flight.update({
+      where: {
+        id,
+      },
+      data: {
+        routeId: updatedRouteId,
+        class: updatedClass,
+        isActive: updatedIsActive,
+        airplaneId: updatedAirplaneId,
+        departureTime: updatedDepartureTime,
+        arrivalTime: updatedArrivalTime,
+        duration: updatedDuration,
+        price: updatedPrice,
+        capacity: updatedCapacity,
+        baggage: updatedBaggage,
+        cabinBaggage: updatedCabinBaggage,
+        entertainment: updatedEntertainment,
+        departureTerminalId: updatedDepartureTerminalId,
+        arrivalTerminalId: updatedArrivalTerminalId,
+        discountId: updatedDiscountId,
+      },
+    });
+
+    return updatedFlight;
+  } catch (error) {
+    console.error("Error updating flight:", error);
+    throw error;
+  }
+};
+
 // TODO Delete flight
