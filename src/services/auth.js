@@ -14,36 +14,6 @@ export const isValidEmail = (email) => {
   return regex.test(email);
 };
 
-// Resend OTP
-export const resendOTP = async (email) => {
-  try {
-    // Generate new otp
-    const otp = generateOTP();
-
-    // Update otp and expiration
-    const account = await prisma.account.update({
-      where: { email },
-      data: {
-        otpCode: otp,
-        otpExpiration: new Date(Date.now() + 10 * 60 * 1000),
-      },
-      include: { user: true },
-    });
-
-    // Resend email
-    sendEmail(email, 'Email Verification', `Your OTP code is: ${otp}`);
-
-    // Send data
-    ["password", "otpCode", "otpExpiration"].forEach((key) => delete account[key]);
-    return account;
-  } catch (error) {
-    if (error.code === 'P2025') {
-      throw new customError('Invalid email', 404);
-    }
-    throw error;
-  }
-};
-
 // Register Email and Password
 export const registerUser = async (userData) => {
   // Seperated user data
@@ -77,7 +47,7 @@ export const registerUser = async (userData) => {
     sendEmail(email, 'Email Verification', `Your OTP code is: ${otp}`);
 
     // Send data
-    ["password", "otpCode", "otpExpiration"].forEach((key) => delete account[key]);
+    ["createdAt", "updatedAt", "role", "password", "otpCode", "otpExpiration"].forEach((key) => delete account[key]);
     return account;
   } catch (error) {
     if (error.code === 'P2002') {
@@ -87,8 +57,38 @@ export const registerUser = async (userData) => {
   }
 };
 
+// Resend OTP
+export const resendOTP = async (email) => {
+  try {
+    // Generate new otp
+    const otp = generateOTP();
+
+    // Update otp and expiration
+    const account = await prisma.account.update({
+      where: { email },
+      data: {
+        otpCode: otp,
+        otpExpiration: new Date(Date.now() + 10 * 60 * 1000),
+      },
+      include: { user: true },
+    });
+
+    // Resend email
+    sendEmail(email, 'Email Verification', `Your OTP code is: ${otp}`);
+
+    // Send data
+    ["createdAt", "updatedAt", "role", "password", "otpCode", "otpExpiration"].forEach((key) => delete account[key]);
+    return account;
+  } catch (error) {
+    if (error.code === 'P2025') {
+      throw new customError('Invalid email', 404);
+    }
+    throw error;
+  }
+};
+
 // Verify Email
-export const verifyEmailUser = async (userData) => {
+export const verifyOTPUser = async (userData) => {
   const { email, otpCode } = userData;
 
   try {
@@ -114,7 +114,7 @@ export const verifyEmailUser = async (userData) => {
     });
 
     // Send data
-    ["password", "otpCode", "otpExpiration"].forEach((key) => delete updatedAccount[key]);
+    ["createdAt", "updatedAt", "role", "password", "otpCode", "otpExpiration"].forEach((key) => delete updatedAccount[key]);
     return updatedAccount;
   } catch (error) {
     throw error;
@@ -155,7 +155,7 @@ export const loginUser = async (userData) => {
     const token = getToken(account.id, account.email);
 
     // Send data
-    ["password", "otpCode", "otpExpiration"].forEach((key) => delete account[key]);
+    ["createdAt", "updatedAt", "role", "password", "otpCode", "otpExpiration"].forEach((key) => delete account[key]);
     return { ...account, token };
   } catch (error) {
     throw error;

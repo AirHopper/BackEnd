@@ -1,21 +1,6 @@
-import { resendOTP, registerUser, verifyEmailUser, loginUser, googleLoginUser } from "../services/auth.js";
+import { resendOTP, registerUser, verifyOTPUser, loginUser, googleLoginUser } from "../services/auth.js";
 
 import { getAuthorizationUrl } from "../utils/googleapis.js";
-
-export const resendOtp = async (req, res, next) => {
-  try {
-    const data = await resendOTP(req.body.email);
-    res.status(200).json({
-      success: true,
-      message: "OTP is resent",
-      data: data,
-      error: null,
-    })
-  } catch (error) {
-    console.log(error);
-    next(error);
-  }
-}
 
 export const register = async (req, res, next) => {
   try {
@@ -32,9 +17,24 @@ export const register = async (req, res, next) => {
   }
 }
 
-export const verifyEmail = async (req, res, next) => {
+export const resendOtp = async (req, res, next) => {
+  try {
+    const data = await resendOTP(req.body.email);
+    res.status(200).json({
+      success: true,
+      message: "OTP is resent",
+      data: data,
+      error: null,
+    })
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+}
+
+export const verifyOTP = async (req, res, next) => {
 try {
-  const data = await verifyEmailUser(req.body);
+  const data = await verifyOTPUser(req.body);
   res.status(200).json({
     success: true,
     message: "Email is verified",
