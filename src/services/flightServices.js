@@ -169,6 +169,102 @@ export const getFlightById = async (id) => {
 };
 
 // TODO Search flights at parameters query
+
 // TODO Create flight
+export const createFlight = async (req) => {
+  try {
+    const { routeId, class: classType, isActive = true, airplaneId, departureTime, arrivalTime, duration, price, capacity = null, baggage, cabinBaggage, entertainment, departureTerminalId, arrivalTerminalId, discountId = null } = req.body;
+
+    if (!routeId || !classType || !airplaneId || !departureTime || !arrivalTime || !duration || !price || !baggage || !cabinBaggage || !departureTerminalId || !arrivalTerminalId) {
+      throw new AppError("Missing required fields", 400);
+    }
+
+    const departureDate = new Date(departureTime);
+    const arrivalDate = new Date(arrivalTime);
+
+    if (departureDate >= arrivalDate) {
+      throw new AppError("Departure time must be earlier than arrival time", 400);
+    }
+
+    const routeExists = await prisma.Route.findUnique({
+      where: {
+        id: routeId,
+      },
+    });
+
+    if (!routeExists) {
+      throw new AppError("Route not found", 404);
+    }
+
+    const airplaneExists = await prisma.Airplane.findUnique({
+      where: {
+        id: airplaneId,
+      },
+    });
+
+    if (!airplaneExists) {
+      throw new AppError("Airplane not found", 404);
+    }
+
+    const departureTerminalExists = await prisma.Terminal.findUnique({
+      where: {
+        id: departureTerminalId,
+      },
+    });
+
+    if (!departureTerminalExists) {
+      throw new AppError("Departure terminal not found", 404);
+    }
+
+    const arrivalTerminalExists = await prisma.Terminal.findUnique({
+      where: {
+        id: arrivalTerminalId,
+      },
+    });
+
+    if (!arrivalTerminalExists) {
+      throw new AppError("Arrival terminal not found", 404);
+    }
+
+    if (discountId) {
+      const discountExists = await prisma.Discount.findUnique({
+        where: {
+          id: discountId,
+        },
+      });
+
+      if (!discountExists) {
+        throw new AppError("Discount not found", 404);
+      }
+    }
+
+    // Membuat data flight
+    const flight = await prisma.flight.create({
+      data: {
+        routeId,
+        class: classType,
+        isActive,
+        airplaneId,
+        departureTime: new Date(departureTime),
+        arrivalTime: new Date(arrivalTime),
+        duration,
+        price,
+        capacity,
+        baggage,
+        cabinBaggage,
+        entertainment,
+        departureTerminalId,
+        arrivalTerminalId,
+        discountId,
+      },
+    });
+
+    return flight;
+  } catch (error) {
+    console.error("Error creating flight:", error);
+    throw error;
+  }
+};
+
 // TODO Update flight
 // TODO Delete flight

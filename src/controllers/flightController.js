@@ -1,4 +1,4 @@
-import { getAllFlights, getFlightById } from "../services/flightServices.js";
+import { getAllFlights, getFlightById, createFlight } from "../services/flightServices.js";
 
 //TODO Get all flights
 export const getAll = async (req, res, next) => {
@@ -36,6 +36,19 @@ export const getById = async (req, res, next) => {
 // TODO Search flights at parameters query
 
 // TODO Create flight
+export const create = async (req, res, next) => {
+  try {
+    const flight = await createFlight(req, res);
+
+    res.status(201).json({
+      success: true,
+      message: "Flight created successfully",
+      data: flight,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 // TODO Update flight
 
