@@ -307,6 +307,30 @@ async function main() {
     await seedAirlines();
     await seedAirplanes();
 
+    // Seeding Account
+    await prisma.account.createMany({
+      data: [
+        {
+          email: "admin@example.com",
+          password: hashedPassword,
+          role: Role.admin,
+          isVerified: true,
+        },
+        {
+          email: "buyer@example.com",
+          password: hashedPassword,
+          role: Role.buyer,
+          isVerified: true,
+          user: {
+            create: {
+              username: "buyerUser",
+              phoneNumber: "1234567890",
+            },
+          },
+        },
+      ],
+    });
+
     console.log("Seeding completed successfully!");
   } catch (e) {
     console.error("Error during seeding:", e);

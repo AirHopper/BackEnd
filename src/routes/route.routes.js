@@ -5,7 +5,7 @@ import {
   getRouteController,
   updateRouteController,
   deleteRouteController,
-} from "../controllers/routeControllers.js";
+} from "../controllers/route.controller.js";
 import {
   validateCreateRoute,
   validateUpdateRoute,

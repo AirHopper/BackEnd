@@ -4,7 +4,7 @@ import {
   getRoute,
   updateRoute,
   deleteRoute,
-} from "../services/routeServices.js";
+} from "../services/route.service.js";
 
 // Controller to create a new route
 export const createRouteController = async (req, res, next) => {

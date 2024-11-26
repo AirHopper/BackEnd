@@ -13,8 +13,8 @@ const getToken = (id, email) => {
   return jwt.sign(payload, secretKey, options);
 }
 
-const verifyUser = (token) => {
+const verifyToken = (token) => {
   return jwt.verify(token, secretKey);
 }
 
-export { getToken, verifyUser }
+export { getToken, verifyToken }
