@@ -9,10 +9,15 @@ import { generateStrongPassword } from '../utils/passwordgenerator.js';
 
 
 // Check email or phone number
-export const isValidEmail = (email) => {
+const isValidEmail = (email) => {
   const regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   return regex.test(email);
 };
+
+// Clean Up Account Properties before send it to frontend
+const cleanUpAccountData = (account) => {
+  ["createdAt", "updatedAt", "role", "password", "otpCode", "otpExpiration"].forEach((key) => delete account[key]);
+}
 
 // Register Email and Password
 export const registerUser = async (userData) => {
@@ -47,7 +52,7 @@ export const registerUser = async (userData) => {
     sendEmail(email, 'Email Verification', `Your OTP code is: ${otp}`);
 
     // Send data
-    ["createdAt", "updatedAt", "role", "password", "otpCode", "otpExpiration"].forEach((key) => delete account[key]);
+    cleanUpAccountData(account);
     return account;
   } catch (error) {
     if (error.code === 'P2002') {
@@ -77,7 +82,7 @@ export const resendOTP = async (email) => {
     sendEmail(email, 'Email Verification', `Your OTP code is: ${otp}`);
 
     // Send data
-    ["createdAt", "updatedAt", "role", "password", "otpCode", "otpExpiration"].forEach((key) => delete account[key]);
+    cleanUpAccountData(account);
     return account;
   } catch (error) {
     if (error.code === 'P2025') {
@@ -114,7 +119,7 @@ export const verifyOTPUser = async (userData) => {
     });
 
     // Send data
-    ["createdAt", "updatedAt", "role", "password", "otpCode", "otpExpiration"].forEach((key) => delete updatedAccount[key]);
+    cleanUpAccountData(updatedAccount);
     return updatedAccount;
   } catch (error) {
     throw error;
@@ -155,7 +160,7 @@ export const loginUser = async (userData) => {
     const token = getToken(account.id, account.email);
 
     // Send data
-    ["createdAt", "updatedAt", "role", "password", "otpCode", "otpExpiration"].forEach((key) => delete account[key]);
+    cleanUpAccountData(account);
     return { ...account, token };
   } catch (error) {
     throw error;
@@ -208,3 +213,63 @@ export const googleLoginUser = async (userData) => {
     throw error;
   }
 };
+
+// Request link for reset password
+export const forgotPasswordUser = async (userData) => {
+  const { email } = userData;
+
+  // Find user by email
+  try {
+    const account = await prisma.account.findUnique({
+      where: {
+        email: email
+      }
+    })
+  
+    // Create token
+    const token = getToken(account.id, account.email);
+  
+    // Send token to user email
+    sendEmail(
+      account.email, 
+      'Reset Password Request', 
+      `Click the link if you want to reset your password: http://${process.env.APP_URL}/reset-password?token=${token}`
+      // Setting up link later
+    );
+
+    return { email: account.email };
+  } catch(error) {
+    throw error;
+  }
+}
+
+// Reset password
+export const resetPasswordUser = async (userData) => {
+  try {
+    const { token, newPassword, confirmPassword } = userData;
+    
+    // Make sure new password and confirm password is same
+    if (!(newPassword === confirmPassword)) {
+      throw new customError("Password didn't match", 400);
+    }
+    
+    // Verify token
+    const { id } = verifyToken(token);
+    
+    // Hash new user password
+    const hashedPassword = await hashPassword(newPassword)
+    
+    // Update user password by id
+    const account = await prisma.account.update({
+      where: { id: id }, 
+      data: { password: hashedPassword },
+      include: { user: true }
+    })
+    
+    // Send back user data
+    cleanUpAccountData(account);
+    return account;
+  } catch(error) {
+    throw error;
+  }
+}

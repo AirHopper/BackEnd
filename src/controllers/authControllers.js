@@ -1,4 +1,4 @@
-import { resendOTP, registerUser, verifyOTPUser, loginUser, googleLoginUser } from "../services/auth.js";
+import { resendOTP, registerUser, verifyOTPUser, loginUser, googleLoginUser, forgotPasswordUser, resetPasswordUser } from "../services/authServices.js";
 
 import { getAuthorizationUrl } from "../utils/googleapis.js";
 
@@ -83,5 +83,35 @@ export const googleLogin = async (req, res, next) => {
   } catch (error) {
     console.log(error);
     next(error);
+  }
+}
+
+export const forgotPassword = async (req, res, next) => {
+  try {
+    const data = await forgotPasswordUser(req.body);
+    res.status(200).json({
+      success: true,
+      message: "Reset password link sent to user email",
+      data: data,
+      error: null,
+    })
+  } catch (error) {
+    console.log(error);
+    next(error)
+  }
+}
+
+export const resetPassword = async (req, res, next) => {
+  try {
+    const data = await resetPasswordUser(req.body);
+    res.status(200).json({
+      success: true,
+      message: "Password updated successfully",
+      data: data,
+      error: null,
+    })
+  } catch (error) {
+    console.log(error);
+    next(error)
   }
 }
