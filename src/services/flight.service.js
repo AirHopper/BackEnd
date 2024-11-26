@@ -2,7 +2,7 @@ import prisma from "../utils/prisma.js";
 import AppError from "../utils/AppError.js";
 
 // TODO Get all flights
-export const getAllFlights = async ({ page = 1, limit = 10, search }) => {
+export const getAll = async ({ page = 1, limit = 10, search }) => {
   try {
     const offset = (page - 1) * limit;
 
@@ -110,7 +110,7 @@ export const getAllFlights = async ({ page = 1, limit = 10, search }) => {
 };
 
 // TODO Get flight by ID
-export const getFlightById = async (id) => {
+export const getById = async (id) => {
   try {
     if (isNaN(id)) {
       throw new AppError("Invalid flight ID", 400);
@@ -197,10 +197,8 @@ export const getFlightById = async (id) => {
   }
 };
 
-// TODO Search flights at parameters query
-
 // TODO Create flight
-export const storeFlight = async (req) => {
+export const store = async (req) => {
   try {
     const { routeId, class: classType, isActive = true, airplaneId, departureTime, arrivalTime, duration, price, capacity = null, baggage, cabinBaggage, entertainment, departureTerminalId, arrivalTerminalId, discountId = null } = req.body;
 
@@ -296,7 +294,7 @@ export const storeFlight = async (req) => {
 };
 
 // TODO Update flight
-export const updateFlight = async (req, id) => {
+export const update = async (req, id) => {
   try {
     if (isNaN(id)) {
       throw new AppError("Invalid flight ID", 400);
@@ -412,7 +410,7 @@ export const updateFlight = async (req, id) => {
 };
 
 // TODO Delete flight
-export const destroyFlight = async (id) => {
+export const destroy = async (id) => {
   try {
     if (isNaN(id)) {
       throw new AppError("Invalid flight ID", 400);
