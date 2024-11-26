@@ -2,9 +2,23 @@ import prisma from "../utils/prisma.js";
 import AppError from "../utils/AppError.js";
 
 // TODO Get all flights
-export const getAllFlights = async () => {
+export const getAllFlights = async ({ page = 1, limit = 10, search }) => {
   try {
+    const offset = (page - 1) * limit;
+
+    // Query flights with optional search
+    const where = search
+      ? {
+          OR: [
+            { "Route.DepartureAirport.city": { contains: search, mode: "insensitive" } },
+            { "Route.ArrivalAirport.city": { contains: search, mode: "insensitive" } },
+            { "Airplane.Airline.name": { contains: search, mode: "insensitive" } },
+          ],
+        }
+      : {};
+
     const flights = await prisma.Flight.findMany({
+      where,
       include: {
         Route: {
           include: {
@@ -21,7 +35,11 @@ export const getAllFlights = async () => {
         ArrivalTerminal: true,
         Discount: true,
       },
+      skip: offset,
+      take: parseInt(limit, 10),
     });
+
+    const totalFlights = await prisma.Flight.count({ where });
 
     if (!flights.length) {
       throw new AppError("No flights found", 404);
@@ -75,11 +93,19 @@ export const getAllFlights = async () => {
       discount: flight.Discount ? flight.Discount.discount : 0,
     }));
 
+    const pagination = {
+      totalItems: totalFlights,
+      currentPage: parseInt(page, 10),
+      totalPages: Math.ceil(totalFlights / limit),
+      pageSize: parseInt(limit, 10),
+    };
+
     return {
       formattedFlights,
+      pagination,
     };
   } catch (error) {
-    console.error("Error geting flight data:", error);
+    console.error("Error getting flight data:", error);
     throw error;
   }
 };

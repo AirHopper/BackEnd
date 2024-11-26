@@ -3,15 +3,15 @@ import { getAllFlights, getFlightById, storeFlight, updateFlight, destroyFlight 
 //TODO Get all flights
 export const getAll = async (req, res, next) => {
   try {
-    const {
-      formattedFlights,
-      // pagination
-    } = await getAllFlights();
+    const { page = 1, limit = 10, search } = req.query;
+
+    const { formattedFlights, pagination } = await getAllFlights({ page, limit, search });
+
     res.status(200).json({
       success: true,
       message: "Flights fetched successfully",
+      pagination,
       data: formattedFlights,
-      // pagination,
     });
   } catch (error) {
     next(error);
