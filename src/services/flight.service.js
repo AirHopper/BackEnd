@@ -138,14 +138,16 @@ export const getById = async (id) => {
       include: {
         Route: {
           include: {
-            DepartureAirport: true,
-            ArrivalAirport: true,
+            DepartureAirport: {
+              include: { City: true },
+            },
+            ArrivalAirport: {
+              include: { City: true },
+            },
           },
         },
         Airplane: {
-          include: {
-            Airline: true,
-          },
+          include: { Airline: true },
         },
         DepartureTerminal: true,
         ArrivalTerminal: true,
@@ -164,45 +166,54 @@ export const getById = async (id) => {
       airline: flight.Airplane.Airline.name,
       airplane: flight.Airplane.name,
       departure: {
-        place: flight.Route.DepartureAirport.city,
+        time: flight.departureTime,
         airport: {
           name: flight.Route.DepartureAirport.name,
           code: flight.Route.DepartureAirport.iataCode,
+          type: flight.Route.DepartureAirport.type,
         },
         city: {
-          name: flight.Route.DepartureAirport.city,
-          code: flight.Route.DepartureAirport.cityCode,
+          name: flight.Route.DepartureAirport.City.name,
+          code: flight.Route.DepartureAirport.City.code,
+          image: flight.Route.DepartureAirport.City.imageUrl,
         },
         country: {
-          name: flight.Route.DepartureAirport.country,
-          code: flight.Route.DepartureAirport.countryCode,
+          name: flight.Route.DepartureAirport.City.country,
+          code: flight.Route.DepartureAirport.City.countryCode,
         },
-        time: flight.departureTime,
-        terminal: flight.DepartureTerminal.name,
+        terminal: {
+          name: flight.DepartureTerminal.name,
+          type: flight.DepartureTerminal.type,
+        },
       },
       arrival: {
-        place: flight.Route.ArrivalAirport.city,
+        time: flight.arrivalTime,
         airport: {
           name: flight.Route.ArrivalAirport.name,
           code: flight.Route.ArrivalAirport.iataCode,
+          type: flight.Route.ArrivalAirport.type,
         },
         city: {
-          name: flight.Route.ArrivalAirport.city,
-          code: flight.Route.ArrivalAirport.cityCode,
+          name: flight.Route.ArrivalAirport.City.name,
+          code: flight.Route.ArrivalAirport.City.code,
+          image: flight.Route.ArrivalAirport.City.imageUrl,
         },
         country: {
-          name: flight.Route.ArrivalAirport.country,
-          code: flight.Route.ArrivalAirport.countryCode,
+          name: flight.Route.ArrivalAirport.City.country,
+          code: flight.Route.ArrivalAirport.City.countryCode,
         },
-        time: flight.arrivalTime,
-        terminal: flight.ArrivalTerminal.name,
+        terminal: {
+          name: flight.ArrivalTerminal.name,
+          type: flight.ArrivalTerminal.type,
+        },
       },
       isActive: flight.isActive,
-      price: flight.price,
       baggage: flight.baggage,
       cabinBaggage: flight.cabinBaggage,
       entertainment: flight.entertainment,
+      price: flight.price,
       discount: flight.Discount ? flight.Discount.discount : 0,
+      totalPrice: flight.price - (flight.price * (flight.Discount ? flight.Discount.discount : 0)) / 100,
     };
 
     return formattedFlight;
