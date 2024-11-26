@@ -6,7 +6,7 @@ import { generateOTP } from '../utils/otpgenerator.js';
 import { sendEmail } from '../utils/nodemailer.js';
 import { setUpOauth2Client, getUserInfo } from '../utils/googleapis.js';
 import { generateStrongPassword } from '../utils/passwordgenerator.js';
-
+  
 
 // Check email or phone number
 const isValidEmail = (email) => {
@@ -269,6 +269,23 @@ export const resetPasswordUser = async (userData) => {
     // Send back user data
     cleanUpAccountData(account);
     return account;
+  } catch(error) {
+    throw error;
+  }
+}
+
+// Testing Auth Middleware
+export const getUser = async (userData) => {
+  try {
+    const data = await prisma.account.findUnique({
+      where: {
+        id: userData
+      },
+      include: {
+        user: true,
+      }
+    })
+    return data;
   } catch(error) {
     throw error;
   }

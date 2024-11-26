@@ -1,5 +1,6 @@
 import express from "express";
-import { register, login, resendOtp, verifyOTP, googlePage, googleLogin, forgotPassword, resetPassword } from "../controllers/authControllers.js";
+import { register, login, resendOtp, verifyOTP, googlePage, googleLogin, forgotPassword, resetPassword, getUserInfoController } from "../controllers/auth.controller.js";
+import authHandler from '../middlewares/authHandler.js';
 
 const router = express.Router();
 
@@ -11,5 +12,6 @@ router.get('/google', googlePage);
 router.get('/google/callback', googleLogin);
 router.post('/password/forgot', forgotPassword);
 router.post('/password/reset', resetPassword);
+router.get('/user', authHandler, getUserInfoController); // Example of using middleware authentication
 
 export default router;

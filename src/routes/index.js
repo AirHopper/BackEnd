@@ -1,6 +1,6 @@
 import express from "express";
-import routes from "./routeRoutes.js";
-import auth from "./authRoutes.js";
+import routes from "./route.routes.js";
+import auth from "./auth.routes.js";
 
 // Examples Import Route :
 
