@@ -85,15 +85,27 @@ export const getRoutes = async (queryParams) => {
         DepartureAirport: {
           select: {
             name: true,
-            city: true,
-            country: true,
+            City: {
+              select: {
+                code: true,
+                name: true,
+                country: true,
+                countryCode: true,
+              },
+            },
           },
         },
         ArrivalAirport: {
           select: {
             name: true,
-            city: true,
-            country: true,
+            City: {
+              select: {
+                code: true,
+                name: true,
+                country: true,
+                countryCode: true,
+              },
+            },
           },
         },
       },
