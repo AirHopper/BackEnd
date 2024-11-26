@@ -21,7 +21,8 @@ export const getAll = async (req, res, next) => {
 // TODO Get flight by ID
 export const getById = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const id = parseInt(req.params.id, 10); // Konversi String ke Int
+
     const flight = await getFlightById(id);
     res.status(200).json({
       success: true,

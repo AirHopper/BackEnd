@@ -6,7 +6,6 @@ export const getAllFlights = async ({ page = 1, limit = 10, search }) => {
   try {
     const offset = (page - 1) * limit;
 
-    // Query flights with optional search
     const where = search
       ? {
           OR: [
@@ -134,6 +133,10 @@ export const getFlightById = async (id) => {
         Discount: true,
       },
     });
+
+    if (isNaN(id)) {
+      throw new AppError("Invalid flight ID", 400);
+    }
 
     if (!flight) {
       throw new AppError("Flight not found", 404);
