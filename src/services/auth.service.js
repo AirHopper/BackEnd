@@ -6,7 +6,7 @@ import { generateOTP } from '../utils/otpgenerator.js';
 import { sendEmail } from '../utils/nodemailer.js';
 import { setUpOauth2Client, getUserInfo } from '../utils/googleapis.js';
 import { generateStrongPassword } from '../utils/passwordgenerator.js';
-  
+
 
 // Check email or phone number
 const isValidEmail = (email) => {
@@ -233,7 +233,7 @@ export const forgotPasswordUser = async (userData) => {
     sendEmail(
       account.email, 
       'Reset Password Request', 
-      `Click the link if you want to reset your password: http://${process.env.APP_URL}/reset-password?token=${token}`
+      `Click the link if you want to reset your password: http://localhost:5173/reset-password?token=${token}`
       // Setting up link later
     );
 
@@ -246,12 +246,7 @@ export const forgotPasswordUser = async (userData) => {
 // Reset password
 export const resetPasswordUser = async (userData) => {
   try {
-    const { token, newPassword, confirmPassword } = userData;
-    
-    // Make sure new password and confirm password is same
-    if (!(newPassword === confirmPassword)) {
-      throw new customError("Password didn't match", 400);
-    }
+    const { token, newPassword } = userData;
     
     // Verify token
     const { id } = verifyToken(token);
