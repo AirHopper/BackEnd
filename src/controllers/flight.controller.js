@@ -1,11 +1,11 @@
-import { getAllFlights, getFlightById, storeFlight, updateFlight, destroyFlight } from "../services/flight.service.js";
+import * as flightService from "../services/flight.service.js";
 
 //TODO Get all flights
 export const getAll = async (req, res, next) => {
   try {
     const { page = 1, limit = 10, search } = req.query;
 
-    const { formattedFlights, pagination } = await getAllFlights({ page, limit, search });
+    const { formattedFlights, pagination } = await flightService.getAll({ page, limit, search });
 
     res.status(200).json({
       success: true,
@@ -23,7 +23,7 @@ export const getById = async (req, res, next) => {
   try {
     const id = parseInt(req.params.id, 10);
 
-    const flight = await getFlightById(id);
+    const flight = await flightService.getById(id);
     res.status(200).json({
       success: true,
       message: "Flight fetched successfully",
@@ -34,12 +34,10 @@ export const getById = async (req, res, next) => {
   }
 };
 
-// TODO Search flights at parameters query
-
 // TODO Store flight
 export const store = async (req, res, next) => {
   try {
-    const flight = await storeFlight(req, res);
+    const flight = await flightService.store(req, res);
 
     res.status(201).json({
       success: true,
@@ -55,7 +53,7 @@ export const store = async (req, res, next) => {
 export const update = async (req, res, next) => {
   try {
     const id = parseInt(req.params.id, 10);
-    const updatedFlight = await updateFlight(req, id);
+    const updatedFlight = await flightService.update(req, id);
 
     res.status(200).json({
       success: true,
@@ -71,7 +69,7 @@ export const update = async (req, res, next) => {
 export const destroy = async (req, res, next) => {
   try {
     const id = parseInt(req.params.id, 10);
-    await destroyFlight(id);
+    await flightService.destroy(id);
     res.status(200).json({
       success: true,
       message: "Flight deleted successfully",
