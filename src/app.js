@@ -2,7 +2,7 @@ import express from "express";
 import path from "path";
 import { createServer } from "http";
 import dotenv from "dotenv";
-import Routes from "./routes/index.js";
+import Routes from "./routes/index.routes.js";
 import Middleware from "./middlewares/index.js";
 import Views from "./views/index.js";
 import errorHandler from "./middlewares/errorHandler.js";

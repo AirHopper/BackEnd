@@ -5,11 +5,11 @@ import {
   getRouteController,
   updateRouteController,
   deleteRouteController,
-} from "../controllers/routeControllers.js";
+} from "../controllers/route.controller.js";
 import {
   validateCreateRoute,
   validateUpdateRoute,
-} from "../middlewares/validator/routeValidator.js";
+} from "../middlewares/validator/route.validator.js";
 
 const router = express.Router();
 

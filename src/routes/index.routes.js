@@ -1,5 +1,5 @@
 import express from "express";
-import routes from "./routeRoutes.js";
+import routes from "./route.routes.js";
 
 // Examples Import Route :
 // import users from "./users.js";
