@@ -152,7 +152,7 @@ export const loginUser = async (userData) => {
     }
 
     // Check password is matching or not
-    if (!account || !comparePassword(password, account.password)) {
+    if (!account || !await comparePassword(password, account.password)) {
       throw new customError('Invalid email or password', 400);
     }
 
