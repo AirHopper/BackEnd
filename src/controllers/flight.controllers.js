@@ -21,7 +21,7 @@ export const getAll = async (req, res, next) => {
 // TODO Get flight by ID
 export const getById = async (req, res, next) => {
   try {
-    const id = parseInt(req.params.id, 10); // Konversi String ke Int
+    const id = parseInt(req.params.id, 10);
 
     const flight = await getFlightById(id);
     res.status(200).json({
@@ -70,7 +70,8 @@ export const update = async (req, res, next) => {
 // TODO Destroy flight
 export const destroy = async (req, res, next) => {
   try {
-    await destroyFlight(req.params.id);
+    const id = parseInt(req.params.id, 10);
+    await destroyFlight(id);
     res.status(200).json({
       success: true,
       message: "Flight deleted successfully",

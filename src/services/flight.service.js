@@ -414,6 +414,10 @@ export const updateFlight = async (req, id) => {
 // TODO Delete flight
 export const destroyFlight = async (id) => {
   try {
+    if (isNaN(id)) {
+      throw new AppError("Invalid flight ID", 400);
+    }
+
     const flightExists = await prisma.Flight.findUnique({
       where: {
         id,
