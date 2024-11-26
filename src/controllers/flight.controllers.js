@@ -54,7 +54,8 @@ export const store = async (req, res, next) => {
 // TODO Update flight
 export const update = async (req, res, next) => {
   try {
-    const updatedFlight = await updateFlight(req);
+    const id = parseInt(req.params.id, 10);
+    const updatedFlight = await updateFlight(req, id);
 
     res.status(200).json({
       success: true,

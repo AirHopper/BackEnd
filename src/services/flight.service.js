@@ -112,6 +112,10 @@ export const getAllFlights = async ({ page = 1, limit = 10, search }) => {
 // TODO Get flight by ID
 export const getFlightById = async (id) => {
   try {
+    if (isNaN(id)) {
+      throw new AppError("Invalid flight ID", 400);
+    }
+
     const flight = await prisma.Flight.findUnique({
       where: {
         id,
@@ -133,10 +137,6 @@ export const getFlightById = async (id) => {
         Discount: true,
       },
     });
-
-    if (isNaN(id)) {
-      throw new AppError("Invalid flight ID", 400);
-    }
 
     if (!flight) {
       throw new AppError("Flight not found", 404);
@@ -296,9 +296,12 @@ export const storeFlight = async (req) => {
 };
 
 // TODO Update flight
-export const updateFlight = async (req) => {
+export const updateFlight = async (req, id) => {
   try {
-    const { id } = req.params;
+    if (isNaN(id)) {
+      throw new AppError("Invalid flight ID", 400);
+    }
+
     const { routeId, class: classType, isActive, airplaneId, departureTime, arrivalTime, duration, price, capacity, baggage, cabinBaggage, entertainment, departureTerminalId, arrivalTerminalId, discountId } = req.body;
 
     const flightExists = await prisma.Flight.findUnique({
