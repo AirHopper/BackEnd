@@ -224,13 +224,9 @@ export const getById = async (id) => {
 };
 
 // TODO Create flight
-export const store = async (req) => {
+export const store = async (payload) => {
   try {
-    const { routeId, class: classType, isActive = true, airplaneId, departureTime, arrivalTime, duration, price, capacity = null, baggage, cabinBaggage, entertainment, departureTerminalId, arrivalTerminalId, discountId = null } = req.body;
-
-    if (!routeId || !classType || !airplaneId || !departureTime || !arrivalTime || !duration || !price || !baggage || !cabinBaggage || !departureTerminalId || !arrivalTerminalId) {
-      throw new AppError("Missing required fields", 400);
-    }
+    const { routeId, class: classType, isActive = true, airplaneId, departureTime, arrivalTime, duration, price, capacity = null, baggage, cabinBaggage, entertainment, departureTerminalId, arrivalTerminalId, discountId = null } = payload;
 
     const departureDate = new Date(departureTime);
     const arrivalDate = new Date(arrivalTime);
@@ -320,13 +316,13 @@ export const store = async (req) => {
 };
 
 // TODO Update flight
-export const update = async (req, id) => {
+export const update = async (payload, id) => {
   try {
     if (isNaN(id)) {
       throw new AppError("Invalid flight ID", 400);
     }
 
-    const { routeId, class: classType, isActive, airplaneId, departureTime, arrivalTime, duration, price, capacity, baggage, cabinBaggage, entertainment, departureTerminalId, arrivalTerminalId, discountId } = req.body;
+    const { routeId, class: classType, isActive, airplaneId, departureTime, arrivalTime, duration, price, capacity, baggage, cabinBaggage, entertainment, departureTerminalId, arrivalTerminalId, discountId } = payload;
 
     const flightExists = await prisma.Flight.findUnique({
       where: {

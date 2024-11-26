@@ -37,7 +37,7 @@ export const getById = async (req, res, next) => {
 // TODO Store flight
 export const store = async (req, res, next) => {
   try {
-    const flight = await flightService.store(req, res);
+    const flight = await flightService.store(req.body);
 
     res.status(201).json({
       success: true,
@@ -53,7 +53,7 @@ export const store = async (req, res, next) => {
 export const update = async (req, res, next) => {
   try {
     const id = parseInt(req.params.id, 10);
-    const updatedFlight = await flightService.update(req, id);
+    const updatedFlight = await flightService.update(req.body, id);
 
     res.status(200).json({
       success: true,
