@@ -1,5 +1,4 @@
 import { resendOTP, registerUser, verifyOTPUser, loginUser, googleLoginUser, forgotPasswordUser, resetPasswordUser, getUser } from "../services/auth.service.js";
-import { getAuthorizationUrl } from "../utils/googleapis.js";
 
 export const register = async (req, res, next) => {
   try {
@@ -63,22 +62,15 @@ export const login = async (req, res, next) => {
   }
 }
 
-// Redirect to Google Login
-export const googlePage = async (req, res) => {
-  res.redirect(await getAuthorizationUrl());
-}
-
 export const googleLogin = async (req, res, next) => {
   try {
-    const data = await googleLoginUser(req.query);
-    // Send response or redirect to Homepage (after user login)
-    // res.status(200).json({
-    //   success: true,
-    //   message: "User login with google successfully",
-    //   data: data,
-    //   error: null,
-    // })
-    res.redirect(`/?token=${data.token}}`);
+    const data = await googleLoginUser(req.body);
+    res.status(200).json({
+      success: true,
+      message: "User login with google successfully",
+      data: data,
+      error: null,
+    })
   } catch (error) {
     console.log(error);
     next(error);

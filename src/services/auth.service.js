@@ -170,12 +170,14 @@ export const loginUser = async (userData) => {
 // Login with Google
 export const googleLoginUser = async (userData) => {
   try {
-    // Set up user token
-    const { code } = userData;
-    const oauth2Client = await setUpOauth2Client(code);
-
-    // Get user info
-    const data = await getUserInfo(oauth2Client);
+    const { accessToken } = userData
+    
+    // Fetching user info from google apis
+    const response = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${accessToken}`);
+    if (!response.ok) {
+      throw new customError('Invalid access token', 400);
+    }
+    const data = await response.json();
 
     // Check if user is already have an account or not
     let account = await prisma.account.findUnique({
