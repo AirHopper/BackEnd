@@ -2,6 +2,7 @@ import express from "express";
 import routes from "./route.routes.js";
 import cities from "./city.routes.js";
 import airlines from "./airline.routes.js";
+import airport from "./airport.routes.js";
 import auth from "./auth.routes.js";
 import flightRoutes from "./flight.routes.js";
 
@@ -12,6 +13,7 @@ export default (app) => {
   router.use("/routes", routes);
   router.use("/cities", cities);
   router.use("/airlines", airlines);
+  router.use("/airports", airport);
   router.use("/auth", auth);
   router.use("/flights", flightRoutes);
 
