@@ -1,5 +1,6 @@
 import express from "express";
 import routes from "./route.routes.js";
+import cities from "./city.routes.js";
 import auth from "./auth.routes.js";
 import flightRoutes from "./flight.routes.js";
 
@@ -8,8 +9,7 @@ export default (app) => {
 
   router.use("/auth", auth);
   router.use("/routes", routes);
-
-  // Examples Route Usage :
+  router.use("/cities", cities);
   router.use("/auth", auth);
   router.use("/flights", flightRoutes);
 

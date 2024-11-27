@@ -1,15 +1,9 @@
-import {
-  createRoute,
-  getRoutes,
-  getRoute,
-  updateRoute,
-  deleteRoute,
-} from "../services/route.service.js";
+import * as routeService from "../services/route.service.js";
 
 // Controller to create a new route
 export const createRouteController = async (req, res, next) => {
   try {
-    const newRoute = await createRoute(req.body);
+    const newRoute = await routeService.createRoute(req.body);
     res.status(201).json({
       message: "Route created successfully",
       data: newRoute,
@@ -23,7 +17,7 @@ export const createRouteController = async (req, res, next) => {
 export const getRoutesController = async (req, res, next) => {
   try {
     const { page, pageSize } = req.query;
-    const routes = await getRoutes({ page, pageSize });
+    const routes = await routeService.getRoutes({ page, pageSize });
     res.status(200).json({
       message: "Routes fetched successfully",
       metadata: routes.metadata,
@@ -38,7 +32,7 @@ export const getRoutesController = async (req, res, next) => {
 export const getRouteController = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const route = await getRoute(parseInt(id));
+    const route = await routeService.getRoute(parseInt(id));
     res.status(200).json({
       message: "Route fetched successfully",
       data: route,
@@ -52,7 +46,7 @@ export const getRouteController = async (req, res, next) => {
 export const updateRouteController = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const updatedRoute = await updateRoute(parseInt(id), req.body);
+    const updatedRoute = await routeService.updateRoute(parseInt(id), req.body);
     res.status(200).json({
       message: "Route updated successfully",
       data: updatedRoute,
@@ -66,7 +60,7 @@ export const updateRouteController = async (req, res, next) => {
 export const deleteRouteController = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const deletedRoute = await deleteRoute(parseInt(id));
+    const deletedRoute = await routeService.deleteRoute(parseInt(id));
     res.status(200).json({
       message: "Route deleted successfully",
       data: deletedRoute,
