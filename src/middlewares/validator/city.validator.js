@@ -12,7 +12,18 @@ const createCitySchema = z.object({
     .string()
     .min(2, "Country code must be 2-3 characters long")
     .max(3, "Country code must be 2-3 characters long"),
-  continent: z.string().min(1, "Continent is required"),
+  continent: z.enum(
+    [
+      "Africa",
+      "Antarctica",
+      "Asia",
+      "Europe",
+      "North America",
+      "Oceania",
+      "South America",
+    ],
+    "Invalid continent"
+  ),
 });
 
 const updateCitySchema = z.object({
@@ -20,7 +31,17 @@ const updateCitySchema = z.object({
   name: z.string().min(1).optional(),
   country: z.string().min(1).optional(),
   countryCode: z.string().min(2).max(3).optional(),
-  continent: z.string().min(1).optional(),
+  continent: z
+    .enum([
+      "Africa",
+      "Antarctica",
+      "Asia",
+      "Europe",
+      "North America",
+      "Oceania",
+      "South America",
+    ])
+    .optional(),
 });
 
 // Middleware for validation

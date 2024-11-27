@@ -8,7 +8,7 @@ export const createAirplane = async (data) => {
 
     const newAirplane = await prisma.airplane.create({
       data: {
-        airlineId,
+        airline: { connect: { iataCode: airlineId } },
         name,
         type,
         pricePerKm,
@@ -26,7 +26,7 @@ export const createAirplane = async (data) => {
 export const getAllAirplanes = async () => {
   try {
     const airplanes = await prisma.airplane.findMany({
-      include: { Airline: true }, 
+      include: { Airline: true },
     });
     return airplanes;
   } catch (error) {
@@ -57,7 +57,9 @@ export const getAirplaneById = async (id) => {
 // Update an airplane
 export const updateAirplane = async (id, data) => {
   try {
-    const airplane = await prisma.airplane.findUnique({ where: { id: parseInt(id, 10) } });
+    const airplane = await prisma.airplane.findUnique({
+      where: { id: parseInt(id, 10) },
+    });
 
     if (!airplane) {
       throw new AppError("Airplane not found", 404);
@@ -78,7 +80,9 @@ export const updateAirplane = async (id, data) => {
 // Delete an airplane
 export const deleteAirplane = async (id) => {
   try {
-    const airplane = await prisma.airplane.findUnique({ where: { id: parseInt(id, 10) } });
+    const airplane = await prisma.airplane.findUnique({
+      where: { id: parseInt(id, 10) },
+    });
 
     if (!airplane) {
       throw new AppError("Airplane not found", 404);

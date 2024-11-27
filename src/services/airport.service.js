@@ -13,7 +13,7 @@ export const createAirport = async (data) => {
         latitude,
         longitude,
         type,
-        city: { connect: { code: cityId } }, 
+        city: { connect: { code: cityId } },
       },
     });
 
@@ -42,7 +42,12 @@ export const getAirportByIataCode = async (iataCode) => {
   try {
     const airport = await prisma.airport.findUnique({
       where: { iataCode },
-      include: { City: true, Terminals: true, departureRoutes: true, arrivalRoutes: true },
+      include: {
+        City: true,
+        Terminals: true,
+        departureRoutes: true,
+        arrivalRoutes: true,
+      },
     });
 
     if (!airport) {
@@ -88,7 +93,9 @@ export const deleteAirport = async (iataCode) => {
 
     await prisma.airport.delete({ where: { iataCode } });
 
-    return { message: `Airport with IATA code ${iataCode} deleted successfully` };
+    return {
+      message: `Airport with IATA code ${iataCode} deleted successfully`,
+    };
   } catch (error) {
     console.error("Error deleting airport:", error);
     throw error;

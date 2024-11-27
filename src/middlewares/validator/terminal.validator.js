@@ -1,17 +1,16 @@
 import { z } from "zod";
 
 // Define validation schemas
-const createAirplaneSchema = z.object({
-  airlineId: z.string().min(1, "Airline ID is required"),
+const createTerminalSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  type: z.enum(["domestic", "international"], "Invalid airplane type"),
-  pricePerKm: z.number().positive("Price per km must be a positive number"),
+  type: z.enum(["domestic", "international"], "Invalid terminal type"),
+  airportId: z.string().min(1, "Airport ID is required"),
 });
 
-const updateAirplaneSchema = z.object({
+const updateTerminalSchema = z.object({
   name: z.string().min(1).optional(),
   type: z.enum(["domestic", "international"]).optional(),
-  pricePerKm: z.number().positive().optional(),
+  airportId: z.string().min(1).optional(),
 });
 
 // Middleware for validation
@@ -25,5 +24,5 @@ const validate = (schema) => (req, res, next) => {
   }
 };
 
-export const validateCreateAirplane = validate(createAirplaneSchema);
-export const validateUpdateAirplane = validate(updateAirplaneSchema);
+export const validateCreateTerminal = validate(createTerminalSchema);
+export const validateUpdateTerminal = validate(updateTerminalSchema);
