@@ -1,4 +1,4 @@
-import * as cityService from "../services/cityService.js";
+import * as cityService from "../services/city.service.js";
 
 export const createCity = async (req, res, next) => {
   try {
