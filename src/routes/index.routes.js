@@ -1,5 +1,6 @@
 import express from "express";
 import routes from "./route.routes.js";
+import cities from "./city.routes.js";
 
 // Examples Import Route :
 // import users from "./users.js";
@@ -12,6 +13,7 @@ export default (app) => {
   const router = express.Router();
 
   router.use("/routes", routes);
+  router.use("/cities", cities);
 
   // Examples Route Usage :
   //   router.use("/users", users);
