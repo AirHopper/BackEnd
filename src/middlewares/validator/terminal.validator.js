@@ -1,16 +1,5 @@
 import { z } from "zod";
 
-// Define the Continent enum
-const Continent = z.enum([
-  "Africa",
-  "Antarctica",
-  "Asia",
-  "Europe",
-  "North_America",
-  "Oceania",
-  "South_America",
-]);
-
 // Define validation schemas
 const createCitySchema = z.object({
   code: z
@@ -23,7 +12,18 @@ const createCitySchema = z.object({
     .string()
     .min(2, "Country code must be 2-3 characters long")
     .max(3, "Country code must be 2-3 characters long"),
-  continent: Continent,
+  continent: z.enum(
+    [
+      "Africa",
+      "Antarctica",
+      "Asia",
+      "Europe",
+      "North America",
+      "Oceania",
+      "South America",
+    ],
+    "Invalid continent"
+  ),
 });
 
 const updateCitySchema = z.object({
@@ -31,7 +31,17 @@ const updateCitySchema = z.object({
   name: z.string().min(1).optional(),
   country: z.string().min(1).optional(),
   countryCode: z.string().min(2).max(3).optional(),
-  continent: Continent.optional(),
+  continent: z
+    .enum([
+      "Africa",
+      "Antarctica",
+      "Asia",
+      "Europe",
+      "North America",
+      "Oceania",
+      "South America",
+    ])
+    .optional(),
 });
 
 // Middleware for validation

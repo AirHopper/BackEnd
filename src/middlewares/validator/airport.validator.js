@@ -5,8 +5,11 @@ const createAirportSchema = z.object({
   iataCode: z.string().length(3, "IATA code must be exactly 3 characters long"),
   name: z.string().min(1, "Name is required"),
   latitude: z.number().min(-90).max(90, "Latitude must be between -90 and 90"),
-  longitude: z.number().min(-180).max(180, "Longitude must be between -180 and 180"),
-  type: z.enum(["International", "Domestic", "Regional"], "Invalid airport type"),
+  longitude: z
+    .number()
+    .min(-180)
+    .max(180, "Longitude must be between -180 and 180"),
+  type: z.enum(["domestic", "international"], "Invalid airport type"),
   cityId: z.string().min(1, "City ID is required"),
 });
 
@@ -14,7 +17,7 @@ const updateAirportSchema = z.object({
   name: z.string().min(1).optional(),
   latitude: z.number().min(-90).max(90).optional(),
   longitude: z.number().min(-180).max(180).optional(),
-  type: z.enum(["International", "Domestic", "Regional"]).optional(),
+  type: z.enum(["domestic", "international"]).optional(),
   cityId: z.string().optional(),
 });
 
