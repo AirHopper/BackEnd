@@ -1,9 +1,17 @@
 import prisma from '../utils/prisma.js';
 // import customError from '../utils/AppError.js';
 
-export const getAllTickets = async () => {
+export const getTicketsByUserId = async (userId) => {
     try {
-        return await prisma.ticket.findMany();
+        return prisma.ticket.findMany({
+            where: {
+                userId
+            },
+            include: {
+                Flight: true,
+                Payment: true
+            }
+        });
     } catch (error) {
         console.error('Error fetching tickets:', error);
         throw error;
@@ -12,7 +20,7 @@ export const getAllTickets = async () => {
 
 export const createTicket = async (req) => { 
     try {
-        return await prisma.ticket.create({
+        return prisma.ticket.create({
             data: {
                 flightId: req.flightId,
                 userId: req.userId,

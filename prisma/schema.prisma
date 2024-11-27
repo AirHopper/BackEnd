@@ -195,7 +195,7 @@ model Flight {
   price               Decimal
   capacity            Int?
   baggage             Int
-  cabinBaggage        Int
+  cabinBaggage        Int       @map("cabin_baggage")
   entertainment       Boolean
   createdAt           DateTime  @default(now()) @map("created_at")
   departureTerminalId Int       @map("departure_terminal_id")
@@ -232,7 +232,7 @@ model Ticket {
 
 model Payment {
   id            Int                 @id @default(autoincrement())
-  method        PaymentMethod // credit_card, e_wallet, etc.
+  method        PaymentMethod       // credit_card, e_wallet, etc.  
   status        PaymentStatus       @default(pending) // Midtrans status: pending, settlement, expire, cancel
   amount        Decimal
   transactionId String?             @unique @map("transaction_id") // Unique transaction ID from Midtrans

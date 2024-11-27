@@ -1,9 +1,9 @@
 import express from "express";
-import { getAll, create } from "../controllers/ticket.js";
+import { getManyByUserId, create } from "../controllers/ticket.js";
 
 const router = express.Router();
 
-router.get("/", getAll);
+router.get("/", getManyByUserId);
 router.post("/", create);
 
 export default router;

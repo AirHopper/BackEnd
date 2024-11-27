@@ -1,6 +1,7 @@
 import express from "express";
 import tickets from "./ticket.js";
 import routes from "./routeRoutes.js";
+import payments from "./payment.js";
 
 // Examples Import Route :
 // import users from "./users.js";
@@ -14,6 +15,7 @@ export default (app) => {
 
   router.use("/tickets", tickets);
   router.use("/routes", routes);
+  router.use("/payments", payments);
 
   // Examples Route Usage :
   //   router.use("/users", users);
