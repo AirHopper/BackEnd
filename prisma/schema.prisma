@@ -147,8 +147,10 @@ model Terminal {
 }
 
 model Airline {
-  iataCode String @id @unique @map("iata_code")
-  name     String @unique
+  iataCode String  @id @unique @map("iata_code")
+  name     String  @unique
+  imageUrl String?
+  imageId  String?
 
   Airplanes Airplane[]
 

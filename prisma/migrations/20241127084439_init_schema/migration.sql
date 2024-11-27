@@ -1,129 +1,41 @@
-/*
-  Warnings:
-
-  - You are about to drop the `Account` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Airline` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Airplane` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Airport` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Flight` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Notification` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Passenger` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Payment` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `PaymentWebhookLog` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Route` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Seat` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Terminal` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Ticket` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `User` table. If the table is not empty, all the data it contains will be lost.
-
-*/
 -- CreateEnum
-CREATE TYPE "GenderType" AS ENUM ('male', 'female');
+CREATE TYPE "Role" AS ENUM ('admin', 'buyer');
 
--- DropForeignKey
-ALTER TABLE "Airplane" DROP CONSTRAINT "Airplane_airline_id_fkey";
+-- CreateEnum
+CREATE TYPE "TicketStatus" AS ENUM ('issued', 'unpaid', 'cancelled', 'paid', 'expired');
 
--- DropForeignKey
-ALTER TABLE "Flight" DROP CONSTRAINT "Flight_airplane_id_fkey";
+-- CreateEnum
+CREATE TYPE "ClassType" AS ENUM ('economy', 'premium_economy', 'business', 'first_class');
 
--- DropForeignKey
-ALTER TABLE "Flight" DROP CONSTRAINT "Flight_arrival_terminal_id_fkey";
+-- CreateEnum
+CREATE TYPE "PassengerType" AS ENUM ('adult', 'child', 'baby');
 
--- DropForeignKey
-ALTER TABLE "Flight" DROP CONSTRAINT "Flight_departure_terminal_id_fkey";
+-- CreateEnum
+CREATE TYPE "PaymentStatus" AS ENUM ('pending', 'settlement', 'expire', 'cancel', 'refund', 'partial_refund', 'failed');
 
--- DropForeignKey
-ALTER TABLE "Flight" DROP CONSTRAINT "Flight_route_id_fkey";
+-- CreateEnum
+CREATE TYPE "PaymentMethod" AS ENUM ('credit_card', 'debit_card', 'e_wallet', 'bank_transfer', 'cash');
 
--- DropForeignKey
-ALTER TABLE "Notification" DROP CONSTRAINT "Notification_account_id_fkey";
+-- CreateEnum
+CREATE TYPE "TitleType" AS ENUM ('Mr', 'Ms');
 
--- DropForeignKey
-ALTER TABLE "Passenger" DROP CONSTRAINT "Passenger_seat_id_fkey";
+-- CreateEnum
+CREATE TYPE "RegionType" AS ENUM ('domestic', 'international');
 
--- DropForeignKey
-ALTER TABLE "Passenger" DROP CONSTRAINT "Passenger_ticket_id_fkey";
-
--- DropForeignKey
-ALTER TABLE "PaymentWebhookLog" DROP CONSTRAINT "PaymentWebhookLog_payment_id_fkey";
-
--- DropForeignKey
-ALTER TABLE "Route" DROP CONSTRAINT "Route_arrival_airport_id_fkey";
-
--- DropForeignKey
-ALTER TABLE "Route" DROP CONSTRAINT "Route_departure_airport_id_fkey";
-
--- DropForeignKey
-ALTER TABLE "Seat" DROP CONSTRAINT "Seat_flight_id_fkey";
-
--- DropForeignKey
-ALTER TABLE "Terminal" DROP CONSTRAINT "Terminal_airport_id_fkey";
-
--- DropForeignKey
-ALTER TABLE "Ticket" DROP CONSTRAINT "Ticket_flight_id_fkey";
-
--- DropForeignKey
-ALTER TABLE "Ticket" DROP CONSTRAINT "Ticket_payment_id_fkey";
-
--- DropForeignKey
-ALTER TABLE "Ticket" DROP CONSTRAINT "Ticket_user_id_fkey";
-
--- DropForeignKey
-ALTER TABLE "User" DROP CONSTRAINT "User_account_id_fkey";
-
--- DropTable
-DROP TABLE "Account";
-
--- DropTable
-DROP TABLE "Airline";
-
--- DropTable
-DROP TABLE "Airplane";
-
--- DropTable
-DROP TABLE "Airport";
-
--- DropTable
-DROP TABLE "Flight";
-
--- DropTable
-DROP TABLE "Notification";
-
--- DropTable
-DROP TABLE "Passenger";
-
--- DropTable
-DROP TABLE "Payment";
-
--- DropTable
-DROP TABLE "PaymentWebhookLog";
-
--- DropTable
-DROP TABLE "Route";
-
--- DropTable
-DROP TABLE "Seat";
-
--- DropTable
-DROP TABLE "Terminal";
-
--- DropTable
-DROP TABLE "Ticket";
-
--- DropTable
-DROP TABLE "User";
-
--- DropEnum
-DROP TYPE "Gender";
+-- CreateEnum
+CREATE TYPE "Continent" AS ENUM ('Africa', 'Antarctica', 'Asia', 'Europe', 'North_America', 'Oceania', 'South_America');
 
 -- CreateTable
 CREATE TABLE "accounts" (
     "id" SERIAL NOT NULL,
-    "email" TEXT NOT NULL,
-    "password" TEXT NOT NULL,
-    "role" "Role" NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
+    "email" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
+    "role" "Role" NOT NULL DEFAULT 'buyer',
+    "otp_code" TEXT,
+    "otp_expiration" TIMESTAMP(3),
+    "is_verified" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "accounts_pkey" PRIMARY KEY ("id")
 );
@@ -132,10 +44,8 @@ CREATE TABLE "accounts" (
 CREATE TABLE "users" (
     "id" SERIAL NOT NULL,
     "account_id" INTEGER NOT NULL,
-    "username" TEXT NOT NULL,
-    "phone_number" TEXT NOT NULL,
-    "gender" "GenderType" NOT NULL,
-    "address" TEXT,
+    "full_name" TEXT NOT NULL,
+    "phone_number" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -143,16 +53,26 @@ CREATE TABLE "users" (
 );
 
 -- CreateTable
+CREATE TABLE "cities" (
+    "code" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "country" TEXT NOT NULL,
+    "country_code" TEXT NOT NULL,
+    "continent" "Continent" NOT NULL,
+    "imageUrl" TEXT,
+    "imageId" TEXT,
+
+    CONSTRAINT "cities_pkey" PRIMARY KEY ("code")
+);
+
+-- CreateTable
 CREATE TABLE "airports" (
     "iata_code" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "city" TEXT NOT NULL,
-    "city_code" TEXT NOT NULL,
-    "country" TEXT NOT NULL,
-    "country_code" TEXT NOT NULL,
     "latitude" DECIMAL(65,30) NOT NULL,
     "longitude" DECIMAL(65,30) NOT NULL,
     "type" "RegionType" NOT NULL,
+    "cityId" TEXT NOT NULL,
 
     CONSTRAINT "airports_pkey" PRIMARY KEY ("iata_code")
 );
@@ -161,7 +81,7 @@ CREATE TABLE "airports" (
 CREATE TABLE "terminals" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
-    "type" TEXT NOT NULL,
+    "type" "RegionType" NOT NULL,
     "airport_id" TEXT NOT NULL,
 
     CONSTRAINT "terminals_pkey" PRIMARY KEY ("id")
@@ -171,6 +91,8 @@ CREATE TABLE "terminals" (
 CREATE TABLE "airlines" (
     "iata_code" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "imageUrl" TEXT,
+    "imageId" TEXT,
 
     CONSTRAINT "airlines_pkey" PRIMARY KEY ("iata_code")
 );
@@ -201,7 +123,7 @@ CREATE TABLE "routes" (
     "id" SERIAL NOT NULL,
     "departure_airport_id" TEXT NOT NULL,
     "arrival_airport_id" TEXT NOT NULL,
-    "distance" INTEGER NOT NULL,
+    "distance" DECIMAL(65,30) NOT NULL,
 
     CONSTRAINT "routes_pkey" PRIMARY KEY ("id")
 );
@@ -217,7 +139,7 @@ CREATE TABLE "flights" (
     "arrival_time" TIMESTAMP(3) NOT NULL,
     "duration" INTEGER NOT NULL,
     "price" DECIMAL(65,30) NOT NULL,
-    "capacity" INTEGER,
+    "capacity" INTEGER NOT NULL,
     "baggage" INTEGER NOT NULL,
     "cabinBaggage" INTEGER NOT NULL,
     "entertainment" BOOLEAN NOT NULL,
@@ -281,7 +203,6 @@ CREATE TABLE "passengers" (
     "family_name" TEXT,
     "date_of_birth" TIMESTAMP(3) NOT NULL,
     "nationality" TEXT NOT NULL,
-    "gender" "GenderType" NOT NULL,
     "identifier_number" TEXT NOT NULL,
     "issued_country" TEXT NOT NULL,
     "id_valid_until" TIMESTAMP(3) NOT NULL,
@@ -317,10 +238,13 @@ CREATE UNIQUE INDEX "accounts_email_key" ON "accounts"("email");
 CREATE UNIQUE INDEX "users_account_id_key" ON "users"("account_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "users_username_key" ON "users"("username");
+CREATE UNIQUE INDEX "users_full_name_key" ON "users"("full_name");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "users_phone_number_key" ON "users"("phone_number");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "cities_code_key" ON "cities"("code");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "airports_iata_code_key" ON "airports"("iata_code");
@@ -330,6 +254,9 @@ CREATE UNIQUE INDEX "airlines_iata_code_key" ON "airlines"("iata_code");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "airlines_name_key" ON "airlines"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "routes_departure_airport_id_arrival_airport_id_key" ON "routes"("departure_airport_id", "arrival_airport_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "tickets_payment_id_key" ON "tickets"("payment_id");
@@ -345,6 +272,9 @@ CREATE UNIQUE INDEX "passengers_seat_id_key" ON "passengers"("seat_id");
 
 -- AddForeignKey
 ALTER TABLE "users" ADD CONSTRAINT "users_account_id_fkey" FOREIGN KEY ("account_id") REFERENCES "accounts"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "airports" ADD CONSTRAINT "airports_cityId_fkey" FOREIGN KEY ("cityId") REFERENCES "cities"("code") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "terminals" ADD CONSTRAINT "terminals_airport_id_fkey" FOREIGN KEY ("airport_id") REFERENCES "airports"("iata_code") ON DELETE RESTRICT ON UPDATE CASCADE;
