@@ -4,7 +4,6 @@ import customError from '../utils/AppError.js'
 import { getToken, verifyToken } from '../utils/jwt.js';
 import { generateOTP } from '../utils/otpgenerator.js';
 import { sendEmail } from '../utils/nodemailer.js';
-import { setUpOauth2Client, getUserInfo } from '../utils/googleapis.js';
 import { generateStrongPassword } from '../utils/passwordgenerator.js';
 
 
