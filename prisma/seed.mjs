@@ -86,7 +86,7 @@ async function seedAirports() {
       {
         iataCode: "JFK",
         name: "John F. Kennedy International Airport",
-        cityId: "NYC", 
+        cityId: "NYC",
         latitude: 40.6413,
         longitude: -73.7781,
         type: RegionType.international,
@@ -94,7 +94,7 @@ async function seedAirports() {
       {
         iataCode: "LAX",
         name: "Los Angeles International Airport",
-        cityId: "LAX", 
+        cityId: "LAX",
         latitude: 33.9416,
         longitude: -118.4085,
         type: RegionType.international,
@@ -102,7 +102,7 @@ async function seedAirports() {
       {
         iataCode: "SIN",
         name: "Singapore Changi Airport",
-        cityId: "SIN", 
+        cityId: "SIN",
         latitude: 1.3644,
         longitude: 103.9915,
         type: RegionType.international,
@@ -110,7 +110,7 @@ async function seedAirports() {
       {
         iataCode: "CGK",
         name: "Soekarno-Hatta International Airport",
-        cityId: "JKT", 
+        cityId: "JKT",
         latitude: -6.1256,
         longitude: 106.6559,
         type: RegionType.international,
@@ -118,7 +118,7 @@ async function seedAirports() {
       {
         iataCode: "DPS",
         name: "Ngurah Rai International Airport",
-        cityId: "DPS", 
+        cityId: "DPS",
         latitude: -8.7482,
         longitude: 115.1675,
         type: RegionType.international,

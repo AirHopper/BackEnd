@@ -54,6 +54,19 @@ export const updateCity = async (req, res, next) => {
   }
 };
 
+export const updateCityPhoto = async (req, res, next) => {
+  try {
+    const { code } = req.params;
+    const updatedCity = await cityService.updateCityPhoto(code, req.file);
+    res.status(200).json({
+      message: "City photo updated successfully",
+      data: updatedCity,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const deleteCity = async (req, res, next) => {
   try {
     const { code } = req.params;

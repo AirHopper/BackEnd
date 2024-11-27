@@ -10,7 +10,7 @@ export const createCity = async (payload) => {
     const result = await imagekit.upload({
       file: file.buffer,
       fileName: `city_${code}_${Date.now()}`,
-      folder: "/city/",
+      folder: "/city_images/",
     });
 
     const newCity = await prisma.city.create({
@@ -81,6 +81,48 @@ export const updateCity = async (code, payload) => {
     return updatedCity;
   } catch (error) {
     console.error("Error updating city:", error);
+    throw error;
+  }
+};
+
+// Update city photo
+export const updateCityPhoto = async (code, file) => {
+  try {
+    const city = await prisma.city.findUnique({ where: { code } });
+
+    if (!city) {
+      throw new AppError("City not found", 404);
+    }
+
+    let updatedImageData = {};
+    if (file) {
+      if (city.imageId) {
+        // Delete the existing image if present
+        await imagekit.deleteFile(city.imageId);
+      }
+
+      const result = await imagekit.upload({
+        file: file.buffer,
+        fileName: `city_${code}_${Date.now()}`,
+        folder: "/city_images/",
+      });
+
+      updatedImageData = {
+        imageUrl: result.url,
+        imageId: result.fileId,
+      };
+
+      const updatedCity = await prisma.city.update({
+        where: { code },
+        data: updatedImageData,
+      });
+
+      return updatedCity;
+    }
+
+    throw new AppError("No file provided for updating photo", 400);
+  } catch (error) {
+    console.error("Error updating city photo:", error);
     throw error;
   }
 };
