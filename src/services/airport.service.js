@@ -13,7 +13,7 @@ export const createAirport = async (data) => {
         latitude,
         longitude,
         type,
-        city: { connect: { code: cityId } }, // Assuming Airport is linked to a City
+        city: { connect: { code: cityId } }, 
       },
     });
 
@@ -28,7 +28,7 @@ export const createAirport = async (data) => {
 export const getAllAirports = async () => {
   try {
     const airports = await prisma.airport.findMany({
-      include: { City: true }, // Include related City
+      include: { City: true },
     });
     return airports;
   } catch (error) {
