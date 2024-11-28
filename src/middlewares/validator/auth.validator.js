@@ -3,7 +3,7 @@ import { z } from "zod";
 // Define validation schemas
 const registerSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(5),
+  password: z.string().min(8, "Password must be at least 8 characters"),
   fullName: z.string().min(1),
   phoneNumber:
     z.string()
@@ -20,8 +20,8 @@ const identifierSchema = z.string().refine(
   }
 );
 const loginSchema = z.object({
-  identifier: identifierSchema, // Bisa email atau nomor telepon
-  password: z.string().min(4, "Password must be at least 4 characters"), // Password minimal 4 karakter
+  identifier: identifierSchema,
+  password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
 const resendOTPSchema = z.object({
@@ -46,7 +46,7 @@ const resetPasswordSchema = z.object({
     .min(1, "Token is required"),
   newPassword: 
     z.string()
-    .min(4, "New password must be at least 4 characters"),
+    .min(8, "New password must be at least 8 characters"),
   confirmPassword: z.string().min(1, 'Confirm password is required'),
 }).refine((data) => data.newPassword === data.confirmPassword, {
   message: "Password didn't match",

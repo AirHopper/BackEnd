@@ -5,6 +5,8 @@ import { getToken, verifyToken } from '../utils/jwt.js';
 import { generateOTP } from '../utils/otpgenerator.js';
 import { sendEmail } from '../utils/nodemailer.js';
 import { generateStrongPassword } from '../utils/passwordgenerator.js';
+import ejs from "ejs";
+import path from "path";
 
 
 // Check email or phone number
