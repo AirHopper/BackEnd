@@ -173,7 +173,7 @@ model Airplane {
 model Seat {
   id         Int     @id @default(autoincrement())
   flightId   Int     @map("flight_id")
-  seatNumber String  @map("seat_number")
+  seatNumber Int     @map("seat_number")
   isOccupied Boolean @default(false) @map("is_occupied")
 
   Flight    Flight     @relation(fields: [flightId], references: [id])

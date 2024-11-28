@@ -9,11 +9,39 @@ export const getAll = async ({ page = 1, limit = 10, search }) => {
     const searchFilters = search
       ? {
           OR: [
-            { Airplane: { Airline: { name: { contains: search, mode: "insensitive" } } } },
-            { Route: { DepartureAirport: { City: { name: { contains: search, mode: "insensitive" } } } } },
-            { Route: { DepartureAirport: { City: { code: { contains: search, mode: "insensitive" } } } } },
-            { Route: { ArrivalAirport: { City: { name: { contains: search, mode: "insensitive" } } } } },
-            { Route: { ArrivalAirport: { City: { code: { contains: search, mode: "insensitive" } } } } },
+            {
+              Airplane: {
+                Airline: { name: { contains: search, mode: "insensitive" } },
+              },
+            },
+            {
+              Route: {
+                DepartureAirport: {
+                  City: { name: { contains: search, mode: "insensitive" } },
+                },
+              },
+            },
+            {
+              Route: {
+                DepartureAirport: {
+                  City: { code: { contains: search, mode: "insensitive" } },
+                },
+              },
+            },
+            {
+              Route: {
+                ArrivalAirport: {
+                  City: { name: { contains: search, mode: "insensitive" } },
+                },
+              },
+            },
+            {
+              Route: {
+                ArrivalAirport: {
+                  City: { code: { contains: search, mode: "insensitive" } },
+                },
+              },
+            },
           ],
         }
       : {};
@@ -104,7 +132,9 @@ export const getAll = async ({ page = 1, limit = 10, search }) => {
       entertainment: flight.entertainment,
       price: flight.price,
       discount: flight.Discount ? flight.Discount.discount : 0,
-      totalPrice: flight.price - (flight.price * (flight.Discount ? flight.Discount.discount : 0)) / 100,
+      totalPrice:
+        flight.price -
+        (flight.price * (flight.Discount ? flight.Discount.discount : 0)) / 100,
     }));
 
     const pagination = {
@@ -213,7 +243,9 @@ export const getById = async (id) => {
       entertainment: flight.entertainment,
       price: flight.price,
       discount: flight.Discount ? flight.Discount.discount : 0,
-      totalPrice: flight.price - (flight.price * (flight.Discount ? flight.Discount.discount : 0)) / 100,
+      totalPrice:
+        flight.price -
+        (flight.price * (flight.Discount ? flight.Discount.discount : 0)) / 100,
     };
 
     return formattedFlight;
@@ -226,32 +258,49 @@ export const getById = async (id) => {
 // TODO Create flight
 export const store = async (payload) => {
   try {
-    const { routeId, class: classType, isActive = true, airplaneId, departureTime, arrivalTime, duration, price, capacity = null, baggage, cabinBaggage, entertainment, departureTerminalId, arrivalTerminalId, discountId = null } = payload;
+    const {
+      routeId,
+      class: classType,
+      isActive = true,
+      airplaneId,
+      departureTime,
+      arrivalTime,
+      duration,
+      baggage,
+      cabinBaggage,
+      entertainment,
+      departureTerminalId,
+      arrivalTerminalId,
+      discountId = null,
+    } = payload;
 
     const departureDate = new Date(departureTime);
     const arrivalDate = new Date(arrivalTime);
 
     if (departureDate >= arrivalDate) {
-      throw new AppError("Departure time must be earlier than arrival time", 400);
+      throw new AppError(
+        "Departure time must be earlier than arrival time",
+        400
+      );
     }
 
-    const routeExists = await prisma.Route.findUnique({
+    const route = await prisma.Route.findUnique({
       where: {
         id: routeId,
       },
     });
 
-    if (!routeExists) {
+    if (!route) {
       throw new AppError("Route not found", 404);
     }
 
-    const airplaneExists = await prisma.Airplane.findUnique({
+    const airplane = await prisma.Airplane.findUnique({
       where: {
         id: airplaneId,
       },
     });
 
-    if (!airplaneExists) {
+    if (!airplane) {
       throw new AppError("Airplane not found", 404);
     }
 
@@ -275,17 +324,40 @@ export const store = async (payload) => {
       throw new AppError("Arrival terminal not found", 404);
     }
 
+    // Calculate price
+    let price = route.distance * airplane.pricePerKm;
+
+    price *=
+      classType === "economy"
+        ? 1
+        : classType === "premium_economy"
+        ? 1.5
+        : classType === "business"
+        ? 6
+        : 17.5;
+
     if (discountId) {
-      const discountExists = await prisma.Discount.findUnique({
+      const discount = await prisma.discount.findUnique({
         where: {
           id: discountId,
         },
       });
 
-      if (!discountExists) {
+      price -= price * (discount.discount / 100);
+
+      if (!discount) {
         throw new AppError("Discount not found", 404);
       }
     }
+
+    const capacity =
+      classType === "economy"
+        ? 72
+        : classType === "premium_economy"
+        ? 24
+        : classType === "business"
+        ? 18
+        : 6;
 
     // Membuat data flight
     const flight = await prisma.flight.create({
@@ -305,6 +377,12 @@ export const store = async (payload) => {
         departureTerminalId,
         arrivalTerminalId,
         discountId,
+        Seats: {
+          create: Array.from({ length: capacity }, (_, index) => ({
+            seatNumber: index + 1,
+            isOccupied: false,
+          })),
+        },
       },
     });
 
@@ -322,7 +400,23 @@ export const update = async (payload, id) => {
       throw new AppError("Invalid flight ID", 400);
     }
 
-    const { routeId, class: classType, isActive, airplaneId, departureTime, arrivalTime, duration, price, capacity, baggage, cabinBaggage, entertainment, departureTerminalId, arrivalTerminalId, discountId } = payload;
+    const {
+      routeId,
+      class: classType,
+      isActive,
+      airplaneId,
+      departureTime,
+      arrivalTime,
+      duration,
+      price,
+      capacity,
+      baggage,
+      cabinBaggage,
+      entertainment,
+      departureTerminalId,
+      arrivalTerminalId,
+      discountId,
+    } = payload;
 
     const flightExists = await prisma.Flight.findUnique({
       where: {
@@ -338,20 +432,29 @@ export const update = async (payload, id) => {
     const updatedClass = classType ?? flightExists.class;
     const updatedIsActive = isActive ?? flightExists.isActive;
     const updatedAirplaneId = airplaneId ?? flightExists.airplaneId;
-    const updatedDepartureTime = departureTime ? new Date(departureTime) : flightExists.departureTime;
-    const updatedArrivalTime = arrivalTime ? new Date(arrivalTime) : flightExists.arrivalTime;
+    const updatedDepartureTime = departureTime
+      ? new Date(departureTime)
+      : flightExists.departureTime;
+    const updatedArrivalTime = arrivalTime
+      ? new Date(arrivalTime)
+      : flightExists.arrivalTime;
     const updatedDuration = duration ?? flightExists.duration;
     const updatedPrice = price ?? flightExists.price;
     const updatedCapacity = capacity ?? flightExists.capacity;
     const updatedBaggage = baggage ?? flightExists.baggage;
     const updatedCabinBaggage = cabinBaggage ?? flightExists.cabinBaggage;
     const updatedEntertainment = entertainment ?? flightExists.entertainment;
-    const updatedDepartureTerminalId = departureTerminalId ?? flightExists.departureTerminalId;
-    const updatedArrivalTerminalId = arrivalTerminalId ?? flightExists.arrivalTerminalId;
+    const updatedDepartureTerminalId =
+      departureTerminalId ?? flightExists.departureTerminalId;
+    const updatedArrivalTerminalId =
+      arrivalTerminalId ?? flightExists.arrivalTerminalId;
     const updatedDiscountId = discountId ?? flightExists.discountId;
 
     if (updatedDepartureTime >= updatedArrivalTime) {
-      throw new AppError("Departure time must be earlier than arrival time", 400);
+      throw new AppError(
+        "Departure time must be earlier than arrival time",
+        400
+      );
     }
 
     const routeExists = await prisma.Route.findUnique({
