@@ -9,47 +9,29 @@ datasource db {
 }
 
 enum Role {
-  admin
-  buyer
+  Admin
+  Buyer
 }
 
 enum TicketStatus {
-  issued
-  unpaid
-  cancelled
-  paid
-  expired
+  Issued
+  Unpaid
+  Cancelled
+  Paid
+  Europexpired
 }
 
 enum ClassType {
-  economy
-  premium_economy
+  Economy
+  Premium_Economy
   business
   first_class
 }
 
 enum PassengerType {
-  adult
-  child
-  baby
-}
-
-enum PaymentStatus {
-  pending
-  settlement
-  expire
-  cancel
-  refund
-  partial_refund
-  failed
-}
-
-enum PaymentMethod {
-  credit_card
-  debit_card
-  e_wallet
-  bank_transfer
-  cash
+  Adult
+  Child
+  Baby
 }
 
 enum TitleType {
@@ -58,8 +40,8 @@ enum TitleType {
 }
 
 enum RegionType {
-  domestic
-  international
+  Domestic
+  International
 }
 
 enum Continent {
@@ -78,7 +60,7 @@ model Account {
   updatedAt     DateTime  @updatedAt @map("updated_at")
   email         String    @unique
   password      String
-  role          Role      @default(buyer)
+  role          Role      @default(Buyer)
   otpCode       String?   @map("otp_code")
   otpExpiration DateTime? @map("otp_expiration")
   isVerified    Boolean   @default(false) @map("is_verified")
@@ -233,7 +215,7 @@ model Ticket {
   paymentId    Int          @unique @map("payment_id")
   qrCodeUrl    String       @map("qr_code_url")
   bookingDate  DateTime     @default(now()) @map("booking_date")
-  ticketStatus TicketStatus @default(issued) @map("ticket_status")
+  ticketStatus TicketStatus @default(Issued) @map("ticket_status")
 
   Flight     Flight      @relation(fields: [flightId], references: [id])
   User       User        @relation(fields: [userId], references: [id])
@@ -244,32 +226,21 @@ model Ticket {
 }
 
 model Payment {
-  id            Int                 @id @default(autoincrement())
-  method        PaymentMethod // credit_card, e_wallet, etc.
-  status        PaymentStatus       @default(pending) // Midtrans status: pending, settlement, expire, cancel
+  id            Int       @id @default(autoincrement())
+  method        String // credit_card, e_wallet, etc.
+  status        String // Midtrans status: pending, settlement, expire, cancel
   amount        Decimal
-  transactionId String?             @unique @map("transaction_id") // Unique transaction ID from Midtrans
-  orderId       String              @unique @map("order_id") // Your system's unique order ID
-  fraudStatus   String?             @map("fraud_status") // Midtrans fraud status: accept, challenge, deny
-  validUntil    DateTime?           @map("valid_until") // Expiration for pending payments
-  paymentDate   DateTime?           @map("payment_date") // When payment is completed
-  createdAt     DateTime            @default(now()) @map("created_at")
-  updatedAt     DateTime            @updatedAt @map("updated_at")
+  payload       Json? // Full webhook payload
+  transactionId String?   @unique @map("transaction_id") // Unique transaction ID from Midtrans
+  orderId       String    @unique @map("order_id") // Your system's unique order ID
+  fraudStatus   String?   @map("fraud_status") // Midtrans fraud status: accept, challenge, deny
+  validUntil    DateTime? @map("valid_until") // Expiration for pending payments
+  paymentDate   DateTime? @map("payment_date") // When payment is completed
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
   Ticket        Ticket?
-  WebhookLog    PaymentWebhookLog[]
 
   @@map("payments")
-}
-
-model PaymentWebhookLog {
-  id        Int      @id @default(autoincrement())
-  paymentId Int?     @map("payment_id")
-  event     String // e.g., `payment.success`, `payment.failed`
-  payload   Json // Full webhook payload
-  createdAt DateTime @default(now()) @map("created_at")
-  Payment   Payment? @relation(fields: [paymentId], references: [id])
-
-  @@map("payment_webhook_logs")
 }
 
 model Passenger {
