@@ -31,18 +31,18 @@ export const resendOTP = async (req, res, next) => {
 }
 
 export const verifyOTP = async (req, res, next) => {
-try {
-  const data = await authService.verifyOTP(req.body);
-  res.status(200).json({
-    success: true,
-    message: "Email is verified",
-    data: data,
-    error: null,
-  })
-} catch (error) {
-  console.log(error);
-  next(error);
-}
+  try {
+    const data = await authService.verifyOTP(req.body);
+    res.status(200).json({
+      success: true,
+      message: "Email is verified",
+      data: data,
+      error: null,
+    })
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
 }
 
 export const login = async (req, res, next) => {
