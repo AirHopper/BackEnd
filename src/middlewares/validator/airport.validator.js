@@ -9,7 +9,7 @@ const createAirportSchema = z.object({
     .number()
     .min(-180)
     .max(180, "Longitude must be between -180 and 180"),
-  type: z.enum(["domestic", "international"], "Invalid airport type"),
+  type: z.enum(["Domestic", "International"], "Invalid airport type"),
   cityId: z.string().min(1, "City ID is required"),
 });
 
@@ -17,7 +17,7 @@ const updateAirportSchema = z.object({
   name: z.string().min(1).optional(),
   latitude: z.number().min(-90).max(90).optional(),
   longitude: z.number().min(-180).max(180).optional(),
-  type: z.enum(["domestic", "international"]).optional(),
+  type: z.enum(["Domestic", "International"]).optional(),
   cityId: z.string().optional(),
 });
 

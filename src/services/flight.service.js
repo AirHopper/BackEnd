@@ -1,9 +1,12 @@
 import prisma from "../utils/prisma.js";
 import AppError from "../utils/AppError.js";
 
-// Calculate price
+// Calculate flight price
 async function calculatePrice(distance, pricePerKm, classType, discountId) {
-  let price = distance * pricePerKm;
+  let price = 0;
+
+  // Calculate price based on distance and price per km
+  price = distance * pricePerKm;
 
   // Price multiplier based on class type
   const economy = 1; // Default
@@ -12,14 +15,15 @@ async function calculatePrice(distance, pricePerKm, classType, discountId) {
   const firstClass = 17.5; // 1650% more expensive
 
   price *=
-    classType === "economy"
+    classType === "Economy"
       ? economy
-      : classType === "premium_economy"
+      : classType === "Premium_Economy"
       ? premiumEconomy
-      : classType === "business"
+      : classType === "Business"
       ? business
       : firstClass;
 
+  // Apply discount if available
   if (discountId) {
     const discount = await prisma.discount.findUnique({
       where: {
@@ -37,6 +41,20 @@ async function calculatePrice(distance, pricePerKm, classType, discountId) {
   }
 
   return price;
+}
+
+// Calculate flight capacity based on class type
+function flightCapacity(classType) {
+  let capacity =
+    classType === "Economy"
+      ? 72
+      : classType === "Premium_economy"
+      ? 24
+      : classType === "Business"
+      ? 18
+      : 6;
+
+  return capacity;
 }
 
 // TODO Get all flights
@@ -349,7 +367,7 @@ export const store = async (payload) => {
       );
     }
 
-    const route = await prisma.Route.findUnique({
+    const route = await prisma.route.findUnique({
       where: {
         id: routeId,
       },
@@ -359,7 +377,7 @@ export const store = async (payload) => {
       throw new AppError("Route not found", 404);
     }
 
-    const airplane = await prisma.Airplane.findUnique({
+    const airplane = await prisma.airplane.findUnique({
       where: {
         id: airplaneId,
       },
@@ -369,7 +387,7 @@ export const store = async (payload) => {
       throw new AppError("Airplane not found", 404);
     }
 
-    const departureTerminalExists = await prisma.Terminal.findUnique({
+    const departureTerminalExists = await prisma.terminal.findUnique({
       where: {
         id: departureTerminalId,
       },
@@ -379,7 +397,7 @@ export const store = async (payload) => {
       throw new AppError("Departure terminal not found", 404);
     }
 
-    const arrivalTerminalExists = await prisma.Terminal.findUnique({
+    const arrivalTerminalExists = await prisma.terminal.findUnique({
       where: {
         id: arrivalTerminalId,
       },
@@ -389,21 +407,18 @@ export const store = async (payload) => {
       throw new AppError("Arrival terminal not found", 404);
     }
 
-    const price = calculatePrice(
+    // Calculate price
+    const price = await calculatePrice(
       route.distance,
       airplane.pricePerKm,
       classType,
       discountId
     );
 
-    const capacity =
-      classType === "economy"
-        ? 72
-        : classType === "premium_economy"
-        ? 24
-        : classType === "business"
-        ? 18
-        : 6;
+    console.log("Price:", price);
+
+    // Calculate capacity based on class type
+    const capacity = flightCapacity(classType);
 
     // Membuat data flight
     const flight = await prisma.flight.create({

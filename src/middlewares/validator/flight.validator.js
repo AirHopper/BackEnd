@@ -3,7 +3,7 @@ import { z } from "zod";
 // Schema untuk create flight
 const createFlightSchema = z.object({
   routeId: z.number().int().positive(),
-  class: z.enum(["economy", "premium_economy", "business", "first_class"]),
+  class: z.enum(["Economy", "Premium_Economy", "Business", "First_Class"]),
   isActive: z.boolean(),
   airplaneId: z.number().int().positive(),
   departureTime: z.string().datetime(),
@@ -20,7 +20,7 @@ const createFlightSchema = z.object({
 // Schema untuk update flight
 const updateFlightSchema = z.object({
   routeId: z.number().int().positive().optional(),
-  class: z.enum(["economy", "premium_economy", "business", "first_class"]).optional(),
+  class: z.enum(["Economy", "Premium_Economy", "Business", "First_Class"]).optional(),
   isActive: z.boolean().optional(),
   airplaneId: z.number().int().positive().optional(),
   departureTime: z.string().datetime().optional(),
