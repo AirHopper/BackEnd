@@ -9,47 +9,29 @@ datasource db {
 }
 
 enum Role {
-  admin
-  buyer
+  Admin
+  Buyer
 }
 
 enum TicketStatus {
-  issued
-  unpaid
-  cancelled
-  paid
-  expired
+  Issued
+  Unpaid
+  Cancelled
+  Paid
+  Europexpired
 }
 
 enum ClassType {
-  economy
-  premium_economy
-  business
-  first_class
+  Economy
+  Premium_Economy
+  Business
+  First_Class
 }
 
 enum PassengerType {
-  adult
-  child
-  baby
-}
-
-enum PaymentStatus {
-  pending
-  settlement
-  expire
-  cancel
-  refund
-  partial_refund
-  failed
-}
-
-enum PaymentMethod {
-  credit_card
-  debit_card
-  e_wallet
-  bank_transfer
-  cash
+  Adult
+  Child
+  Baby
 }
 
 enum TitleType {
@@ -58,8 +40,8 @@ enum TitleType {
 }
 
 enum RegionType {
-  domestic
-  international
+  Domestic
+  International
 }
 
 enum Continent {
@@ -78,7 +60,7 @@ model Account {
   updatedAt     DateTime  @updatedAt @map("updated_at")
   email         String    @unique
   password      String
-  role          Role      @default(buyer)
+  role          Role      @default(Buyer)
   otpCode       String?   @map("otp_code")
   otpExpiration DateTime? @map("otp_expiration")
   isVerified    Boolean   @default(false) @map("is_verified")
@@ -92,7 +74,7 @@ model Account {
 model User {
   id          Int      @id @default(autoincrement())
   accountId   Int      @unique @map("account_id")
-  username    String   @unique
+  fullName    String   @unique @map("full_name")
   phoneNumber String?  @unique @map("phone_number")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
@@ -103,21 +85,32 @@ model User {
   @@map("users")
 }
 
-model Airport {
-  iataCode    String     @id @unique @map("iata_code")
+model City {
+  code        String    @id @unique
   name        String
-  city        String
-  cityCode    String     @map("city_code")
   country     String
-  countryCode String     @map("country_code")
+  countryCode String    @map("country_code")
   continent   Continent
-  latitude    Decimal
-  longitude   Decimal
-  type        RegionType
+  imageUrl    String?
+  imageId     String?
+
+  Airports Airport[]
+
+  @@map("cities")
+}
+
+model Airport {
+  iataCode  String     @id @unique @map("iata_code")
+  name      String
+  latitude  Decimal
+  longitude Decimal
+  type      RegionType
 
   Terminals       Terminal[]
   departureRoutes Route[]    @relation("DepartureRoutes")
   arrivalRoutes   Route[]    @relation("ArrivalRoutes")
+  City            City       @relation(fields: [cityId], references: [code])
+  cityId          String
 
   @@map("airports")
 }
@@ -136,8 +129,10 @@ model Terminal {
 }
 
 model Airline {
-  iataCode String @id @unique @map("iata_code")
-  name     String @unique
+  iataCode String  @id @unique @map("iata_code")
+  name     String  @unique
+  imageUrl String?
+  imageId  String?
 
   Airplanes Airplane[]
 
@@ -160,7 +155,7 @@ model Airplane {
 model Seat {
   id         Int     @id @default(autoincrement())
   flightId   Int     @map("flight_id")
-  seatNumber String  @map("seat_number")
+  seatNumber Int     @map("seat_number")
   isOccupied Boolean @default(false) @map("is_occupied")
 
   Flight    Flight     @relation(fields: [flightId], references: [id])
@@ -193,7 +188,7 @@ model Flight {
   arrivalTime         DateTime  @map("arrival_time")
   duration            Int
   price               Decimal
-  capacity            Int?
+  capacity            Int
   baggage             Int
   cabinBaggage        Int       @map("cabin_baggage")
   entertainment       Boolean
@@ -220,7 +215,7 @@ model Ticket {
   paymentId    Int          @unique @map("payment_id")
   qrCodeUrl    String       @map("qr_code_url")
   bookingDate  DateTime     @default(now()) @map("booking_date")
-  ticketStatus TicketStatus @default(issued) @map("ticket_status")
+  ticketStatus TicketStatus @default(Issued) @map("ticket_status")
 
   Flight     Flight      @relation(fields: [flightId], references: [id])
   User       User        @relation(fields: [userId], references: [id])
@@ -231,32 +226,21 @@ model Ticket {
 }
 
 model Payment {
-  id            Int                 @id @default(autoincrement())
-  method        PaymentMethod       // credit_card, e_wallet, etc.  
-  status        PaymentStatus       @default(pending) // Midtrans status: pending, settlement, expire, cancel
+  id            Int       @id @default(autoincrement())
+  method        String // credit_card, e_wallet, etc.
+  status        String // Midtrans status: pending, settlement, expire, cancel
   amount        Decimal
-  transactionId String?             @unique @map("transaction_id") // Unique transaction ID from Midtrans
-  orderId       String              @unique @map("order_id") // Your system's unique order ID
-  fraudStatus   String?             @map("fraud_status") // Midtrans fraud status: accept, challenge, deny
-  validUntil    DateTime?           @map("valid_until") // Expiration for pending payments
-  paymentDate   DateTime?           @map("payment_date") // When payment is completed
-  createdAt     DateTime            @default(now()) @map("created_at")
-  updatedAt     DateTime            @updatedAt @map("updated_at")
+  payload       Json? // Full webhook payload
+  transactionId String?   @unique @map("transaction_id") // Unique transaction ID from Midtrans
+  orderId       String    @unique @map("order_id") // Your system's unique order ID
+  fraudStatus   String?   @map("fraud_status") // Midtrans fraud status: accept, challenge, deny
+  validUntil    DateTime? @map("valid_until") // Expiration for pending payments
+  paymentDate   DateTime? @map("payment_date") // When payment is completed
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
   Ticket        Ticket?
-  WebhookLog    PaymentWebhookLog[]
 
   @@map("payments")
-}
-
-model PaymentWebhookLog {
-  id        Int      @id @default(autoincrement())
-  paymentId Int?     @map("payment_id")
-  event     String // e.g., `payment.success`, `payment.failed`
-  payload   Json // Full webhook payload
-  createdAt DateTime @default(now()) @map("created_at")
-  Payment   Payment? @relation(fields: [paymentId], references: [id])
-
-  @@map("payment_webhook_logs")
 }
 
 model Passenger {

@@ -1,4 +1,4 @@
-import { getTicketsByUserId, createTicket } from "../services/ticket.js";
+import { getTicketsByUserId, createTicket } from "../services/ticket.service.js";
 
 export const getManyByUserId = async (req, res, next) => {
     try {
