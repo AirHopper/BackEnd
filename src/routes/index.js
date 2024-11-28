@@ -2,6 +2,7 @@ import express from "express";
 import tickets from "./ticket.js";
 import routes from "./routeRoutes.js";
 import payments from "./payment.js";
+import paymentWebhookLogs from "./paymentWebhookLog.js";
 
 // Examples Import Route :
 // import users from "./users.js";
@@ -16,6 +17,7 @@ export default (app) => {
   router.use("/tickets", tickets);
   router.use("/routes", routes);
   router.use("/payments", payments);
+  router.use("/payment-webhook-logs", paymentWebhookLogs);
 
   // Examples Route Usage :
   //   router.use("/users", users);

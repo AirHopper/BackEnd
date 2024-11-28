@@ -1,6 +1,13 @@
 import prisma from '../utils/prisma.js';
-import { MIDTRANS_SERVER_KEY, FRONT_END_URL, MIDTRANS_API_URL, MIDTRANS_APP_URL } from '../utils/midtrans.js';
+import { MIDTRANS_SERVER_KEY, FRONT_END_URL, MIDTRANS_API_URL, MIDTRANS_APP_URL, MIDTRANS_CLIENT_KEY } from '../utils/midtrans.js';
 import AppError from '../utils/AppError.js';
+import MidtransClient from 'midtrans-client';
+
+let coreApi = new MidtransClient.CoreApi({
+    isProduction : false,
+    serverKey : MIDTRANS_SERVER_KEY,
+    clientKey : MIDTRANS_CLIENT_KEY
+});
 
 // export const getTicketsByUserId = async (userId) => {
 //     try {
@@ -21,72 +28,40 @@ import AppError from '../utils/AppError.js';
 
 export const createPayment = async (req) => { 
     try {
-        const transactionId = 'transaction-' + Math.random().toString(36).substr(2, 9);
-        const price = 1000;
-        const authString = btoa(`${MIDTRANS_SERVER_KEY}:`);
+        const orderId = 'orderId-' + Math.random().toString(36).substr(2, 9);
+        console.log(req.method)
 
-        const payload = {
+        let parameter = {
+            payment_type: req.method,
             transaction_details: {
-                order_id: transactionId,
-                gross_amount: price
+                gross_amount: 24145,
+                order_id: orderId,
             },
-            item_details: {
-                name: 'test item',
-                price: price,
-                quantity: 1
-            },
-            customer_details: {
-                email: 'halodek@gmail.com'
-            },
-            callback: {
-                finish: `${FRONT_END_URL}/order-status?transaction_id=${transactionId}`,
-                error: `${FRONT_END_URL}/order-status?transaction_id=${transactionId}`,
-                pending: `${FRONT_END_URL}/order-status?transaction_id=${transactionId}`
-            }
+            // bank_transfer:{
+            //     bank: "bni"
+            // }
+        };
+
+        const chargeResponse = await coreApi.charge(parameter);
+        if (chargeResponse.status_code !== '201') {
+            throw new AppError('Error on chargeResponse', 500);
         }
-
-        const response = await fetch(`${MIDTRANS_APP_URL}/snap/v1/transactions`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'Authorization': `Basic ${authString}`
-            },
-            body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) throw new AppError("error on create payment", 500);
-
-        const data = await response.json();
-
-        // await Promise.all([
-        //     transactionService.createTransaction({
-        //         transaction_id,
-        //         gross_amount,
-        //         customer_name,
-        //         customer_email,
-        //         snap_token: data.token,
-        //         snap_redirect_url: data.token
-        //     }),
-        //     transactionService.createTransactionItems({
-        //         products: productsFromDB,
-        //         transaction_id
-        //     })
-        // ]);
-
-        console.log(data)
+        // console.log('chargeResponse:', JSON.stringify(chargeResponse));
+        console.log(chargeResponse);
 
         return prisma.payment.create({
             data: {
-                method: req.method,
-                status: req.status,
-                amount: price,
-                orderId: transactionId,
-                updatedAt: new Date(),
+                method: chargeResponse.payment_type,
+                status: chargeResponse.transaction_status,
+                amount: chargeResponse.gross_amount,
+                transactionId: chargeResponse.transaction_id,
+                orderId: chargeResponse.order_id,
+                fraudStatus: chargeResponse.fraud_status,
+                validUntil: new Date(chargeResponse.expiry_time)
             }
         });
     } catch (error) {
-        console.error('Error creating ticket:', error);
+        console.error('Error creating payment:', error);
         throw error;
     }
 }
