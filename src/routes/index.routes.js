@@ -8,7 +8,6 @@ import terminals from "./terminal.routes.js";
 import auth from "./auth.routes.js";
 import flightRoutes from "./flight.routes.js";
 import payments from "./payment.routes.js";
-import paymentWebhook from "./paymentWebhook.js";
 import tickets from "./ticket.js";
 
 export default (app) => {
@@ -25,7 +24,6 @@ export default (app) => {
   router.use("/flights", flightRoutes);
   router.use("/tickets", tickets);
   router.use("/payments", payments);
-  router.use("/payment-webhook", paymentWebhook);
 
   app.use("/api/v1", router);
 };
