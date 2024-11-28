@@ -1,23 +1,24 @@
-import nodemailer from 'nodemailer';
+import nodemailer from "nodemailer";
 
-const mailerUser = process.env.MAILER_USER
-const mailerPassword = process.env.MAILER_PASSWORD
+const mailerUser = process.env.MAILER_USER;
+const mailerPassword = process.env.MAILER_PASSWORD;
 
-const sendEmail = (email, subject, message) => {
+const sendEmail = (email, subject, html) => {
   const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    service: "gmail",
     auth: {
-      user: mailerUser, 
+      user: mailerUser,
       pass: mailerPassword,
-    }
+    },
   });
   transporter.sendMail(
-    { 
+    {
       from: mailerUser,
       to: email,
       subject: subject,
-      text: message,
-    }, (error, info) => {
+      html: html,
+    },
+    (error, info) => {
       if (error) {
         console.log(error);
         return error;
@@ -25,7 +26,7 @@ const sendEmail = (email, subject, message) => {
         return info;
       }
     }
-  )
-}
+  );
+};
 
 export { sendEmail };

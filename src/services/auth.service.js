@@ -5,6 +5,8 @@ import { getToken, verifyToken } from "../utils/jwt.js";
 import { generateOTP } from "../utils/otpgenerator.js";
 import { sendEmail } from "../utils/nodemailer.js";
 import { generateStrongPassword } from "../utils/passwordgenerator.js";
+import ejs from "ejs";
+import path from "path";
 // import { setUpOauth2Client, getUserInfo } from "../utils/googleapis.js";
 
 // Check email or phone number
@@ -48,7 +50,12 @@ export const registerUser = async (userData) => {
       include: { user: true },
     });
 
-    sendEmail(email, "Email Verification", `Your OTP code is: ${otp}`);
+    const emailTemplatePath = path.resolve("src/views/otpRegister.ejs");
+    const htmlContent = await ejs.renderFile(emailTemplatePath, {
+      otp,
+    });
+
+    sendEmail(email, "Email Verification", htmlContent);
     cleanUpAccountData(account);
     return account;
   } catch (error) {
@@ -73,7 +80,12 @@ export const resendOTP = async (email) => {
       include: { user: true },
     });
 
-    sendEmail(email, "Email Verification", `Your OTP code is: ${otp}`);
+    const emailTemplatePath = path.resolve("src/views/otpRegister.ejs");
+    const htmlContent = await ejs.renderFile(emailTemplatePath, {
+      otp,
+    });
+
+    sendEmail(email, "Email Verification", htmlContent);
     cleanUpAccountData(account);
     return account;
   } catch (error) {
@@ -205,10 +217,20 @@ export const forgotPasswordUser = async (userData) => {
     });
 
     const token = getToken(account.id, account.email);
+
+    const emailTemplatePath = path.resolve("src/views/resetPassword.ejs");
+
+    const resetLink = `http://localhost:5173/reset-password?token=${token}`;
+
+    const htmlContent = await ejs.renderFile(emailTemplatePath, {
+      resetLink,
+    });
+
+
     sendEmail(
       account.email,
       "Reset Password Request",
-      `Click the link if you want to reset your password: http://localhost:5173/reset-password?token=${token}`
+      htmlContent
     );
 
     return { email: account.email };
