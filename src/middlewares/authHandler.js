@@ -14,6 +14,7 @@ const authHandler = (req, res, next) => {
     req.user = verifyToken(token);
     next();
   } catch (error) {
+    console.error("Error verifying token:", error);
     next(new customError("Invalid token", 403));
   }
 };

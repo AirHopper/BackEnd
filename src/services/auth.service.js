@@ -4,8 +4,8 @@ import customError from "../utils/AppError.js";
 import { getToken, verifyToken } from "../utils/jwt.js";
 import { generateOTP } from "../utils/otpgenerator.js";
 import { sendEmail } from "../utils/nodemailer.js";
-import { setUpOauth2Client, getUserInfo } from "../utils/googleapis.js";
 import { generateStrongPassword } from "../utils/passwordgenerator.js";
+// import { setUpOauth2Client, getUserInfo } from "../utils/googleapis.js";
 
 // Check email or phone number
 const isValidEmail = (email) => {
@@ -27,17 +27,11 @@ const cleanUpAccountData = (account) => {
 
 // Register Email and Password
 export const registerUser = async (userData) => {
-  // Seperated user data
   const { email, password, fullName, phoneNumber } = userData;
-
-  // Hashing password
   const hashedPassword = await hashPassword(password);
-
-  // Generate OTP
   const otp = generateOTP();
 
   try {
-    // Create account and user
     const account = await prisma.account.create({
       data: {
         email,
@@ -54,13 +48,11 @@ export const registerUser = async (userData) => {
       include: { user: true },
     });
 
-    // Send OTP to email user
     sendEmail(email, "Email Verification", `Your OTP code is: ${otp}`);
-
-    // Send data
     cleanUpAccountData(account);
     return account;
   } catch (error) {
+    console.error("Error registering user:", error);
     if (error.code === "P2002") {
       throw new customError("Email address already used", 409);
     }
@@ -71,10 +63,7 @@ export const registerUser = async (userData) => {
 // Resend OTP
 export const resendOTP = async (email) => {
   try {
-    // Generate new otp
     const otp = generateOTP();
-
-    // Update otp and expiration
     const account = await prisma.account.update({
       where: { email },
       data: {
@@ -84,13 +73,11 @@ export const resendOTP = async (email) => {
       include: { user: true },
     });
 
-    // Resend email
     sendEmail(email, "Email Verification", `Your OTP code is: ${otp}`);
-
-    // Send data
     cleanUpAccountData(account);
     return account;
   } catch (error) {
+    console.error("Error resending OTP:", error);
     if (error.code === "P2025") {
       throw new customError("Invalid email", 404);
     }
@@ -103,7 +90,6 @@ export const verifyOTPUser = async (userData) => {
   const { email, otpCode } = userData;
 
   try {
-    // Match email and otp
     const account = await prisma.account.findUnique({
       where: { email, otpCode },
     });
@@ -111,44 +97,38 @@ export const verifyOTPUser = async (userData) => {
       throw new customError("Invalid OTP or email", 400);
     }
 
-    // Check the OTP has expired or not.
     const OTPExpired = new Date() > new Date(account.otpExpiration);
     if (OTPExpired) {
       throw new customError("OTP is expired", 400);
     }
 
-    // Make user verified
     const updatedAccount = await prisma.account.update({
       where: { id: account.id },
       data: { isVerified: true },
       include: { user: true },
     });
 
-    // Send data
     cleanUpAccountData(updatedAccount);
     return updatedAccount;
   } catch (error) {
+    console.error("Error verifying OTP:", error);
     throw error;
   }
 };
 
 // Login Email and Password
 export const loginUser = async (userData) => {
-  // Seperated user data
   const { identifier, password } = userData;
 
   try {
     let account;
-    // Check user is available or not
     if (isValidEmail(identifier)) {
-      // Using email
       account = await prisma.account.findUnique({
         where: { email: identifier },
         include: { user: true },
       });
     } else {
-      // Using phone number
-      let user = await prisma.user.findUnique({
+      const user = await prisma.user.findUnique({
         where: { phoneNumber: identifier },
       });
       account = await prisma.account.findUnique({
@@ -157,18 +137,15 @@ export const loginUser = async (userData) => {
       });
     }
 
-    // Check password is matching or not
     if (!account || !(await comparePassword(password, account.password))) {
       throw new customError("Invalid email or password", 400);
     }
 
-    // Get Token
     const token = getToken(account.id, account.email);
-
-    // Send data
     cleanUpAccountData(account);
     return { ...account, token };
   } catch (error) {
+    console.error("Error logging in user:", error);
     throw error;
   }
 };
@@ -178,7 +155,6 @@ export const googleLoginUser = async (userData) => {
   try {
     const { accessToken } = userData;
 
-    // Fetching user info from google apis
     const response = await fetch(
       `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${accessToken}`
     );
@@ -187,19 +163,14 @@ export const googleLoginUser = async (userData) => {
     }
     const data = await response.json();
 
-    // Check if user is already have an account or not
     let account = await prisma.account.findUnique({
-      where: {
-        email: data.email,
-      },
+      where: { email: data.email },
       include: { user: true },
     });
 
-    // Generate random password and hash it
     const password = await generateStrongPassword();
     const hashedPassword = await hashPassword(password);
 
-    // If not exist, create one
     if (!account) {
       account = await prisma.account.create({
         data: {
@@ -216,10 +187,10 @@ export const googleLoginUser = async (userData) => {
       });
     }
 
-    // Get token
     const token = getToken(account.id, account.email);
     return { ...account, token };
   } catch (error) {
+    console.error("Error logging in with Google:", error);
     throw error;
   }
 };
@@ -228,27 +199,21 @@ export const googleLoginUser = async (userData) => {
 export const forgotPasswordUser = async (userData) => {
   const { email } = userData;
 
-  // Find user by email
   try {
     const account = await prisma.account.findUnique({
-      where: {
-        email: email,
-      },
+      where: { email },
     });
 
-    // Create token
     const token = getToken(account.id, account.email);
-
-    // Send token to user email
     sendEmail(
       account.email,
       "Reset Password Request",
       `Click the link if you want to reset your password: http://localhost:5173/reset-password?token=${token}`
-      // Setting up link later
     );
 
     return { email: account.email };
   } catch (error) {
+    console.error("Error in forgot password request:", error);
     throw error;
   }
 };
@@ -258,23 +223,19 @@ export const resetPasswordUser = async (userData) => {
   try {
     const { token, newPassword } = userData;
 
-    // Verify token
     const { id } = verifyToken(token);
-
-    // Hash new user password
     const hashedPassword = await hashPassword(newPassword);
 
-    // Update user password by id
     const account = await prisma.account.update({
-      where: { id: id },
+      where: { id },
       data: { password: hashedPassword },
       include: { user: true },
     });
 
-    // Send back user data
     cleanUpAccountData(account);
     return account;
   } catch (error) {
+    console.error("Error resetting password:", error);
     throw error;
   }
 };
@@ -283,15 +244,12 @@ export const resetPasswordUser = async (userData) => {
 export const getUser = async (userData) => {
   try {
     const data = await prisma.account.findUnique({
-      where: {
-        id: userData,
-      },
-      include: {
-        user: true,
-      },
+      where: { id: userData },
+      include: { user: true },
     });
     return data;
   } catch (error) {
+    console.error("Error fetching user data:", error);
     throw error;
   }
 };
