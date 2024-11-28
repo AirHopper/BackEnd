@@ -69,8 +69,8 @@ export const updatePaymentStatusById = async (id, request) => {
                 id
             },
             data: {
-                status: request.status,
-                fraudStatus: request.fraudStatus,
+                status: request.transaction_status,
+                fraudStatus: request.fraud_status,
                 payload: JSON.stringify(request)
             }
         });
