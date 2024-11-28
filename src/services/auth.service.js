@@ -26,7 +26,8 @@ const cleanUpAccountData = (account) => {
 };
 
 // Register Email and Password
-export const registerUser = async (userData) => {
+export const register = async (userData) => {
+  // Seperated user data
   const { email, password, fullName, phoneNumber } = userData;
   const hashedPassword = await hashPassword(password);
   const otp = generateOTP();
@@ -127,7 +128,8 @@ export const verifyOTPUser = async (userData) => {
 };
 
 // Login Email and Password
-export const loginUser = async (userData) => {
+export const login = async (userData) => {
+  // Seperated user data
   const { identifier, password } = userData;
 
   try {
@@ -161,7 +163,7 @@ export const loginUser = async (userData) => {
 };
 
 // Login with Google
-export const googleLoginUser = async (userData) => {
+export const googleLogin = async (userData) => {
   try {
     const { accessToken } = userData;
 
@@ -206,7 +208,7 @@ export const googleLoginUser = async (userData) => {
 };
 
 // Request link for reset password
-export const forgotPasswordUser = async (userData) => {
+export const forgotPassword = async (userData) => {
   const { email } = userData;
 
   try {
@@ -239,7 +241,7 @@ export const forgotPasswordUser = async (userData) => {
 };
 
 // Reset password
-export const resetPasswordUser = async (userData) => {
+export const resetPassword = async (userData) => {
   try {
     const { token, newPassword } = userData;
 
