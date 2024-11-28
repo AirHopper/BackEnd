@@ -6,12 +6,18 @@ const errorHandler = (err, req, res, next) => {
   if (err instanceof AppError) {
     // Handle custom application errors
     return res.status(err.statusCode).json({
-      error: err.message,
+      status: false,
+      data: null,
+      message: err.message,
+      error: err,
     });
   } else {
     // Handle general errors
     return res.status(500).json({
-      error: "Internal Server Error",
+      status: false,
+      data: null,
+      message: "Internal Server Error",
+      error: err,
     });
   }
 };
