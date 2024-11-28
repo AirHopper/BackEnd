@@ -227,10 +227,10 @@ model Ticket {
 
 model Payment {
   id            Int       @id @default(autoincrement())
-  method        String // credit_card, e_wallet, etc.
-  status        String // Midtrans status: pending, settlement, expire, cancel
+  method        String    // credit_card, e_wallet, etc.
+  status        String    // Midtrans status: pending, settlement, expire, cancel
   amount        Decimal
-  payload       Json? // Full webhook payload
+  payload       Json?     // Full webhook payload
   transactionId String?   @unique @map("transaction_id") // Unique transaction ID from Midtrans
   orderId       String    @unique @map("order_id") // Your system's unique order ID
   fraudStatus   String?   @map("fraud_status") // Midtrans fraud status: accept, challenge, deny

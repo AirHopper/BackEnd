@@ -1,13 +1,12 @@
-import prisma from '../utils/prisma.js';
-import { hashPassword, comparePassword } from '../utils/bcrypt.js';
-import customError from '../utils/AppError.js'
-import { getToken, verifyToken } from '../utils/jwt.js';
-import { generateOTP } from '../utils/otpgenerator.js';
-import { sendEmail } from '../utils/nodemailer.js';
-import { generateStrongPassword } from '../utils/passwordgenerator.js';
+import prisma from "../utils/prisma.js";
+import { hashPassword, comparePassword } from "../utils/bcrypt.js";
+import customError from "../utils/AppError.js";
+import { getToken, verifyToken } from "../utils/jwt.js";
+import { generateOTP } from "../utils/otpgenerator.js";
+import { sendEmail } from "../utils/nodemailer.js";
+import { generateStrongPassword } from "../utils/passwordgenerator.js";
 import ejs from "ejs";
 import path from "path";
-
 
 // Check email or phone number
 const isValidEmail = (email) => {
@@ -228,12 +227,7 @@ export const forgotPassword = async (userData) => {
       resetLink,
     });
 
-
-    sendEmail(
-      account.email,
-      "Reset Password Request",
-      htmlContent
-    );
+    sendEmail(account.email, "Reset Password Request", htmlContent);
 
     return { email: account.email };
   } catch (error) {
