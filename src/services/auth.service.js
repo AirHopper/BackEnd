@@ -97,7 +97,7 @@ export const resendOTP = async (email) => {
 };
 
 // Verify Email
-export const verifyOTPUser = async (userData) => {
+export const verifyOTP = async (userData) => {
   const { email, otpCode } = userData;
 
   try {

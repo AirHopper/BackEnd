@@ -12,6 +12,6 @@ router.post('/otp/verify', validator.validateVerifyOTP, authController.verifyOTP
 router.post('/google', authController.googleLogin);
 router.post('/password/forgot', validator.validateForgotPassword, authController.forgotPassword);
 router.post('/password/reset', validator.validateResetPassword, authController.resetPassword);
-router.get('/user', authHandler, authController.getUserInfoController); // Example of using middleware authentication
+router.get('/user', authHandler, authController.getUser); // Example of using middleware authentication
 
 export default router;

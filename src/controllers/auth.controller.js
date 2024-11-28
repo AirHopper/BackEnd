@@ -107,7 +107,7 @@ export const resetPassword = async (req, res, next) => {
   }
 }
 
-export const getUserInfoController = async (req, res, next) => {
+export const getUser = async (req, res, next) => {
   try {
     const data = await authService.getUser(req.user.id);
     res.status(200).json({
