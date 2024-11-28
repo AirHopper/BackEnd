@@ -2,6 +2,7 @@ import prisma from '../utils/prisma.js';
 import { MIDTRANS_SERVER_KEY, FRONT_END_URL, MIDTRANS_API_URL, MIDTRANS_APP_URL, MIDTRANS_CLIENT_KEY } from '../utils/midtrans.js';
 import AppError from '../utils/AppError.js';
 import MidtransClient from 'midtrans-client';
+import crypto from 'crypto';
 
 let coreApi = new MidtransClient.CoreApi({
     isProduction : false,
@@ -78,4 +79,12 @@ export const updatePaymentStatusById = async (id, request) => {
         console.error('Error updating payment by id:', error);
         throw error;
     }
+}
+
+export const isValidSignatureMidtrans = (request) => {
+    const hash = crypto.createHash('sha512')
+        .update(`${request.transactionId}${request.status_code}${request.gross_amount}${MIDTRANS_SERVER_KEY}`)
+        .digest('hex');
+
+    return hash === request.signature_key;
 }
