@@ -11,10 +11,11 @@ let coreApi = new MidtransClient.CoreApi({
 
 export const createPaymentWebhookLog = async (req) => { 
     try {
-        const paymentWehbookLog = await coreApi.transaction.notification(req.body)
-        console.log(paymentWehbookLog)
+        // const paymentWehbookLog = await coreApi.transaction.notification(req.body)
+        // console.log(paymentWehbookLog)
+        
 
-        const stringPaymentWehbookLog = JSON.stringify(paymentWehbookLog)
+        // const stringPaymentWehbookLog = JSON.stringify(paymentWehbookLog)
 
         // return prisma.payment.create({
         //     data: {

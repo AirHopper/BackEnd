@@ -1,7 +1,8 @@
-import { createPaymentWebhookLog } from "../services/paymentWebhookLog";
+import { createPaymentWebhookLog } from "../services/paymentWebhookLog.js";
 
 export const create = async (req, res, next) => {
     try {
+        console.log(req.body)
         const paymentWebhookLog = await createPaymentWebhookLog(req.body);
         res.status(201).json({
             success: true,
