@@ -222,9 +222,9 @@ export const getAll = async ({ page = 1, limit = 10, search }) => {
 
     const pagination = {
       totalItems: totalFlights,
-      currentPage: parseInt(page, 10),
+      currentPage: parseInt(page),
       totalPages: Math.ceil(totalFlights / limit),
-      pageSize: parseInt(limit, 10),
+      pageSize: parseInt(limit),
     };
 
     return {
@@ -265,12 +265,15 @@ export const getById = async (id) => {
         DepartureTerminal: true,
         ArrivalTerminal: true,
         Discount: true,
+        Seats: true,
       },
     });
 
     if (!flight) {
       throw new AppError("Flight not found", 404);
     }
+
+    const percentage = 100;
 
     // Format response
     const formattedFlight = {
@@ -320,6 +323,7 @@ export const getById = async (id) => {
           type: flight.ArrivalTerminal.type,
         },
       },
+      Seats: flight.Seats,
       isActive: flight.isActive,
       baggage: flight.baggage,
       cabinBaggage: flight.cabinBaggage,
@@ -328,7 +332,8 @@ export const getById = async (id) => {
       discount: flight.Discount ? flight.Discount.discount : 0,
       totalPrice:
         flight.price -
-        (flight.price * (flight.Discount ? flight.Discount.discount : 0)) / 100,
+        (flight.price * (flight.Discount ? flight.Discount.discount : 0)) /
+          percentage,
     };
 
     return formattedFlight;
@@ -415,8 +420,6 @@ export const store = async (payload) => {
       discountId
     );
 
-    console.log("Price:", price);
-
     // Calculate capacity based on class type
     const capacity = flightCapacity(classType);
 
@@ -454,7 +457,7 @@ export const store = async (payload) => {
   }
 };
 
-// TODO Update flight
+// TODO Update flight | Apakah update flight diperlukan?
 export const update = async (payload, id) => {
   try {
     if (isNaN(id)) {
