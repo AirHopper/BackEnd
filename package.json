@@ -6,7 +6,9 @@
   "type": "module",
   "scripts": {
     "start": "node ./src/app.js",
-    "dev": "nodemon ./src/app.js"
+    "dev": "nodemon ./src/app.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "prisma": {
     "seed": "node prisma/seed.mjs"
