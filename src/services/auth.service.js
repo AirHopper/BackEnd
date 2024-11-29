@@ -201,6 +201,7 @@ export const googleLogin = async (userData) => {
     }
 
     const token = getToken(account.id, account.email);
+    cleanUpAccountData(account);
     return { ...account, token };
   } catch (error) {
     console.error("Error logging in with Google:", error);
@@ -216,6 +217,10 @@ export const forgotPassword = async (userData) => {
     const account = await prisma.account.findUnique({
       where: { email },
     });
+
+    if (!account) {
+      throw new customError('Invalid email', 404);
+    }
 
     const token = getToken(account.id, account.email);
 
