@@ -34,8 +34,8 @@ jobs:
         run: npm install
 
       # Step 4: Lint code
-      # - name: Lint code
-      #   run: npm run lint
+      - name: Lint code
+        run: npm run lint
 
       # Step 5: Run tests
       # - name: Run tests
