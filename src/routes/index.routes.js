@@ -8,7 +8,8 @@ import terminals from "./terminal.routes.js";
 import auth from "./auth.routes.js";
 import flightRoutes from "./flight.routes.js";
 import payments from "./payment.routes.js";
-import tickets from "./ticket.js";
+import tickets from "./ticket.routes.js";
+import authHandler from "../middlewares/authHandler.js";
 
 export default (app) => {
   const router = express.Router();
@@ -22,7 +23,7 @@ export default (app) => {
   router.use("/terminals", terminals);
   router.use("/auth", auth);
   router.use("/flights", flightRoutes);
-  router.use("/tickets", tickets);
+  router.use("/tickets", authHandler, tickets);
   router.use("/payments", payments);
 
   app.use("/api/v1", router);

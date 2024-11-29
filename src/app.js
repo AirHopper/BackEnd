@@ -1,4 +1,6 @@
+import "./instrument.mjs";
 import express from "express";
+import * as Sentry from "@sentry/node";
 import path from "path";
 import { createServer } from "http";
 import dotenv from "dotenv";
@@ -29,6 +31,9 @@ Routes(app);
 
 // Configure views
 Views(app);
+
+// Sentry error handler
+Sentry.setupExpressErrorHandler(app);
 
 // Error handling
 app.use(errorHandler);

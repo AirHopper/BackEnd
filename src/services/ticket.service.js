@@ -18,15 +18,19 @@ export const getTicketsByUserId = async (userId) => {
     }
 }
 
-export const createTicket = async (req) => { 
+export const createTicket = async (request, paymentId, userId) => { 
     try {
         return prisma.ticket.create({
             data: {
-                flightId: req.flightId,
-                userId: req.userId,
-                paymentId: req.paymentId,
-                qrCodeUrl: req.qrCodeUrl,
-                ticketStatus: req.ticketStatus
+                userId,
+                paymentId,
+                flightId: request.flightId,
+                qrCodeUrl: 'test',
+                ticketStatus: 'unpaid'
+            },
+            include: {
+                Flight: true,
+                Payment: true
             }
         });
     } catch (error) {

@@ -10,14 +10,14 @@ let coreApi = new MidtransClient.CoreApi({
     clientKey : MIDTRANS_CLIENT_KEY
 });
 
-export const createPaymentByBankTransfer = async (request) => { 
+export const createPaymentByBankTransfer = async (request, price) => { 
     try {
         const orderId = 'airHopper-' + Math.random().toString(36).substr(2, 9);
 
         let parameter = {
             payment_type: 'bank_transfer',
             transaction_details: {
-                gross_amount: 24145,
+                gross_amount: price,
                 order_id: orderId,
             },
             bank_transfer:{
@@ -128,6 +128,9 @@ export const getPaymentByTransactionId = async (transactionId) => {
 
 export const updatePaymentStatusById = async (id, request) => {
     try {
+        let paymentDate = null;
+        if (request.transaction_status === 'settlement' || request.transaction_status === 'capture') paymentDate = new Date();
+
         return prisma.payment.update({
             where: {
                 id
@@ -135,7 +138,8 @@ export const updatePaymentStatusById = async (id, request) => {
             data: {
                 status: request.transaction_status,
                 fraudStatus: request.fraud_status,
-                payload: JSON.stringify(request)
+                payload: JSON.stringify(request),
+                paymentDate
             }
         });
     } catch (error) {
@@ -146,7 +150,7 @@ export const updatePaymentStatusById = async (id, request) => {
 
 export const isValidSignatureMidtrans = (request) => {
     const hash = crypto.createHash('sha512')
-        .update(`${request.transactionId}${request.status_code}${request.gross_amount}${MIDTRANS_SERVER_KEY}`)
+        .update(`${request.order_id}${request.status_code}${request.gross_amount}${MIDTRANS_SERVER_KEY}`)
         .digest('hex');
 
     return hash === request.signature_key;
