@@ -8,6 +8,8 @@ import { generateStrongPassword } from "../utils/passwordgenerator.js";
 import ejs from "ejs";
 import path from "path";
 
+const OTP_EXPIRATION_TIME_MS = 10 * 60 * 1000;
+
 // Check email or phone number
 const isValidEmail = (email) => {
   const regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -39,7 +41,7 @@ export const register = async (userData) => {
         email,
         password: hashedPassword,
         otpCode: otp,
-        otpExpiration: new Date(Date.now() + 10 * 60 * 1000),
+        otpExpiration: new Date(Date.now() + OTP_EXPIRATION_TIME_MS),
         user: {
           create: {
             fullName,
@@ -75,7 +77,7 @@ export const resendOTP = async (email) => {
       where: { email },
       data: {
         otpCode: otp,
-        otpExpiration: new Date(Date.now() + 10 * 60 * 1000),
+        otpExpiration: new Date(Date.now() + OTP_EXPIRATION_TIME_MS), // 10 minutes
       },
       include: { user: true },
     });
