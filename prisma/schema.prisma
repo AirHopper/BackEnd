@@ -18,7 +18,7 @@ enum TicketStatus {
   Unpaid
   Cancelled
   Paid
-  Europexpired
+  Expired
 }
 
 enum ClassType {
@@ -190,7 +190,7 @@ model Flight {
   price               Decimal
   capacity            Int
   baggage             Int
-  cabinBaggage        Int       @map("cabin_baggage")
+  cabinBaggage        Int       
   entertainment       Boolean
   createdAt           DateTime  @default(now()) @map("created_at")
   departureTerminalId Int       @map("departure_terminal_id")
@@ -235,7 +235,9 @@ model Payment {
   orderId       String    @unique @map("order_id") // Your system's unique order ID
   fraudStatus   String?   @map("fraud_status") // Midtrans fraud status: accept, challenge, deny
   validUntil    DateTime? @map("valid_until") // Expiration for pending payments
-  paymentDate   DateTime? @map("payment_date") // When payment is completed
+  paymentDate   DateTime? @map("payment_date") // When payment is completed (settlement/capture)
+  bankName      String?   @map("bank_name") // only for bank_transfer method
+  bankVa        String?   @map("bank_va") // only for bank_trasnfer method, virtual account number
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
   Ticket        Ticket?

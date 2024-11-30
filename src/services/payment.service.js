@@ -1,5 +1,5 @@
 import prisma from '../utils/prisma.js';
-import { MIDTRANS_SERVER_KEY, FRONT_END_URL, MIDTRANS_API_URL, MIDTRANS_APP_URL, MIDTRANS_CLIENT_KEY } from '../utils/midtrans.js';
+import { MIDTRANS_SERVER_KEY, MIDTRANS_CLIENT_KEY } from '../utils/midtrans.js';
 import AppError from '../utils/AppError.js';
 import MidtransClient from 'midtrans-client';
 import crypto from 'crypto';
@@ -39,6 +39,8 @@ export const createPaymentByBankTransfer = async (request, price) => {
                 transactionId: chargeResponse.transaction_id,
                 orderId: chargeResponse.order_id,
                 fraudStatus: chargeResponse.fraud_status,
+                bankName: chargeResponse.va_numbers[0].bank,
+                bankVa: chargeResponse.va_numbers[0].va_number,
                 validUntil: new Date(chargeResponse.expiry_time)
             }
         });
