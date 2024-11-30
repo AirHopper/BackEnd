@@ -58,76 +58,123 @@ function flightCapacity(classType) {
 }
 
 // TODO Get all flights
-export const getAll = async ({ page = 1, limit = 10, search }) => {
+export const getAll = async ({
+  page = 1,
+  limit = 10,
+  search,
+  sortByPrice = "asc",
+}) => {
   try {
     const offset = (page - 1) * limit;
 
-    const searchFilters = search
-      ? {
-          OR: [
-            {
-              Airplane: {
-                Airline: { name: { contains: search, mode: "insensitive" } },
-              },
-            },
-            {
-              Route: {
-                DepartureAirport: {
-                  City: { name: { contains: search, mode: "insensitive" } },
-                },
-              },
-            },
-            {
-              Route: {
-                DepartureAirport: {
-                  City: { code: { contains: search, mode: "insensitive" } },
-                },
-              },
-            },
-            {
-              Route: {
-                ArrivalAirport: {
-                  City: { name: { contains: search, mode: "insensitive" } },
-                },
-              },
-            },
-            {
-              Route: {
-                ArrivalAirport: {
-                  City: { code: { contains: search, mode: "insensitive" } },
-                },
-              },
-            },
-            {
-              departureTime: { contains: search, mode: "insensitive" },
-            },
-            {
-              arrivalTime: { contains: search, mode: "insensitive" },
-            },
-            {
-              Route: {
-                DepartureAirport: {
-                  City: {
-                    continent: { contains: search, mode: "insensitive" },
+    // Destructure search parameters from the search object
+    const {
+      departureCityName,
+      departureCityCode,
+      arrivalCityName,
+      arrivalCityCode,
+      departureDate,
+      classType,
+      continent,
+    } = search || {};
+
+    // Build search filters
+    const searchFilters = {
+      AND: [
+        ...(departureCityName
+          ? [
+              {
+                Route: {
+                  DepartureAirport: {
+                    City: {
+                      name: {
+                        contains: departureCityName,
+                        mode: "insensitive",
+                      },
+                    },
                   },
                 },
               },
-            },
-            {
-              Route: {
-                ArrivalAirport: {
-                  City: {
-                    continent: { contains: search, mode: "insensitive" },
+            ]
+          : []),
+        ...(departureCityCode
+          ? [
+              {
+                Route: {
+                  DepartureAirport: {
+                    City: {
+                      code: {
+                        contains: departureCityCode,
+                        mode: "insensitive",
+                      },
+                    },
                   },
                 },
               },
-            },
-            {
-              class: { contains: search, mode: "insensitive" },
-            },
-          ],
-        }
-      : {};
+            ]
+          : []),
+        ...(arrivalCityName
+          ? [
+              {
+                Route: {
+                  ArrivalAirport: {
+                    City: {
+                      name: { contains: arrivalCityName, mode: "insensitive" },
+                    },
+                  },
+                },
+              },
+            ]
+          : []),
+        ...(arrivalCityCode
+          ? [
+              {
+                Route: {
+                  ArrivalAirport: {
+                    City: {
+                      code: { contains: arrivalCityCode, mode: "insensitive" },
+                    },
+                  },
+                },
+              },
+            ]
+          : []),
+        ...(departureDate
+          ? [
+              {
+                departureTime: {
+                  gte: new Date(departureDate),
+                  lt: new Date(
+                    new Date(departureDate).setDate(
+                      new Date(departureDate).getDate() + 1
+                    )
+                  ),
+                },
+              },
+            ]
+          : []),
+        ...(classType
+          ? [
+              {
+                class: classType,
+              },
+            ]
+          : []),
+        ...(continent
+          ? [
+              {
+                Route: {
+                  ArrivalAirport: {
+                    City: {
+                      continent: continent,
+                    },
+                  },
+                },
+              },
+            ]
+          : []),
+      ],
+    };
 
     // Fetch flights
     const flights = await prisma.Flight.findMany({
@@ -152,10 +199,13 @@ export const getAll = async ({ page = 1, limit = 10, search }) => {
       },
       skip: offset,
       take: parseInt(limit, 10),
+      orderBy: {
+        price: sortByPrice === "asc" ? "asc" : "desc", // Sort by price
+      },
     });
 
     // Count total flights
-    const totalFlights = await prisma.Flight.count({ where: searchFilters });
+    const totalFlights = await prisma.flight.count({ where: searchFilters });
 
     if (!flights.length) {
       throw new AppError("No flights found", 404);
@@ -204,6 +254,7 @@ export const getAll = async ({ page = 1, limit = 10, search }) => {
           name: flight.Route.ArrivalAirport.City.country,
           code: flight.Route.ArrivalAirport.City.countryCode,
         },
+        continent: flight.Route.ArrivalAirport.City.continent,
         terminal: {
           name: flight.ArrivalTerminal.name,
           type: flight.ArrivalTerminal.type,
@@ -353,6 +404,7 @@ export const store = async (payload) => {
       airplaneId,
       departureTime,
       arrivalTime,
+      // Duration dijadikan otomatis
       duration,
       baggage,
       cabinBaggage,

@@ -17,7 +17,10 @@ export const createRoute = async (payload) => {
 
     // Validate airports
     if (!departureAirport) {
-      throw new AppError(`Departure airport ${departureAirportId} not found`, 404);
+      throw new AppError(
+        `Departure airport ${departureAirportId} not found`,
+        404
+      );
     }
     if (!arrivalAirport) {
       throw new AppError(`Arrival airport ${arrivalAirportId} not found`, 404);
@@ -151,8 +154,10 @@ export const updateRoute = async (id, payload) => {
 
     // If either departureAirportId or arrivalAirportId changes, recalculate the distance
     if (payload.departureAirportId || payload.arrivalAirportId) {
-      const departureAirportId = payload.departureAirportId || route.departureAirportId;
-      const arrivalAirportId = payload.arrivalAirportId || route.arrivalAirportId;
+      const departureAirportId =
+        payload.departureAirportId || route.departureAirportId;
+      const arrivalAirportId =
+        payload.arrivalAirportId || route.arrivalAirportId;
 
       const departureAirport = await prisma.airport.findUnique({
         where: { iataCode: departureAirportId },
@@ -163,10 +168,16 @@ export const updateRoute = async (id, payload) => {
       });
 
       if (!departureAirport) {
-        throw new AppError(`Departure airport ${departureAirportId} not found`, 404);
+        throw new AppError(
+          `Departure airport ${departureAirportId} not found`,
+          404
+        );
       }
       if (!arrivalAirport) {
-        throw new AppError(`Arrival airport ${arrivalAirportId} not found`, 404);
+        throw new AppError(
+          `Arrival airport ${arrivalAirportId} not found`,
+          404
+        );
       }
 
       const distance = haversine(
