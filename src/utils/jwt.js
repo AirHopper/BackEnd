@@ -2,11 +2,8 @@ import jwt from 'jsonwebtoken';
 const secretKey = process.env.JWT_SECRET;
 import customError from "../utils/AppError.js";
 
-const getToken = (id, email) => {
-  const payload = {
-    id: id,
-    email: email,
-  };
+const getToken = (payloadData) => {
+  const payload = payloadData;
   const options = {
     expiresIn: "1h",
     issuer: "AirHopper",

@@ -156,7 +156,7 @@ export const login = async (userData) => {
       throw new customError("Invalid email or password", 400);
     }
 
-    const token = getToken(account.id, account.email);
+    const token = getToken({ id: account.id, email: account.email, role: account.role });
     cleanUpAccountData(account);
     return { ...account, token };
   } catch (error) {
@@ -202,7 +202,7 @@ export const googleLogin = async (userData) => {
       });
     }
 
-    const token = getToken(account.id, account.email);
+    const token = getToken({ id: account.id, email: account.email, role: account.role });
     cleanUpAccountData(account);
     return { ...account, token };
   } catch (error) {
@@ -224,7 +224,7 @@ export const forgotPassword = async (userData) => {
       throw new customError('Invalid email', 404);
     }
 
-    const token = getToken(account.id, account.email);
+    const token = getToken({ id: account.id, email: account.email });
 
     const emailTemplatePath = path.resolve("src/views/resetPassword.ejs");
 
