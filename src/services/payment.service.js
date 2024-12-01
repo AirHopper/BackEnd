@@ -1,23 +1,17 @@
 import prisma from '../utils/prisma.js';
-import { MIDTRANS_SERVER_KEY, MIDTRANS_CLIENT_KEY } from '../utils/midtrans.js';
+import { coreApi, MIDTRANS_CLIENT_KEY } from '../utils/midtrans.js';
 import AppError from '../utils/AppError.js';
-import MidtransClient from 'midtrans-client';
-import crypto from 'crypto';
-
-let coreApi = new MidtransClient.CoreApi({
-    isProduction : false,
-    serverKey : MIDTRANS_SERVER_KEY,
-    clientKey : MIDTRANS_CLIENT_KEY
-});
+import { nanoid } from 'nanoid';
 
 export const createPaymentByBankTransfer = async (request, price) => { 
     try {
-        const orderId = 'airHopper-' + Math.random().toString(36).substr(2, 9);
+        const orderId = 'airHopper-' + nanoid(10);
+        const totalPrice = price * request.passengers.length;
 
-        let parameter = {
+        const parameter = {
             payment_type: 'bank_transfer',
             transaction_details: {
-                gross_amount: price,
+                gross_amount: totalPrice,
                 order_id: orderId,
             },
             bank_transfer:{
@@ -26,9 +20,7 @@ export const createPaymentByBankTransfer = async (request, price) => {
         };
 
         const chargeResponse = await coreApi.charge(parameter);
-        if (chargeResponse.status_code !== '201') {
-            throw new AppError('Error on chargeResponse', 500);
-        }
+        if (chargeResponse.status_code !== '201') throw new AppError('Error on chargeResponse', 500);
         console.log(chargeResponse);
 
         return prisma.payment.create({
@@ -52,7 +44,7 @@ export const createPaymentByBankTransfer = async (request, price) => {
 
 export const createPaymentByCreditCard = async (request) => {
     try {
-        const orderId = 'airHopper-' + Math.random().toString(36).substr(2, 9);
+        const orderId = 'airHopper-' + nanoid(10);
         // console.log(request);
 
         const { card_number, card_cvv, card_exp_month, card_exp_year } = request;
@@ -148,12 +140,4 @@ export const updatePaymentStatusById = async (id, request) => {
         console.error('Error updating payment by id:', error);
         throw error;
     }
-}
-
-export const isValidSignatureMidtrans = (request) => {
-    const hash = crypto.createHash('sha512')
-        .update(`${request.order_id}${request.status_code}${request.gross_amount}${MIDTRANS_SERVER_KEY}`)
-        .digest('hex');
-
-    return hash === request.signature_key;
 }

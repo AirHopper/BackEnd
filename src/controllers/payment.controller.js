@@ -1,7 +1,10 @@
-import { createPaymentByBankTransfer, createPaymentByCreditCard, getPaymentByTransactionId, updatePaymentStatusById, isValidSignatureMidtrans } from "../services/payment.service.js";
+import { createPaymentByBankTransfer, createPaymentByCreditCard, getPaymentByTransactionId, updatePaymentStatusById } from "../services/payment.service.js";
 import { updateTicketStatusByPaymentId } from "../services/ticket.service.js";
+import { isValidSignatureMidtrans } from "../utils/midtrans.js";
+import { updateSeatOccupied } from "../services/seat.service.js";
 
 import AppError from '../utils/AppError.js';
+import { getPassegersByTicketId } from "../services/passenger.service.js";
 
 export const createByBankTransfer = async (req, res, next) => {
     try {
@@ -42,6 +45,8 @@ export const notifications = async (req, res, next) => {
         if (!payment) throw new AppError('Payment not found', 404);
         const updatedPayment = await updatePaymentStatusById(payment.id, req.body);
         const updatedTicket = await updateTicketStatusByPaymentId(updatedPayment.id, updatedPayment.status);
+        const passengers = await getPassegersByTicketId(updatedTicket.id);
+        if (updatedTicket.ticketStatus === 'Cancelled' || updatedTicket.ticketStatus === 'Expired') await updateSeatOccupied(passengers, false);
 
         res.status(200).json({
             success: true,

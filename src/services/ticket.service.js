@@ -39,28 +39,28 @@ export const createTicket = async (request, paymentId, userId) => {
 }
 
 export const updateTicketStatusByPaymentId = async (paymentId, paymentStatus) => {
-    let ticketStatus;
-    switch (paymentStatus) {
-        case 'settlement':
-        case 'capture':
-            ticketStatus = 'Paid';
-            break;
-        case 'pending':
-            ticketStatus = 'Unpaid';
-            break;
-        case 'cancel':
-        case 'deny':
-            ticketStatus = 'Canceled';
-            break;
-        case 'expire':
-            ticketStatus = 'Expired';
-            break;
-        default:
-            ticketStatus = 'Unknown';
-            break;
-    }
-
     try {
+        let ticketStatus;
+        switch (paymentStatus) {
+            case 'settlement':
+            case 'capture':
+                ticketStatus = 'Paid';
+                break;
+            case 'pending':
+                ticketStatus = 'Unpaid';
+                break;
+            case 'cancel':
+            case 'deny':
+                ticketStatus = 'Canceled';
+                break;
+            case 'expire':
+                ticketStatus = 'Expired';
+                break;
+            default:
+                ticketStatus = 'Unknown';
+                break;
+        }
+
         return prisma.ticket.update({
             where: {
                 paymentId
