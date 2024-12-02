@@ -40,15 +40,15 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          IMAGE_NAME=gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.CLOUD_RUN_SERVICE_NAME }}
+          IMAGE_NAME=gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.CLOUD_RUN_SERVICE_NAME_STAGING }}
           docker build -t $IMAGE_NAME .
           docker push $IMAGE_NAME
 
       - name: Deploy to Cloud Run
         run: |
-          gcloud run deploy ${{ secrets.CLOUD_RUN_SERVICE_NAME }} \
-            --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.CLOUD_RUN_SERVICE_NAME }} \
+          gcloud run deploy ${{ secrets.CLOUD_RUN_SERVICE_NAME_STAGING }} \
+            --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.CLOUD_RUN_SERVICE_NAME_STAGING }} \
             --platform managed \
             --region asia-southeast1 \
             --allow-unauthenticated \
-            --set-env-vars DATABASE_URL=${{ secrets.DATABASE_URL }}, DIRECT_URL=${{ secrets.DIRECT_URL }}, JWT_SECRET=${{ secrets.JWT_SECRET }}, APP_URL=${{ secrets.APP_URL }}, NODE_ENV=${{ secrets.NODE_ENV }}, PORT=${{ secrets.PORT }}, IMAGEKIT_PUBLIC_KEY=${{ secrets.IMAGEKIT_PUBLIC_KEY }}, IMAGEKIT_PRIVATE_KEY=${{ secrets.IMAGEKIT_PRIVATE_KEY }},  IMAGEKIT_URL_ENDPOINT=${{ secrets.IMAGEKIT_URL_ENDPOINT }}
+            --set-env-vars DATABASE_URL=${{ secrets.DATABASE_URL }}, DIRECT_URL=${{ secrets.DIRECT_URL }}, JWT_SECRET=${{ secrets.JWT_SECRET }}, APP_URL=${{ secrets.APP_URL_STAGING }}, NODE_ENV=${{ secrets.NODE_ENV }}, PORT=${{ secrets.PORT }}, IMAGEKIT_PUBLIC_KEY=${{ secrets.IMAGEKIT_PUBLIC_KEY }}, IMAGEKIT_PRIVATE_KEY=${{ secrets.IMAGEKIT_PRIVATE_KEY }},  IMAGEKIT_URL_ENDPOINT=${{ secrets.IMAGEKIT_URL_ENDPOINT }}
