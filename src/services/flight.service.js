@@ -57,39 +57,38 @@ function flightCapacity(classType) {
   return capacity;
 }
 
-// Calculate flight duration in minutes
-function flightDuration(departureTime, arrivalTime) {
-  const diff = arrivalTime - departureTime;
-  const minutes = 1000 * 60;
-  const duration = Math.floor(diff / minutes);
-
-  return duration;
-}
-
 // TODO Get all flights
 export const getAll = async ({
   page = 1,
   limit = 10,
   search,
-  orderBy = "price_asc",
+  sortByPrice = "asc",
 }) => {
   try {
     const offset = (page - 1) * limit;
 
-    const { departureCity, arrivalCity, flightDate, classType, continent } =
-      search || {};
+    // Destructure search parameters from the search object
+    const {
+      departureCityName,
+      departureCityCode,
+      arrivalCityName,
+      arrivalCityCode,
+      departureDate,
+      classType,
+      continent,
+    } = search || {};
 
     // Build search filters
     const searchFilters = {
       AND: [
-        ...(departureCity
+        ...(departureCityName
           ? [
               {
                 Route: {
                   DepartureAirport: {
                     City: {
                       name: {
-                        contains: departureCity,
+                        contains: departureCityName,
                         mode: "insensitive",
                       },
                     },
@@ -98,27 +97,56 @@ export const getAll = async ({
               },
             ]
           : []),
-        ...(arrivalCity
+        ...(departureCityCode
           ? [
               {
                 Route: {
-                  ArrivalAirport: {
+                  DepartureAirport: {
                     City: {
-                      name: { contains: arrivalCity, mode: "insensitive" },
+                      code: {
+                        contains: departureCityCode,
+                        mode: "insensitive",
+                      },
                     },
                   },
                 },
               },
             ]
           : []),
-        ...(flightDate
+        ...(arrivalCityName
+          ? [
+              {
+                Route: {
+                  ArrivalAirport: {
+                    City: {
+                      name: { contains: arrivalCityName, mode: "insensitive" },
+                    },
+                  },
+                },
+              },
+            ]
+          : []),
+        ...(arrivalCityCode
+          ? [
+              {
+                Route: {
+                  ArrivalAirport: {
+                    City: {
+                      code: { contains: arrivalCityCode, mode: "insensitive" },
+                    },
+                  },
+                },
+              },
+            ]
+          : []),
+        ...(departureDate
           ? [
               {
                 departureTime: {
-                  gte: new Date(flightDate),
+                  gte: new Date(departureDate),
                   lt: new Date(
-                    new Date(flightDate).setDate(
-                      new Date(flightDate).getDate() + 1
+                    new Date(departureDate).setDate(
+                      new Date(departureDate).getDate() + 1
                     )
                   ),
                 },
@@ -148,28 +176,8 @@ export const getAll = async ({
       ],
     };
 
-    // Determine orderBy clause based on the user input
-    const prismaOrderBy = (() => {
-      switch (orderBy) {
-        case "price_asc":
-          return { price: "asc" };
-        case "duration_asc":
-          return { duration: "asc" };
-        case "departure_soon":
-          return { departureTime: "asc" };
-        case "departure_late":
-          return { departureTime: "desc" };
-        case "arrival_soon":
-          return { arrivalTime: "asc" };
-        case "arrival_late":
-          return { arrivalTime: "desc" };
-        default:
-          return { price: "asc" };
-      }
-    })();
-
     // Fetch flights
-    const flights = await prisma.flight.findMany({
+    const flights = await prisma.Flight.findMany({
       where: searchFilters,
       include: {
         Route: {
@@ -191,7 +199,9 @@ export const getAll = async ({
       },
       skip: offset,
       take: parseInt(limit, 10),
-      orderBy: prismaOrderBy,
+      orderBy: {
+        price: sortByPrice === "asc" ? "asc" : "desc", // Sort by price
+      },
     });
 
     // Count total flights
@@ -207,7 +217,6 @@ export const getAll = async ({
       class: flight.class,
       airline: flight.Airplane.Airline.name,
       airplane: flight.Airplane.name,
-      duration: flight.duration,
       departure: {
         time: flight.departureTime,
         airport: {
@@ -395,6 +404,8 @@ export const store = async (payload) => {
       airplaneId,
       departureTime,
       arrivalTime,
+      // Duration dijadikan otomatis
+      duration,
       baggage,
       cabinBaggage,
       entertainment,
@@ -463,9 +474,6 @@ export const store = async (payload) => {
 
     // Calculate capacity based on class type
     const capacity = flightCapacity(classType);
-
-    // Calculate duration in minutes
-    const duration = flightDuration(departureDate, arrivalDate);
 
     // Membuat data flight
     const flight = await prisma.flight.create({

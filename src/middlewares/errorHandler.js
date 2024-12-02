@@ -18,7 +18,6 @@ const errorHandler = (err, req, res, next) => {
       data: null,
       message: "Internal Server Error",
       error: err,
-      sentry: res.sentry,
     });
   }
 };
