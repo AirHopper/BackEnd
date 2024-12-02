@@ -5,6 +5,9 @@ on:
     branches:
       - main
       - staging
+  pull_request:
+    branches:
+      - main
 
 jobs:
   CD:
@@ -17,13 +20,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Generate Prisma Client
-        run: npx prisma generate
+          node-version: 22.11.0
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
@@ -44,6 +41,7 @@ jobs:
           docker build -t $IMAGE_NAME .
           docker push $IMAGE_NAME
 
+      # Deploy to Cloud Run
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy ${{ secrets.CLOUD_RUN_SERVICE_NAME }} \
@@ -51,4 +49,4 @@ jobs:
             --platform managed \
             --region asia-southeast1 \
             --allow-unauthenticated \
-            --set-env-vars DATABASE_URL=${{ secrets.DATABASE_URL }}, DIRECT_URL=${{ secrets.DIRECT_URL }}, JWT_SECRET=${{ secrets.JWT_SECRET }}, APP_URL=${{ secrets.APP_URL }}, NODE_ENV=${{ secrets.NODE_ENV }}, PORT=${{ secrets.PORT }}, IMAGEKIT_PUBLIC_KEY=${{ secrets.IMAGEKIT_PUBLIC_KEY }}, IMAGEKIT_PRIVATE_KEY=${{ secrets.IMAGEKIT_PRIVATE_KEY }},  IMAGEKIT_URL_ENDPOINT=${{ secrets.IMAGEKIT_URL_ENDPOINT }}
+            --set-env-vars DATABASE_URL=${{ secrets.DATABASE_URL }},DIRECT_URL=${{ secrets.DIRECT_URL }},MAILER_USER=${{ secrets.MAILER_USER }},MAILER_PASSWORD=${{ secrets.MAILER_PASSWORD }},JWT_SECRET=${{ secrets.JWT_SECRET }},APP_URL=${{ secrets.APP_URL_STAGING }},NODE_ENV=${{ secrets.NODE_ENV }},IMAGEKIT_PUBLIC_KEY=${{ secrets.IMAGEKIT_PUBLIC_KEY }},IMAGEKIT_PRIVATE_KEY=${{ secrets.IMAGEKIT_PRIVATE_KEY }},IMAGEKIT_URL_ENDPOINT=${{ secrets.IMAGEKIT_URL_ENDPOINT }}
