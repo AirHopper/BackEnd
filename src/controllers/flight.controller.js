@@ -3,9 +3,14 @@ import * as flightService from "../services/flight.service.js";
 //TODO Get all flights
 export const getAll = async (req, res, next) => {
   try {
-    const { page = 1, limit = 10, search } = req.query;
+    const { page = 1, limit = 10, search, orderBy } = req.query;
 
-    const { formattedFlights, pagination } = await flightService.getAll({ page, limit, search });
+    const { formattedFlights, pagination } = await flightService.getAll({
+      page,
+      limit,
+      search,
+      orderBy,
+    });
 
     res.status(200).json({
       success: true,
