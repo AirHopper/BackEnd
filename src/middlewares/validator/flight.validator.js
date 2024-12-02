@@ -8,7 +8,6 @@ const createFlightSchema = z.object({
   airplaneId: z.number().int().positive(),
   departureTime: z.string().datetime(),
   arrivalTime: z.string().datetime(),
-  duration: z.number().int().positive(),
   baggage: z.number().int().nonnegative(),
   cabinBaggage: z.number().int().nonnegative(),
   entertainment: z.boolean(),
