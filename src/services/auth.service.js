@@ -5,28 +5,12 @@ import { getToken, verifyToken } from "../utils/jwt.js";
 import { generateOTP } from "../utils/otpgenerator.js";
 import { sendEmail } from "../utils/nodemailer.js";
 import { generateStrongPassword } from "../utils/passwordgenerator.js";
+import cleanUpAccountData from "../utils/cleanUpAccountData.js";
+import isValidEmail from "../utils/isValidEmail.js"
 import ejs from "ejs";
 import path from "path";
 
 const OTP_EXPIRATION_TIME_MS = 10 * 60 * 1000;
-
-// Check email or phone number
-const isValidEmail = (email) => {
-  const regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  return regex.test(email);
-};
-
-// Clean Up Account Properties before send it to frontend
-const cleanUpAccountData = (account) => {
-  [
-    "createdAt",
-    "updatedAt",
-    "role",
-    "password",
-    "otpCode",
-    "otpExpiration",
-  ].forEach((key) => delete account[key]);
-};
 
 // Register Email and Password
 export const register = async (userData) => {
