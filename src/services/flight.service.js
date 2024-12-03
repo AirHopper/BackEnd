@@ -2,7 +2,7 @@ import prisma from "../utils/prisma.js";
 import AppError from "../utils/AppError.js";
 
 // Calculate flight price
-async function calculatePrice(distance, pricePerKm, classType, discountId) {
+async function calculatePrice(distance, pricePerKm, classType) {
   let price = 0;
 
   // Calculate price based on distance and price per km
@@ -22,23 +22,6 @@ async function calculatePrice(distance, pricePerKm, classType, discountId) {
       : classType === "Business"
       ? business
       : firstClass;
-
-  // Apply discount if available
-  if (discountId) {
-    const discount = await prisma.discount.findUnique({
-      where: {
-        id: discountId,
-      },
-    });
-
-    const percentage = 100;
-
-    price -= price * (discount.discount / percentage);
-
-    if (!discount) {
-      throw new AppError("Discount not found", 404);
-    }
-  }
 
   return price;
 }
@@ -187,7 +170,6 @@ export const getAll = async ({
         },
         DepartureTerminal: true,
         ArrivalTerminal: true,
-        Discount: true,
       },
       skip: offset,
       take: parseInt(limit, 10),
@@ -307,7 +289,7 @@ export const getById = async (id) => {
         DepartureTerminal: true,
         ArrivalTerminal: true,
         Discount: true,
-        Seats: true,
+        Seat: true,
       },
     });
 
@@ -365,7 +347,7 @@ export const getById = async (id) => {
           type: flight.ArrivalTerminal.type,
         },
       },
-      Seats: flight.Seats,
+      Seat: flight.Seat,
       isActive: flight.isActive,
       baggage: flight.baggage,
       cabinBaggage: flight.cabinBaggage,
@@ -400,7 +382,6 @@ export const store = async (payload) => {
       entertainment,
       departureTerminalId,
       arrivalTerminalId,
-      discountId = null,
     } = payload;
 
     const departureDate = new Date(departureTime);
@@ -458,7 +439,6 @@ export const store = async (payload) => {
       route.distance,
       airplane.pricePerKm,
       classType,
-      discountId
     );
 
     // Calculate capacity based on class type
@@ -484,8 +464,7 @@ export const store = async (payload) => {
         entertainment,
         departureTerminalId,
         arrivalTerminalId,
-        discountId,
-        Seats: {
+        Seat: {
           create: Array.from({ length: capacity }, (_, index) => ({
             seatNumber: index + 1,
             isOccupied: false,
@@ -521,7 +500,6 @@ export const update = async (payload, id) => {
       entertainment,
       departureTerminalId,
       arrivalTerminalId,
-      discountId,
     } = payload;
 
     const flightExists = await prisma.flight.findUnique({
@@ -552,7 +530,6 @@ export const update = async (payload, id) => {
       departureTerminalId ?? flightExists.departureTerminalId;
     const updatedArrivalTerminalId =
       arrivalTerminalId ?? flightExists.arrivalTerminalId;
-    const updatedDiscountId = discountId ?? flightExists.discountId;
 
     if (updatedDepartureTime >= updatedArrivalTime) {
       throw new AppError(
@@ -597,17 +574,6 @@ export const update = async (payload, id) => {
       throw new AppError("Arrival terminal not found", 404);
     }
 
-    if (updatedDiscountId) {
-      const discountExists = await prisma.discount.findUnique({
-        where: {
-          id: updatedDiscountId,
-        },
-      });
-      if (!discountExists) {
-        throw new AppError("Discount not found", 404);
-      }
-    }
-
     const updatedFlight = await prisma.flight.update({
       where: {
         id,
@@ -625,7 +591,6 @@ export const update = async (payload, id) => {
         entertainment: updatedEntertainment,
         departureTerminalId: updatedDepartureTerminalId,
         arrivalTerminalId: updatedArrivalTerminalId,
-        discountId: updatedDiscountId,
       },
     });
 
