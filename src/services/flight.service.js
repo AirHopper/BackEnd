@@ -438,7 +438,7 @@ export const store = async (payload) => {
     const price = await calculatePrice(
       route.distance,
       airplane.pricePerKm,
-      classType,
+      classType
     );
 
     // Calculate capacity based on class type
