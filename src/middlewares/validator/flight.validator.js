@@ -13,7 +13,6 @@ const createFlightSchema = z.object({
   entertainment: z.boolean(),
   departureTerminalId: z.number().int().positive(),
   arrivalTerminalId: z.number().int().positive(),
-  discountId: z.string().min(3).max(10).nullable(),
 });
 
 // Schema untuk update flight
@@ -29,7 +28,6 @@ const updateFlightSchema = z.object({
   entertainment: z.boolean().optional(),
   departureTerminalId: z.number().int().positive().optional(),
   arrivalTerminalId: z.number().int().positive().optional(),
-  discountId: z.string().min(3).max(10).nullable().optional(),
 });
 
 // Middleware validator

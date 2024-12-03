@@ -1,7 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "debian-openssl-3.0.x", "linux-musl"]
-
 }
 
 datasource db {
@@ -19,8 +18,7 @@ enum TicketStatus {
   Issued
   Unpaid
   Cancelled
-  Paid
-  Europexpired
+  Expired
 }
 
 enum ClassType {
@@ -81,8 +79,8 @@ model User {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  Account Account  @relation(fields: [accountId], references: [id])
-  Tickets Ticket[]
+  Account Account @relation(fields: [accountId], references: [id])
+  Order   Order[]
 
   @@map("users")
 }
@@ -175,9 +173,32 @@ model Route {
   DepartureAirport Airport  @relation("DepartureRoutes", fields: [departureAirportId], references: [iataCode])
   ArrivalAirport   Airport  @relation("ArrivalRoutes", fields: [arrivalAirportId], references: [iataCode])
   Flights          Flight[]
+  Ticket           Ticket[]
 
   @@unique([departureAirportId, arrivalAirportId])
   @@map("routes")
+}
+
+model Ticket {
+  id            Int      @id @default(autoincrement())
+  routeId       Int      @map("route_id")
+  isTransits    Boolean  @default(false)
+  departureTime DateTime @map("departure_date")
+  arrivalTime   DateTime @map("arrival_date")
+  totalPrice    Decimal  @map("total_price")
+  totalDuration Int      @map("total_duration")
+  discountId    Int?     @map("discount_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  Route    Route     @relation(fields: [routeId], references: [id])
+  Flights  Flight[]
+  Discount Discount? @relation(fields: [discountId], references: [id])
+
+  outbondOrder Order[] @relation("OutboundTicket")
+  returnOrder  Order[] @relation("ReturnTicket")
+
+  @@map("tickets")
 }
 
 model Flight {
@@ -192,39 +213,44 @@ model Flight {
   price               Decimal
   capacity            Int
   baggage             Int
-  cabinBaggage        Int
+  cabinBaggage        Int       @map("cabin_baggage")
   entertainment       Boolean
   createdAt           DateTime  @default(now()) @map("created_at")
   departureTerminalId Int       @map("departure_terminal_id")
   arrivalTerminalId   Int       @map("arrival_terminal_id")
-  discountId          Int?      @map("discount_id")
 
-  Route             Route     @relation(fields: [routeId], references: [id])
-  Airplane          Airplane  @relation(fields: [airplaneId], references: [id])
-  DepartureTerminal Terminal  @relation("DepartureTerminal", fields: [departureTerminalId], references: [id])
-  ArrivalTerminal   Terminal  @relation("ArrivalTerminal", fields: [arrivalTerminalId], references: [id])
-  Discount          Discount? @relation(fields: [discountId], references: [id])
-  Tickets           Ticket[]
-  Seats             Seat[]
+  Route             Route    @relation(fields: [routeId], references: [id])
+  Airplane          Airplane @relation(fields: [airplaneId], references: [id])
+  DepartureTerminal Terminal @relation("DepartureTerminal", fields: [departureTerminalId], references: [id])
+  ArrivalTerminal   Terminal @relation("ArrivalTerminal", fields: [arrivalTerminalId], references: [id])
+
+  Ticket Ticket[]
+  Seat   Seat[]
 
   @@map("flights")
 }
 
-model Ticket {
-  id           Int          @id @default(autoincrement())
-  flightId     Int          @map("flight_id")
-  userId       Int          @map("user_id")
-  paymentId    Int          @unique @map("payment_id")
-  qrCodeUrl    String       @map("qr_code_url")
-  bookingDate  DateTime     @default(now()) @map("booking_date")
-  ticketStatus TicketStatus @default(Issued) @map("ticket_status")
+model Order {
+  id               Int          @id @default(autoincrement())
+  userId           Int          @map("user_id")
+  paymentId        Int          @unique @map("payment_id")
+  qrCodeUrl        String       @map("qr_code_url")
+  bookingDate      DateTime     @default(now()) @map("booking_date")
+  ticketStatus     TicketStatus @default(Unpaid) @map("ticket_status")
+  isRoundTrip      Boolean      @default(false)
+  outboundTicketId Int          @unique @map("outbound_ticket_id")
+  returnTicketId   Int?         @unique @map("return_ticket_id")
+  createdAt        DateTime     @default(now()) @map("created_at")
+  updatedAt        DateTime     @updatedAt @map("updated_at")
 
-  Flight     Flight      @relation(fields: [flightId], references: [id])
-  User       User        @relation(fields: [userId], references: [id])
-  Payment    Payment     @relation(fields: [paymentId], references: [id])
+  User           User    @relation(fields: [userId], references: [id])
+  Payment        Payment @relation(fields: [paymentId], references: [id])
+  OutboundTicket Ticket  @relation("OutboundTicket", fields: [outboundTicketId], references: [id])
+  ReturnTicket   Ticket? @relation("ReturnTicket", fields: [returnTicketId], references: [id])
+
   Passengers Passenger[]
 
-  @@map("tickets")
+  @@map("orders")
 }
 
 model Payment {
@@ -240,14 +266,14 @@ model Payment {
   paymentDate   DateTime? @map("payment_date") // When payment is completed
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
-  Ticket        Ticket?
+  Order         Order?
 
   @@map("payments")
 }
 
 model Passenger {
   id               Int           @id @default(autoincrement())
-  ticketId         Int           @map("ticket_id")
+  orderId          Int           @map("order_id")
   seatId           Int           @unique @map("seat_id")
   type             PassengerType
   title            TitleType
@@ -259,8 +285,8 @@ model Passenger {
   issuedCountry    String        @map("issued_country")
   idValidUntil     DateTime      @map("id_valid_until")
 
-  Ticket Ticket @relation(fields: [ticketId], references: [id])
-  Seat   Seat   @relation(fields: [seatId], references: [id])
+  Order Order @relation(fields: [orderId], references: [id])
+  Seat  Seat  @relation(fields: [seatId], references: [id])
 
   @@map("passengers")
 }
@@ -282,7 +308,7 @@ model Discount {
   discount  Int
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-  flights   Flight[]
+  Ticket    Ticket[]
 
   @@map("discounts")
 }
