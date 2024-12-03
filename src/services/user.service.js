@@ -58,7 +58,7 @@ export const updateUserProfile = async (userId, userData) => {
   }
 }
 
-// Update user settings (reset password with password)
+// Update user settings (reset password with old password)
 export const resetPassword = async (userId, userData) => {
   try {
     const { oldPassword, newPassword } = userData;
