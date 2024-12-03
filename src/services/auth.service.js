@@ -47,7 +47,7 @@ export const register = async (userData) => {
   } catch (error) {
     console.error("Error registering user:", error);
     if (error.code === "P2002") {
-      throw new customError("Email address already used", 409);
+      throw new customError("Email, phone number, or fullname already used", 409);
     }
     throw error;
   }
