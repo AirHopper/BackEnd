@@ -5,8 +5,10 @@ export const createAirline = async (req, res, next) => {
   try {
     const newAirline = await airlineService.createAirline(req.body, req.file);
     res.status(201).json({
+      success: true,
       message: "Airline created successfully",
       data: newAirline,
+      error: null,
     });
   } catch (error) {
     next(error);
@@ -18,8 +20,10 @@ export const getAllAirlines = async (req, res, next) => {
   try {
     const airlines = await airlineService.getAllAirlines();
     res.status(200).json({
+      success : true,
       message: "Airlines fetched successfully",
       data: airlines,
+      error: null,
     });
   } catch (error) {
     next(error);
@@ -32,8 +36,10 @@ export const getAirlineById = async (req, res, next) => {
     const { iataCode } = req.params;
     const airline = await airlineService.getAirlineById(iataCode);
     res.status(200).json({
+      success: true,
       message: "Airline fetched successfully",
       data: airline,
+      error: null,
     });
   } catch (error) {
     next(error);
@@ -49,8 +55,10 @@ export const updateAirlineDetails = async (req, res, next) => {
       req.body
     );
     res.status(200).json({
+      success: true,
       message: "Airline details updated successfully",
       data: updatedAirline,
+      error: null,
     });
   } catch (error) {
     next(error);

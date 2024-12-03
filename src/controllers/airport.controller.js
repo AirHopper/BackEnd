@@ -4,7 +4,7 @@ import * as airportService from "../services/airport.service.js";
 export const createAirport = async (req, res, next) => {
   try {
     const airport = await airportService.createAirport(req.body);
-    res.status(201).json({ message: "Airport created successfully", data: airport });
+    res.status(201).json({ success: true, message: "Airport created successfully", data: airport, error: null });
   } catch (error) {
     next(error);
   }
@@ -14,7 +14,7 @@ export const createAirport = async (req, res, next) => {
 export const getAllAirports = async (req, res, next) => {
   try {
     const airports = await airportService.getAllAirports();
-    res.status(200).json({ data: airports });
+    res.status(200).json({ success: true, message: "Airports fetched successfully", data: airports,  error: null });
   } catch (error) {
     next(error);
   }
@@ -24,7 +24,7 @@ export const getAllAirports = async (req, res, next) => {
 export const getAirportByIataCode = async (req, res, next) => {
   try {
     const airport = await airportService.getAirportByIataCode(req.params.iataCode);
-    res.status(200).json({ data: airport });
+    res.status(200).json({ success: true,message: "Airport fetched successfully", data: airport,  error: null });
   } catch (error) {
     next(error);
   }
@@ -34,7 +34,7 @@ export const getAirportByIataCode = async (req, res, next) => {
 export const updateAirport = async (req, res, next) => {
   try {
     const updatedAirport = await airportService.updateAirport(req.params.iataCode, req.body);
-    res.status(200).json({ message: "Airport updated successfully", data: updatedAirport });
+    res.status(200).json({ success: true, message: "Airport updated successfully", data: updatedAirport, error: null });
   } catch (error) {
     next(error);
   }
@@ -44,7 +44,7 @@ export const updateAirport = async (req, res, next) => {
 export const deleteAirport = async (req, res, next) => {
   try {
     const result = await airportService.deleteAirport(req.params.iataCode);
-    res.status(200).json(result);
+    res.status(200).json({ success: true, message: "Airport deleted successfully", data: result, error: null });
   } catch (error) {
     next(error);
   }

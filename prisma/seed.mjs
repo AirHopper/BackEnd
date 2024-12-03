@@ -5,7 +5,7 @@ import haversine from "haversine";
 const prisma = new PrismaClient();
 
 async function seedAccounts() {
-  const hashedPassword = await bcrypt.hash("123456", 10);
+  const hashedPassword = await bcrypt.hash("12345678", 10);
 
   await prisma.account.createMany({
     data: [

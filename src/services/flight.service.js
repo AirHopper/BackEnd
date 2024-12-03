@@ -57,80 +57,119 @@ function flightCapacity(classType) {
   return capacity;
 }
 
+// Calculate flight duration in minutes
+function flightDuration(departureTime, arrivalTime) {
+  const diff = arrivalTime - departureTime;
+  const minutes = 1000 * 60;
+  const duration = Math.floor(diff / minutes);
+
+  return duration;
+}
+
 // TODO Get all flights
-export const getAll = async ({ page = 1, limit = 10, search }) => {
+export const getAll = async ({
+  page = 1,
+  limit = 10,
+  search,
+  orderBy = "price_asc",
+}) => {
   try {
     const offset = (page - 1) * limit;
 
-    const searchFilters = search
-      ? {
-          OR: [
-            {
-              Airplane: {
-                Airline: { name: { contains: search, mode: "insensitive" } },
-              },
-            },
-            {
-              Route: {
-                DepartureAirport: {
-                  City: { name: { contains: search, mode: "insensitive" } },
-                },
-              },
-            },
-            {
-              Route: {
-                DepartureAirport: {
-                  City: { code: { contains: search, mode: "insensitive" } },
-                },
-              },
-            },
-            {
-              Route: {
-                ArrivalAirport: {
-                  City: { name: { contains: search, mode: "insensitive" } },
-                },
-              },
-            },
-            {
-              Route: {
-                ArrivalAirport: {
-                  City: { code: { contains: search, mode: "insensitive" } },
-                },
-              },
-            },
-            {
-              departureTime: { contains: search, mode: "insensitive" },
-            },
-            {
-              arrivalTime: { contains: search, mode: "insensitive" },
-            },
-            {
-              Route: {
-                DepartureAirport: {
-                  City: {
-                    continent: { contains: search, mode: "insensitive" },
+    const { departureCity, arrivalCity, flightDate, classType, continent } =
+      search || {};
+
+    // Build search filters
+    const searchFilters = {
+      AND: [
+        ...(departureCity
+          ? [
+              {
+                Route: {
+                  DepartureAirport: {
+                    City: {
+                      name: {
+                        contains: departureCity,
+                        mode: "insensitive",
+                      },
+                    },
                   },
                 },
               },
-            },
-            {
-              Route: {
-                ArrivalAirport: {
-                  City: {
-                    continent: { contains: search, mode: "insensitive" },
+            ]
+          : []),
+        ...(arrivalCity
+          ? [
+              {
+                Route: {
+                  ArrivalAirport: {
+                    City: {
+                      name: { contains: arrivalCity, mode: "insensitive" },
+                    },
                   },
                 },
               },
-            },
-            {
-              class: { contains: search, mode: "insensitive" },
-            },
-          ],
-        }
-      : {};
+            ]
+          : []),
+        ...(flightDate
+          ? [
+              {
+                departureTime: {
+                  gte: new Date(flightDate),
+                  lt: new Date(
+                    new Date(flightDate).setDate(
+                      new Date(flightDate).getDate() + 1
+                    )
+                  ),
+                },
+              },
+            ]
+          : []),
+        ...(classType
+          ? [
+              {
+                class: classType,
+              },
+            ]
+          : []),
+        ...(continent
+          ? [
+              {
+                Route: {
+                  ArrivalAirport: {
+                    City: {
+                      continent: continent,
+                    },
+                  },
+                },
+              },
+            ]
+          : []),
+      ],
+    };
+
+    // Determine orderBy
+    const prismaOrderBy = (() => {
+      switch (orderBy) {
+        case "price_asc":
+          return { price: "asc" };
+        case "duration_asc":
+          return { duration: "asc" };
+        case "departure_soon":
+          return { departureTime: "asc" };
+        case "departure_late":
+          return { departureTime: "desc" };
+        case "arrival_soon":
+          return { arrivalTime: "asc" };
+        case "arrival_late":
+          return { arrivalTime: "desc" };
+        default:
+          return { price: "asc" };
+      }
+    })();
 
     // Fetch flights
-    const flights = await prisma.Flight.findMany({
+    const flights = await prisma.flight.findMany({
       where: searchFilters,
       include: {
         Route: {
@@ -152,10 +191,11 @@ export const getAll = async ({ page = 1, limit = 10, search }) => {
       },
       skip: offset,
       take: parseInt(limit, 10),
+      orderBy: prismaOrderBy,
     });
 
     // Count total flights
-    const totalFlights = await prisma.Flight.count({ where: searchFilters });
+    const totalFlights = await prisma.flight.count({ where: searchFilters });
 
     if (!flights.length) {
       throw new AppError("No flights found", 404);
@@ -167,6 +207,7 @@ export const getAll = async ({ page = 1, limit = 10, search }) => {
       class: flight.class,
       airline: flight.Airplane.Airline.name,
       airplane: flight.Airplane.name,
+      duration: flight.duration,
       departure: {
         time: flight.departureTime,
         airport: {
@@ -204,6 +245,7 @@ export const getAll = async ({ page = 1, limit = 10, search }) => {
           name: flight.Route.ArrivalAirport.City.country,
           code: flight.Route.ArrivalAirport.City.countryCode,
         },
+        continent: flight.Route.ArrivalAirport.City.continent,
         terminal: {
           name: flight.ArrivalTerminal.name,
           type: flight.ArrivalTerminal.type,
@@ -244,7 +286,7 @@ export const getById = async (id) => {
       throw new AppError("Invalid flight ID", 400);
     }
 
-    const flight = await prisma.Flight.findUnique({
+    const flight = await prisma.flight.findUnique({
       where: {
         id,
       },
@@ -353,7 +395,6 @@ export const store = async (payload) => {
       airplaneId,
       departureTime,
       arrivalTime,
-      duration,
       baggage,
       cabinBaggage,
       entertainment,
@@ -423,6 +464,9 @@ export const store = async (payload) => {
     // Calculate capacity based on class type
     const capacity = flightCapacity(classType);
 
+    // Calculate duration in minutes
+    const duration = flightDuration(departureDate, arrivalDate);
+
     // Membuat data flight
     const flight = await prisma.flight.create({
       data: {
@@ -480,7 +524,7 @@ export const update = async (payload, id) => {
       discountId,
     } = payload;
 
-    const flightExists = await prisma.Flight.findUnique({
+    const flightExists = await prisma.flight.findUnique({
       where: {
         id,
       },

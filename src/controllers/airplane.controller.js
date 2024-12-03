@@ -4,7 +4,12 @@ import * as airplaneService from "../services/airplane.service.js";
 export const createAirplane = async (req, res, next) => {
   try {
     const airplane = await airplaneService.createAirplane(req.body);
-    res.status(201).json({ message: "Airplane created successfully", data: airplane });
+    res.status(201).json({
+      success: true,
+      message: "Airplane created successfully",
+      data: airplane,
+      error: null,
+    });
   } catch (error) {
     next(error);
   }
@@ -14,7 +19,14 @@ export const createAirplane = async (req, res, next) => {
 export const getAllAirplanes = async (req, res, next) => {
   try {
     const airplanes = await airplaneService.getAllAirplanes();
-    res.status(200).json({ data: airplanes });
+    res
+      .status(200)
+      .json({
+        success: true,
+        message: "Airplanes fetched successfully",
+        data: airplanes,
+        error: null,
+      });
   } catch (error) {
     next(error);
   }
@@ -24,7 +36,14 @@ export const getAllAirplanes = async (req, res, next) => {
 export const getAirplaneById = async (req, res, next) => {
   try {
     const airplane = await airplaneService.getAirplaneById(req.params.id);
-    res.status(200).json({ data: airplane });
+    res
+      .status(200)
+      .json({
+        success: true,
+        message: "Airplane fetched successfully",
+        data: airplane,
+        error: null,
+      });
   } catch (error) {
     next(error);
   }
@@ -33,8 +52,16 @@ export const getAirplaneById = async (req, res, next) => {
 // Update an airplane
 export const updateAirplane = async (req, res, next) => {
   try {
-    const updatedAirplane = await airplaneService.updateAirplane(req.params.id, req.body);
-    res.status(200).json({ message: "Airplane updated successfully", data: updatedAirplane });
+    const updatedAirplane = await airplaneService.updateAirplane(
+      req.params.id,
+      req.body
+    );
+    res.status(200).json({
+      success: true,
+      message: "Airplane updated successfully",
+      data: updatedAirplane,
+      error: null,
+    });
   } catch (error) {
     next(error);
   }
@@ -44,7 +71,14 @@ export const updateAirplane = async (req, res, next) => {
 export const deleteAirplane = async (req, res, next) => {
   try {
     const result = await airplaneService.deleteAirplane(req.params.id);
-    res.status(200).json(result);
+    res
+      .status(200)
+      .json({
+        success: true,
+        message: "Airplane deleted successfully",
+        data: result,
+        error: null,
+      });
   } catch (error) {
     next(error);
   }
