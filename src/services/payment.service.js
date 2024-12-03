@@ -7,7 +7,6 @@ export const createPaymentByBankTransfer = async (request, price) => {
     try {
         const orderId = 'airHopper-' + nanoid(10);
         const totalPrice = price * request.passengers.length;
-
         const parameter = {
             payment_type: 'bank_transfer',
             transaction_details: {
@@ -21,7 +20,6 @@ export const createPaymentByBankTransfer = async (request, price) => {
 
         const chargeResponse = await coreApi.charge(parameter);
         if (chargeResponse.status_code !== '201') throw new AppError('Error on chargeResponse', 500);
-        console.log(chargeResponse);
 
         return prisma.payment.create({
             data: {
@@ -37,45 +35,27 @@ export const createPaymentByBankTransfer = async (request, price) => {
             }
         });
     } catch (error) {
-        console.error('Error creating payment:', error);
+        console.error('Error creating payment by bank transfer:', error);
         throw error;
     }
 }
 
-export const createPaymentByCreditCard = async (request) => {
+export const createPaymentByCreditCard = async (request, price) => {
     try {
         const orderId = 'airHopper-' + nanoid(10);
-        // console.log(request);
-
-        const { card_number, card_cvv, card_exp_month, card_exp_year } = request;
-
-        if (!card_number || !card_cvv || !card_exp_month || !card_exp_year) {
-            throw new AppError('Credit card details are required', 400);
-        }
-
-        console.log('halo dek')
-
-        // Tokenize the credit card details
+        const totalPrice = price * request.passengers.length;
         const cardData = {
-            card_number,
-            card_exp_month,
-            card_exp_year,
-            card_cvv,
+            ...request.card,
             client_key: MIDTRANS_CLIENT_KEY
         };
 
         const tokenResponse = await coreApi.cardToken(cardData);
-        if (tokenResponse.status_code !== '200') {
-            throw new AppError('Error generating card token', 500);
-        }
-
-        console.log(tokenResponse);
+        if (tokenResponse.status_code !== '200') throw new AppError('Error generating card token', 500);
         const token_id = tokenResponse.token_id;
-
-        let parameter = {
+        const parameter = {
             payment_type: 'credit_card',
             transaction_details: {
-                gross_amount: 24145,
+                gross_amount: totalPrice,
                 order_id: orderId,
             },
             credit_card: {
@@ -85,11 +65,8 @@ export const createPaymentByCreditCard = async (request) => {
         };
 
         const chargeResponse = await coreApi.charge(parameter);
-        // if (chargeResponse.status_code !== '201') {
-        //     throw new AppError('Error on chargeResponse', 500);
-        // }
-        console.log(chargeResponse);
-
+        if (chargeResponse.status_code !== '200') throw new AppError('Error on chargeResponse', 500);
+        
         return prisma.payment.create({
             data: {
                 method: chargeResponse.payment_type,
@@ -102,7 +79,7 @@ export const createPaymentByCreditCard = async (request) => {
             }
         });
     } catch (error) {
-        console.error('Error creating payment:', error);
+        console.error('Error creating payment by credit card:', error);
         throw error;
     }
 }

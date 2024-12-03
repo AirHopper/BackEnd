@@ -2,9 +2,8 @@ import { createPaymentByBankTransfer, createPaymentByCreditCard, getPaymentByTra
 import { updateTicketStatusByPaymentId } from "../services/ticket.service.js";
 import { isValidSignatureMidtrans } from "../utils/midtrans.js";
 import { updateSeatOccupied } from "../services/seat.service.js";
-
-import AppError from '../utils/AppError.js';
 import { getPassegersByTicketId } from "../services/passenger.service.js";
+import AppError from '../utils/AppError.js';
 
 export const createByBankTransfer = async (req, res, next) => {
     try {

@@ -17,13 +17,13 @@ export const getTicketsByUserId = async (userId) => {
     }
 }
 
-export const createTicket = async (request, paymentId, userId) => { 
+export const createTicket = async (flightId, paymentId, userId) => { 
     try {
         return prisma.ticket.create({
             data: {
                 userId,
                 paymentId,
-                flightId: request.flightId,
+                flightId,
                 qrCodeUrl: 'test',
                 ticketStatus: 'Unpaid'
             },
@@ -51,7 +51,7 @@ export const updateTicketStatusByPaymentId = async (paymentId, paymentStatus) =>
                 break;
             case 'cancel':
             case 'deny':
-                ticketStatus = 'Canceled';
+                ticketStatus = 'Cancelled';
                 break;
             case 'expire':
                 ticketStatus = 'Expired';
