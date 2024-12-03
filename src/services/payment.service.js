@@ -84,6 +84,41 @@ export const createPaymentByCreditCard = async (request, price) => {
     }
 }
 
+export const createPaymentByGopay = async (request, price) => {
+    try {
+        const orderId = 'airHopper-' + nanoid(10);
+        const totalPrice = price * request.passengers.length;
+        const parameter = {
+            payment_type: 'gopay',
+            transaction_details: {
+                gross_amount: totalPrice,
+                order_id: orderId,
+            },
+            gopay: {
+                enable_callback: true
+            }
+        };
+
+        const chargeResponse = await coreApi.charge(parameter);
+        if (chargeResponse.status_code !== '201') throw new AppError('Error on chargeResponse', 500);
+
+        return prisma.payment.create({
+            data: {
+                method: chargeResponse.payment_type,
+                status: chargeResponse.transaction_status,
+                amount: chargeResponse.gross_amount,
+                transactionId: chargeResponse.transaction_id,
+                orderId: chargeResponse.order_id,
+                fraudStatus: chargeResponse.fraud_status,
+                qrCodeUrl: chargeResponse.actions[0].url
+            }
+        });
+    } catch (error) {
+        console.error('Error creating payment by gopay:', error);
+        throw error;
+    }
+}
+
 export const getPaymentByTransactionId = async (transactionId) => {
     try {
         return prisma.payment.findUnique({

@@ -47,12 +47,13 @@ export const createByCreditCard = async (req, res, next) => {
         const flight = await getById(flightId); //already has validation if flight not found
         await checkSeatAvailability(req.body.passengers);
         const payment = await createPaymentByCreditCard(req.body, flight.totalPrice);
-        
-        
+        const ticket = await createTicket(flightId, payment.id, req.user.id);
+        await updateSeatOccupied(req.body.passengers, true);
+        await createPassengers(req.body.passengers, ticket.id);
         res.status(201).json({
             success: true,
-            message: 'Payment created successfully',
-            data: payment
+            message: 'Ticket created successfully',
+            data: ticket
         });
     } catch (error) {
         console.log(error);
