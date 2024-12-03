@@ -44,7 +44,7 @@ export const updateTicketStatusByPaymentId = async (paymentId, paymentStatus) =>
         switch (paymentStatus) {
             case 'settlement':
             case 'capture':
-                ticketStatus = 'Paid';
+                ticketStatus = 'Issued';
                 break;
             case 'pending':
                 ticketStatus = 'Unpaid';
