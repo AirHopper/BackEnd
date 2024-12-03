@@ -146,6 +146,9 @@ export const login = async (userData) => {
       const user = await prisma.user.findUnique({
         where: { phoneNumber: identifier },
       });
+      if (!user) {
+        throw new customError("Invalid phone number or password", 400);
+      }
       account = await prisma.account.findUnique({
         where: { id: user.accountId },
         include: { user: true },
