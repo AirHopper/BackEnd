@@ -230,10 +230,10 @@ export const getAll = async ({
             },
           },
         },
-        skip: offset,
-        take: parseInt(limit, 10),
-        orderBy: prismaOrderBy,
       },
+      skip: offset,
+      take: parseInt(limit, 10),
+      orderBy: prismaOrderBy,
     });
 
     // Format response
