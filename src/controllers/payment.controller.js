@@ -1,5 +1,5 @@
 import { createPaymentByBankTransfer, createPaymentByCreditCard, getPaymentByTransactionId, updatePaymentStatusById } from "../services/payment.service.js";
-import { updateTicketStatusByPaymentId } from "../services/ticket.service.js";
+import { updateTicketStatusByPaymentId } from "../services/order.service.js";
 import { isValidSignatureMidtrans } from "../utils/midtrans.js";
 import { updateSeatOccupied } from "../services/seat.service.js";
 import { getPassegersByTicketId } from "../services/passenger.service.js";

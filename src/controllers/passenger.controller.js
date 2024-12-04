@@ -1,4 +1,4 @@
-import { createTicket } from "../services/ticket.service.js";
+import { createTicket } from "../services/order.service.js";
 import { createPaymentByBankTransfer } from "../services/payment.service.js";
 import { getById } from "../services/flight.service.js";
 

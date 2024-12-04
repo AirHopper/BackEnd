@@ -8,7 +8,7 @@ import terminals from "./terminal.routes.js";
 import auth from "./auth.routes.js";
 import flightRoutes from "./flight.routes.js";
 import payments from "./payment.routes.js";
-import tickets from "./ticket.routes.js";
+import orders from "./order.routes.js"
 import passengers from "./passenger.routes.js";
 import authHandler from "../middlewares/authHandler.js";
 
@@ -24,7 +24,7 @@ export default (app) => {
   router.use("/terminals", terminals);
   router.use("/auth", auth);
   router.use("/flights", flightRoutes);
-  router.use("/tickets", authHandler, tickets);
+  router.use("/orders", authHandler, orders);
   router.use("/payments", payments);
   router.use("/passengers", passengers);
 
