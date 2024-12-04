@@ -377,6 +377,7 @@ export const store = async (payload) => {
       entertainment,
       departureTerminalId,
       arrivalTerminalId,
+      discountId = null,
     } = payload;
 
     const departureDate = new Date(departureTime);
@@ -436,6 +437,22 @@ export const store = async (payload) => {
       classType
     );
 
+    let discountPrice = null;
+
+    if (discountId) {
+      const discount = await prisma.discount.findUnique({
+        where: {
+          id: discountId,
+        },
+      });
+
+      discountPrice = price - price * (discount.percentage / 100);
+
+      if (!discount) {
+        throw new AppError("Discount not found", 404);
+      }
+    }
+
     // Calculate capacity based on class type
     const capacity = flightCapacity(classType);
 
@@ -473,7 +490,9 @@ export const store = async (payload) => {
             departureTime: new Date(departureTime),
             arrivalTime: new Date(arrivalTime),
             totalPrice: price,
+            discountPrice,
             totalDuration: duration,
+            discountId,
           },
         },
       },
@@ -509,6 +528,7 @@ export const update = async (payload, id) => {
       entertainment,
       departureTerminalId,
       arrivalTerminalId,
+      discountId=null,
     } = payload;
 
     const flightExists = await prisma.flight.findUnique({
@@ -600,6 +620,7 @@ export const update = async (payload, id) => {
         entertainment: updatedEntertainment,
         departureTerminalId: updatedDepartureTerminalId,
         arrivalTerminalId: updatedArrivalTerminalId,
+        discountId,
       },
     });
 
