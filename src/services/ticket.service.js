@@ -25,6 +25,10 @@ async function validateFlights({ routeId, flightIds }) {
     throw new AppError("Some flights could not be found", 400);
   }
 
+  // Validate first and last flights match the route's airports
+  const firstFlight = flights[0];
+  const lastFlight = flights[flights.length - 1];
+
   // Ensure all flights are on the same day and class type
   const firstFlightDate = new Date(firstFlight.departureTime).toDateString();
   const classType = firstFlight.class;
@@ -38,10 +42,6 @@ async function validateFlights({ routeId, flightIds }) {
       throw new AppError("All flights must be of the same class type", 400);
     }
   }
-
-  // Validate first and last flights match the route's airports
-  const firstFlight = flights[0];
-  const lastFlight = flights[flights.length - 1];
 
   if (
     firstFlight.Route.DepartureAirport.id !== route.DepartureAirport.id ||
