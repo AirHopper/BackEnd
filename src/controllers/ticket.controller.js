@@ -1,11 +1,11 @@
-import * as flightService from "../services/flight.service.js";
+import * as ticketService from "../services/ticket.service.js";
 
-//TODO Get all flights
+// TODO Get all tickets
 export const getAll = async (req, res, next) => {
   try {
     const { page = 1, limit = 10, search, orderBy } = req.query;
 
-    const { formattedFlights, pagination } = await flightService.getAll({
+    const { formattedTickets, pagination } = await ticketService.getAll({
       page,
       limit,
       search,
@@ -14,70 +14,71 @@ export const getAll = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: "Flights fetched successfully",
+      message: "Tickets fetched successfully",
       pagination,
-      data: formattedFlights,
+      data: formattedTickets,
     });
   } catch (error) {
     next(error);
   }
 };
 
-// TODO Get flight by ID
+// TODO Get ticket by ID
 export const getById = async (req, res, next) => {
   try {
     const id = parseInt(req.params.id, 10);
 
-    const flight = await flightService.getById(id);
+    const ticket = await ticketService.getById(id);
     res.status(200).json({
       success: true,
-      message: "Flight fetched successfully",
-      data: flight,
+      message: "Ticket fetched successfully",
+      data: ticket,
     });
   } catch (error) {
     next(error);
   }
 };
 
-// TODO Store flight
+// TODO Store ticket
 export const store = async (req, res, next) => {
   try {
-    const flight = await flightService.store(req.body);
+    const ticket = await ticketService.store(req.body);
 
     res.status(201).json({
       success: true,
-      message: "Flight created successfully",
-      data: flight,
+      message: "Ticket created successfully",
+      data: ticket,
     });
   } catch (error) {
     next(error);
   }
 };
 
-// TODO Update flight
+// TODO Update ticket
 export const update = async (req, res, next) => {
   try {
     const id = parseInt(req.params.id, 10);
-    const updatedFlight = await flightService.update(req.body, id);
+    const updatedTicket = await ticketService.update(req.body, id);
 
     res.status(200).json({
       success: true,
-      message: "Flight updated successfully",
-      data: updatedFlight,
+      message: "Ticket updated successfully",
+      data: updatedTicket,
     });
   } catch (error) {
     next(error);
   }
 };
 
-// TODO Destroy flight
+// TODO Destroy ticket
 export const destroy = async (req, res, next) => {
   try {
     const id = parseInt(req.params.id, 10);
-    await flightService.destroy(id);
+    await ticketService.destroy(id);
+
     res.status(200).json({
       success: true,
-      message: "Flight deleted successfully",
+      message: "Ticket deleted successfully",
     });
   } catch (error) {
     next(error);

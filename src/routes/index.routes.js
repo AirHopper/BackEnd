@@ -7,11 +7,12 @@ import airports from "./airport.routes.js";
 import terminals from "./terminal.routes.js";
 import auth from "./auth.routes.js";
 import flightRoutes from "./flight.routes.js";
+import tickets from "./ticket.routes.js";
+import users from "./user.routes.js";
 
 export default (app) => {
   const router = express.Router();
 
-  router.use("/auth", auth);
   router.use("/routes", routes);
   router.use("/cities", cities);
   router.use("/airlines", airlines);
@@ -20,6 +21,8 @@ export default (app) => {
   router.use("/terminals", terminals);
   router.use("/auth", auth);
   router.use("/flights", flightRoutes);
+  router.use("/tickets", tickets);
+  router.use("/users", users);
 
   app.use("/api/v1", router);
 };

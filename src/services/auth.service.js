@@ -5,26 +5,12 @@ import { getToken, verifyToken } from "../utils/jwt.js";
 import { generateOTP } from "../utils/otpgenerator.js";
 import { sendEmail } from "../utils/nodemailer.js";
 import { generateStrongPassword } from "../utils/passwordgenerator.js";
+import cleanUpAccountData from "../utils/cleanUpAccountData.js";
+import isValidEmail from "../utils/isValidEmail.js";
 import ejs from "ejs";
 import path from "path";
 
-// Check email or phone number
-const isValidEmail = (email) => {
-  const regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  return regex.test(email);
-};
-
-// Clean Up Account Properties before send it to frontend
-const cleanUpAccountData = (account) => {
-  [
-    "createdAt",
-    "updatedAt",
-    "role",
-    "password",
-    "otpCode",
-    "otpExpiration",
-  ].forEach((key) => delete account[key]);
-};
+const OTP_EXPIRATION_TIME_MS = 10 * 60 * 1000;
 
 // Register Email and Password
 export const register = async (userData) => {
@@ -39,7 +25,7 @@ export const register = async (userData) => {
         email,
         password: hashedPassword,
         otpCode: otp,
-        otpExpiration: new Date(Date.now() + 10 * 60 * 1000),
+        otpExpiration: new Date(Date.now() + OTP_EXPIRATION_TIME_MS),
         user: {
           create: {
             fullName,
@@ -61,7 +47,7 @@ export const register = async (userData) => {
   } catch (error) {
     console.error("Error registering user:", error);
     if (error.code === "P2002") {
-      throw new customError("Email address already used", 409);
+      throw new customError("Email, phone number, or fullname already used", 409);
     }
     throw error;
   }
@@ -75,7 +61,7 @@ export const resendOTP = async (email) => {
       where: { email },
       data: {
         otpCode: otp,
-        otpExpiration: new Date(Date.now() + 10 * 60 * 1000),
+        otpExpiration: new Date(Date.now() + OTP_EXPIRATION_TIME_MS), // 10 minutes
       },
       include: { user: true },
     });
@@ -144,6 +130,9 @@ export const login = async (userData) => {
       const user = await prisma.user.findUnique({
         where: { phoneNumber: identifier },
       });
+      if (!user) {
+        throw new customError("Invalid phone number or password", 400);
+      }
       account = await prisma.account.findUnique({
         where: { id: user.accountId },
         include: { user: true },
@@ -154,7 +143,7 @@ export const login = async (userData) => {
       throw new customError("Invalid email or password", 400);
     }
 
-    const token = getToken(account.id, account.email);
+    const token = getToken({ id: account.id, email: account.email, role: account.role });
     cleanUpAccountData(account);
     return { ...account, token };
   } catch (error) {
@@ -168,9 +157,7 @@ export const googleLogin = async (userData) => {
   try {
     const { accessToken } = userData;
 
-    const response = await fetch(
-      `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${accessToken}`
-    );
+    const response = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${accessToken}`);
     if (!response.ok) {
       throw new customError("Invalid access token", 400);
     }
@@ -200,7 +187,8 @@ export const googleLogin = async (userData) => {
       });
     }
 
-    const token = getToken(account.id, account.email);
+    const token = getToken({ id: account.id, email: account.email, role: account.role });
+    cleanUpAccountData(account);
     return { ...account, token };
   } catch (error) {
     console.error("Error logging in with Google:", error);
@@ -217,7 +205,11 @@ export const forgotPassword = async (userData) => {
       where: { email },
     });
 
-    const token = getToken(account.id, account.email);
+    if (!account) {
+      throw new customError("Invalid email", 404);
+    }
+
+    const token = getToken({ id: account.id, email: account.email });
 
     const emailTemplatePath = path.resolve("src/views/resetPassword.ejs");
 
