@@ -14,7 +14,7 @@ enum Role {
   Buyer
 }
 
-enum TicketStatus {
+enum OrderStatus {
   Issued
   Unpaid
   Cancelled
@@ -237,8 +237,8 @@ model Order {
   paymentId        Int          @unique @map("payment_id")
   qrCodeUrl        String       @map("qr_code_url")
   bookingDate      DateTime     @default(now()) @map("booking_date")
-  ticketStatus     TicketStatus @default(Unpaid) @map("ticket_status")
-  isRoundTrip      Boolean      @default(false)
+  orderStatus      OrderStatus  @default(Unpaid) @map("order_status")
+  isRoundTrip      Boolean      @default(false) @map("is_round_trip")
   outboundTicketId Int          @unique @map("outbound_ticket_id")
   returnTicketId   Int?         @unique @map("return_ticket_id")
   createdAt        DateTime     @default(now()) @map("created_at")

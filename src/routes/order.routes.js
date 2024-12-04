@@ -4,7 +4,7 @@ import { getManyByUserId, createByBank, createByCreditCard } from "../controller
 const router = express.Router();
 
 router.get("/", getManyByUserId);
-router.post("/:flightId/bank-va", createByBank);
-router.post("/:flightId/credit-card", createByCreditCard);
+router.post("/:ticketId/bank-va", createByBank);
+router.post("/:ticketId/credit-card", createByCreditCard);
 
 export default router;

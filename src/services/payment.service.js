@@ -3,14 +3,13 @@ import { coreApi, MIDTRANS_CLIENT_KEY } from '../utils/midtrans.js';
 import AppError from '../utils/AppError.js';
 import { nanoid } from 'nanoid';
 
-export const createPaymentByBankTransfer = async (request, price) => { 
+export const createPaymentByBankTransfer = async (request) => { 
     try {
         const orderId = 'airHopper-' + nanoid(10);
-        const totalPrice = price * request.passengers.length;
         const parameter = {
             payment_type: 'bank_transfer',
             transaction_details: {
-                gross_amount: totalPrice,
+                gross_amount: request.finalPrice,
                 order_id: orderId,
             },
             bank_transfer:{

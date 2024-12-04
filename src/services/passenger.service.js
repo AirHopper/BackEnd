@@ -1,10 +1,10 @@
 import prisma from '../utils/prisma.js';
 
-export const createPassengers = async (request, ticketId) => { 
+export const createPassengers = async (request, orderId) => { 
     try {
         const passengers = request.map(passenger => ({
             ...passenger,
-            ticketId
+            orderId
         }));
         
         return prisma.passenger.createMany({ //return { count } not passenger's data
@@ -16,11 +16,11 @@ export const createPassengers = async (request, ticketId) => {
     }
 }
 
-export const getPassegersByTicketId = async (ticketId) => {
+export const getPassegersByOrderId = async (orderId) => {
     try {
         return prisma.passenger.findMany({
             where: {
-                ticketId
+                orderId
             }
         });
     } catch (error) {

@@ -1,8 +1,8 @@
 import prisma from '../utils/prisma.js';
 
-export const getTicketsByUserId = async (userId) => {
+export const getOrdersByUserId = async (userId) => {
     try {
-        return prisma.ticket.findMany({
+        return prisma.order.findMany({
             where: {
                 userId
             },
@@ -12,61 +12,60 @@ export const getTicketsByUserId = async (userId) => {
             }
         });
     } catch (error) {
-        console.error('Error fetching tickets:', error);
+        console.error('Error fetching orders:', error);
         throw error;
     }
 }
 
-export const createTicket = async (flightId, paymentId, userId) => { 
+export const createOrder = async (request, paymentId, userId) => { 
     try {
-        return prisma.ticket.create({
+        const returnTicketId = (request.isRoundTrip) ? request.returnTicketId : null;
+
+        return prisma.order.create({
             data: {
                 userId,
                 paymentId,
-                flightId,
                 qrCodeUrl: 'test',
-                ticketStatus: 'Unpaid'
-            },
-            include: {
-                Flight: true,
-                Payment: true
+                isRoundTrip: request.isRoundTrip,
+                outboundTicketId: request.outboundTicketId,
+                returnTicketId,
             }
         });
     } catch (error) {
-        console.error('Error creating ticket:', error);
+        console.error('Error creating order:', error);
         throw error;
     }
 }
 
-export const updateTicketStatusByPaymentId = async (paymentId, paymentStatus) => {
+export const updateOrderStatusByPaymentId = async (paymentId, paymentStatus) => {
     try {
-        let ticketStatus;
+        let orderStatus;
         switch (paymentStatus) {
             case 'settlement':
             case 'capture':
-                ticketStatus = 'Issued';
+                orderStatus = 'Issued';
                 break;
             case 'pending':
-                ticketStatus = 'Unpaid';
+                orderStatus = 'Unpaid';
                 break;
             case 'cancel':
             case 'deny':
-                ticketStatus = 'Cancelled';
+                orderStatus = 'Cancelled';
                 break;
             case 'expire':
-                ticketStatus = 'Expired';
+                orderStatus = 'Expired';
                 break;
             default:
-                ticketStatus = 'Unknown';
+                orderStatus = 'Unknown';
                 break;
         }
 
-        return prisma.ticket.update({
+        return prisma.order.update({
             where: {
                 paymentId
             },
             data: {
-                ticketStatus
+                orderStatus
             },
             include: {
                 Flight: true,
@@ -74,7 +73,7 @@ export const updateTicketStatusByPaymentId = async (paymentId, paymentStatus) =>
             }
         });
     } catch (error) {
-        console.error('Error updating ticket status:', error);
+        console.error('Error updating order status:', error);
         throw error;
     }
 }
