@@ -128,6 +128,11 @@ export const getAll = async ({
               },
             ]
           : []),
+        ...[
+          {
+            isActive: true,
+          },
+        ],
       ],
     };
 
@@ -460,6 +465,20 @@ export const store = async (payload) => {
             isOccupied: false,
           })),
         },
+        Ticket: {
+          create: {
+            routeId,
+            class: classType,
+            isTransits: false,
+            departureTime: new Date(departureTime),
+            arrivalTime: new Date(arrivalTime),
+            totalPrice: price,
+            totalDuration: duration,
+          },
+        },
+      },
+      include: {
+        Ticket: true,
       },
     });
 
@@ -470,7 +489,7 @@ export const store = async (payload) => {
   }
 };
 
-// TODO Update flight | Apakah update flight diperlukan?
+// TODO Update flight
 export const update = async (payload, id) => {
   try {
     if (isNaN(id)) {
