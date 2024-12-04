@@ -46,12 +46,10 @@ enum RegionType {
 
 enum Continent {
   Africa
-  Antarctica
+  America
   Asia
   Europe
-  North_America
   Oceania
-  South_America
 }
 
 model Account {
@@ -79,7 +77,7 @@ model User {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  Account Account @relation(fields: [accountId], references: [id])
+  Account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
   Order   Order[]
 
   @@map("users")
@@ -109,7 +107,7 @@ model Airport {
   Terminals       Terminal[]
   departureRoutes Route[]    @relation("DepartureRoutes")
   arrivalRoutes   Route[]    @relation("ArrivalRoutes")
-  City            City       @relation(fields: [cityId], references: [code])
+  City            City       @relation(fields: [cityId], references: [code], onDelete: Cascade)
   cityId          String
 
   @@map("airports")
@@ -121,7 +119,7 @@ model Terminal {
   type      RegionType
   airportId String     @map("airport_id")
 
-  Airport          Airport  @relation(fields: [airportId], references: [iataCode])
+  Airport          Airport  @relation(fields: [airportId], references: [iataCode], onDelete: Cascade)
   FlightsDeparture Flight[] @relation("DepartureTerminal")
   FlightsArrival   Flight[] @relation("ArrivalTerminal")
 
@@ -146,7 +144,7 @@ model Airplane {
   type       RegionType
   pricePerKm Decimal    @map("price_per_km")
 
-  Airline Airline  @relation(fields: [airlineId], references: [iataCode])
+  Airline Airline  @relation(fields: [airlineId], references: [iataCode], onDelete: Cascade)
   Flights Flight[]
 
   @@map("airplanes")
@@ -158,7 +156,7 @@ model Seat {
   seatNumber Int     @map("seat_number")
   isOccupied Boolean @default(false) @map("is_occupied")
 
-  Flight    Flight     @relation(fields: [flightId], references: [id])
+  Flight    Flight     @relation(fields: [flightId], references: [id], onDelete: Cascade)
   Passenger Passenger?
 
   @@map("seats")
@@ -170,8 +168,8 @@ model Route {
   arrivalAirportId   String  @map("arrival_airport_id")
   distance           Decimal
 
-  DepartureAirport Airport  @relation("DepartureRoutes", fields: [departureAirportId], references: [iataCode])
-  ArrivalAirport   Airport  @relation("ArrivalRoutes", fields: [arrivalAirportId], references: [iataCode])
+  DepartureAirport Airport  @relation("DepartureRoutes", fields: [departureAirportId], references: [iataCode], onDelete: Cascade)
+  ArrivalAirport   Airport  @relation("ArrivalRoutes", fields: [arrivalAirportId], references: [iataCode], onDelete: Cascade)
   Flights          Flight[]
   Ticket           Ticket[]
 
@@ -180,18 +178,20 @@ model Route {
 }
 
 model Ticket {
-  id            Int      @id @default(autoincrement())
-  routeId       Int      @map("route_id")
-  isTransits    Boolean  @default(false)
-  departureTime DateTime @map("departure_date")
-  arrivalTime   DateTime @map("arrival_date")
-  totalPrice    Decimal  @map("total_price")
-  totalDuration Int      @map("total_duration")
-  discountId    Int?     @map("discount_id")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  id            Int       @id @default(autoincrement())
+  routeId       Int       @map("route_id")
+  isTransits    Boolean   @default(false)
+  class         ClassType
+  departureTime DateTime  @map("departure_date")
+  arrivalTime   DateTime  @map("arrival_date")
+  totalPrice    Decimal   @map("total_price")
+  priceDiscount Decimal?  @map("price_discount")
+  totalDuration Int       @map("total_duration")
+  discountId    Int?      @map("discount_id")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
 
-  Route    Route     @relation(fields: [routeId], references: [id])
+  Route    Route     @relation(fields: [routeId], references: [id], onDelete: Cascade)
   Flights  Flight[]
   Discount Discount? @relation(fields: [discountId], references: [id])
 
@@ -219,10 +219,10 @@ model Flight {
   departureTerminalId Int       @map("departure_terminal_id")
   arrivalTerminalId   Int       @map("arrival_terminal_id")
 
-  Route             Route    @relation(fields: [routeId], references: [id])
-  Airplane          Airplane @relation(fields: [airplaneId], references: [id])
-  DepartureTerminal Terminal @relation("DepartureTerminal", fields: [departureTerminalId], references: [id])
-  ArrivalTerminal   Terminal @relation("ArrivalTerminal", fields: [arrivalTerminalId], references: [id])
+  Route             Route    @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  Airplane          Airplane @relation(fields: [airplaneId], references: [id], onDelete: Cascade)
+  DepartureTerminal Terminal @relation("DepartureTerminal", fields: [departureTerminalId], references: [id], onDelete: Cascade)
+  ArrivalTerminal   Terminal @relation("ArrivalTerminal", fields: [arrivalTerminalId], references: [id], onDelete: Cascade)
 
   Ticket Ticket[]
   Seat   Seat[]
@@ -285,8 +285,8 @@ model Passenger {
   issuedCountry    String        @map("issued_country")
   idValidUntil     DateTime      @map("id_valid_until")
 
-  Order Order @relation(fields: [orderId], references: [id])
-  Seat  Seat  @relation(fields: [seatId], references: [id])
+  Order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  Seat  Seat  @relation(fields: [seatId], references: [id], onDelete: Cascade)
 
   @@map("passengers")
 }
@@ -298,7 +298,7 @@ model Notification {
   createdAt DateTime @default(now()) @map("created_at")
   isRead    Boolean  @default(false) @map("is_read")
 
-  Account Account @relation(fields: [accountId], references: [id])
+  Account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
   @@map("notifications")
 }
