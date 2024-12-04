@@ -46,14 +46,14 @@ async function seedCities() {
         code: "NYC",
         country: "United States",
         countryCode: "US",
-        continent: Continent.North_America,
+        continent: Continent.America,
       },
       {
         name: "Los Angeles",
         code: "LAX",
         country: "United States",
         countryCode: "US",
-        continent: Continent.North_America,
+        continent: Continent.America,
       },
       {
         name: "Singapore",
