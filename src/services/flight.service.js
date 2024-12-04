@@ -238,10 +238,7 @@ export const getAll = async ({
       cabinBaggage: flight.cabinBaggage,
       entertainment: flight.entertainment,
       price: flight.price,
-      discount: flight.Discount ? flight.Discount.discount : 0,
-      totalPrice:
-        flight.price -
-        (flight.price * (flight.Discount ? flight.Discount.discount : 0)) / 100,
+      totalPrice: flight.price,
     }));
 
     const pagination = {
@@ -288,7 +285,6 @@ export const getById = async (id) => {
         },
         DepartureTerminal: true,
         ArrivalTerminal: true,
-        Discount: true,
         Seat: true,
       },
     });
@@ -296,8 +292,6 @@ export const getById = async (id) => {
     if (!flight) {
       throw new AppError("Flight not found", 404);
     }
-
-    const percentage = 100;
 
     // Format response
     const formattedFlight = {
@@ -353,11 +347,7 @@ export const getById = async (id) => {
       cabinBaggage: flight.cabinBaggage,
       entertainment: flight.entertainment,
       price: flight.price,
-      discount: flight.Discount ? flight.Discount.discount : 0,
-      totalPrice:
-        flight.price -
-        (flight.price * (flight.Discount ? flight.Discount.discount : 0)) /
-          percentage,
+      totalPrice: flight.price,
     };
 
     return formattedFlight;
