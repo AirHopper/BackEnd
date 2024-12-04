@@ -59,7 +59,7 @@ export const updateUserProfile = async (userId, userData) => {
 }
 
 // Update user settings (reset password with old password)
-export const resetPassword = async (userId, userData) => {
+export const changePassword = async (userId, userData) => {
   try {
     const { oldPassword, newPassword } = userData;
     const account = await prisma.account.findUnique({ 

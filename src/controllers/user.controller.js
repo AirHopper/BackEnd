@@ -51,9 +51,9 @@ export const updateUserProfile = async (req, res, next) => {
   }
 }
 
-export const resetPassword = async (req, res, next) => {
+export const changePassword = async (req, res, next) => {
   try {
-    const data = await userService.resetPassword(req.user.id, req.body);
+    const data = await userService.changePassword(req.user.id, req.body);
     res.status(200).json({
       success: true,
       message: "Update user password successfully",
