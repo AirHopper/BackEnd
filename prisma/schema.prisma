@@ -264,6 +264,8 @@ model Payment {
   fraudStatus   String?   @map("fraud_status") // Midtrans fraud status: accept, challenge, deny
   validUntil    DateTime? @map("valid_until") // Expiration for pending payments
   paymentDate   DateTime? @map("payment_date") // When payment is completed
+  bankName      String?   @map("bank_name") // only for bank_transfer method
+  bankVa        String?   @map("bank_va") // only for bank_trasnfer method, virtual account number
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
   Order         Order?
