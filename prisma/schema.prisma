@@ -182,10 +182,11 @@ model Ticket {
   routeId       Int       @map("route_id")
   isTransits    Boolean   @default(false)
   class         ClassType
+  isActive      Boolean   @default(true) @map("is_active")
   departureTime DateTime  @map("departure_date")
   arrivalTime   DateTime  @map("arrival_date")
   totalPrice    Decimal   @map("total_price")
-  priceDiscount Decimal?  @map("price_discount")
+  discountPrice Decimal?  @map("price_discount")
   totalDuration Int       @map("total_duration")
   discountId    Int?      @map("discount_id")
   createdAt     DateTime  @default(now()) @map("created_at")
@@ -306,11 +307,11 @@ model Notification {
 }
 
 model Discount {
-  id        Int      @id @default(autoincrement())
-  discount  Int
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  Ticket    Ticket[]
+  id         Int      @id @default(autoincrement())
+  percentage Int
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  Ticket     Ticket[]
 
   @@map("discounts")
 }
