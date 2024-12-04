@@ -10,6 +10,7 @@ export const getAllUsers = async () => {
     accounts.forEach(account => cleanUpAccountData(account));
     return accounts;
   } catch(error) {
+    console.log("Error get all users information: ", error);
     throw error;
   }
 }
@@ -24,6 +25,7 @@ export const getUserProfile = async (userId) => {
     cleanUpAccountData(account)
     return account;
   } catch (error) {
+    console.log("Error get a user information: ", error);
     throw error;
   }
 }
@@ -81,6 +83,7 @@ export const changePassword = async (userId, userData) => {
     cleanUpAccountData(account);
     return account;
   } catch(error) {
+    console.log("Error change user password: ", error);
     throw error;
   }
 }
