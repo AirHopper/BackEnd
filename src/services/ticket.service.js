@@ -25,7 +25,6 @@ async function validateFlights({ routeId, flightIds }) {
     throw new AppError("Some flights could not be found", 400);
   }
 
-  // Validate first and last flights match the route's airports
   const firstFlight = flights[0];
   const lastFlight = flights[flights.length - 1];
 
@@ -43,6 +42,7 @@ async function validateFlights({ routeId, flightIds }) {
     }
   }
 
+  // Validate first and last flights match the route's airports
   if (
     firstFlight.Route.DepartureAirport.id !== route.DepartureAirport.id ||
     lastFlight.Route.ArrivalAirport.id !== route.ArrivalAirport.id
@@ -58,10 +58,7 @@ async function validateFlights({ routeId, flightIds }) {
     const currentFlight = flights[i];
     const nextFlight = flights[i + 1];
 
-    if (
-      currentFlight.Route.ArrivalAirport.id !==
-      nextFlight.Route.DepartureAirport.id
-    ) {
+    if (currentFlight.Route.ArrivalAirport.id !== nextFlight.Route.DepartureAirport.id) {
       throw new AppError("Connecting flights do not match", 400);
     }
 
@@ -84,17 +81,11 @@ function calculateDuration(flights) {
 }
 
 // TODO Get all tickets
-export const getAll = async ({
-  page = 1,
-  limit = 10,
-  search,
-  orderBy = "price_asc",
-}) => {
+export const getAll = async ({ page = 1, limit = 10, search, orderBy = "price_asc" }) => {
   try {
     const offset = (page - 1) * limit;
 
-    const { departureCity, arrivalCity, flightDate, classType, continent } =
-      search || {};
+    let { departureCity, arrivalCity, flightDate, classType, continent, isTransit } = search || {};
 
     const searchFilters = {
       AND: [
@@ -132,11 +123,7 @@ export const getAll = async ({
               {
                 departureTime: {
                   gte: new Date(flightDate),
-                  lt: new Date(
-                    new Date(flightDate).setDate(
-                      new Date(flightDate).getDate() + 1
-                    )
-                  ),
+                  lt: new Date(new Date(flightDate).setDate(new Date(flightDate).getDate() + 1)),
                 },
               },
             ]
@@ -158,6 +145,13 @@ export const getAll = async ({
                     },
                   },
                 },
+              },
+            ]
+          : []),
+        ...(isTransit
+          ? [
+              {
+                isTransits: isTransit === "1" ? true : false,
               },
             ]
           : []),
@@ -240,6 +234,7 @@ export const getAll = async ({
     const formattedTickets = tickets.map((ticket) => ({
       id: ticket.id,
       class: ticket.class,
+      isTransits: ticket.isTransits,
       price: ticket.price,
       totalPrice: ticket.totalPrice,
       isActive: ticket.isActive,
@@ -417,6 +412,7 @@ export const getById = async (id) => {
     const formattedTicket = {
       id: ticket.id,
       class: ticket.class,
+      isTransits: ticket.isTransits,
       price: ticket.price,
       totalPrice: ticket.totalPrice,
       isActive: ticket.isActive,
@@ -573,7 +569,7 @@ export const store = async (payload) => {
   }
 };
 
-// TODO Update flight
+// TODO Update tiket
 // export const update = async (id, payload) => {
 
 // }

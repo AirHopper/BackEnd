@@ -3,13 +3,13 @@ import { z } from "zod";
 // Define validation schemas
 const createTerminalSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  type: z.enum(["Domestic", "International"], "Invalid terminal type"),
+  type: z.enum(["Domestik", "Internasional"], "Invalid terminal type"),
   airportId: z.string().min(1, "Airport ID is required"),
 });
 
 const updateTerminalSchema = z.object({
   name: z.string().min(1).optional(),
-  type: z.enum(["Domestic", "International"]).optional(),
+  type: z.enum(["Domestik", "Internasional"]).optional(),
   airportId: z.string().min(1).optional(),
 });
 

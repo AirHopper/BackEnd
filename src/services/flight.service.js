@@ -528,7 +528,7 @@ export const update = async (payload, id) => {
       entertainment,
       departureTerminalId,
       arrivalTerminalId,
-      discountId=null,
+      discountId = null,
     } = payload;
 
     const flightExists = await prisma.flight.findUnique({

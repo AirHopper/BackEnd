@@ -67,20 +67,9 @@ export const createRoute = async (payload) => {
 };
 
 // Get all routes
-export const getRoutes = async (queryParams) => {
+export const getRoutes = async () => {
   try {
-    const { page = 1, pageSize = 10 } = queryParams;
-
-    const currentPage = parseInt(page);
-    const itemsPerPage = parseInt(pageSize);
-
-    const skip = (currentPage - 1) * itemsPerPage;
-
-    const totalItems = await prisma.route.count();
-
     const routes = await prisma.route.findMany({
-      skip,
-      take: itemsPerPage,
       include: {
         DepartureAirport: {
           select: {
@@ -111,16 +100,7 @@ export const getRoutes = async (queryParams) => {
       },
     });
 
-    const totalPages = Math.ceil(totalItems / itemsPerPage);
-
-    const metadata = {
-      totalItems,
-      totalPages,
-      currentPage,
-      itemsPerPage,
-    };
-
-    return { metadata, routes };
+    return routes;
   } catch (error) {
     console.error("Error getting routes: ", error);
     throw error;
