@@ -22,13 +22,13 @@ export const getManyByUserId = async (req, res, next) => {
 
 export const createByBank = async (req, res, next) => {
     try {
-        if (isNaN(req.body.outbondTicketId)) throw new AppError('Invalid outbond ticketId', 400);
+        if (isNaN(req.body.outboundTicketId)) throw new AppError('Invalid outbond ticketId', 400);
         if (req.isRoundTrip) {
             if (isNaN(req.body.returnTicketId)) throw new AppError('Invalid return ticketId', 400);
         }
 
-        const outbondTicket = await getById(req.body.outbondTicketId);
-        if (!outbondTicket) throw new AppError('Outbond ticket not found', 404);
+        const outboundTicket = await getById(req.body.outboundTicketId);
+        if (!outboundTicket) throw new AppError('Outbond ticket not found', 404);
         if (req.isRoundTrip) {
             const returnTicket = await getById(req.body.returnTicketId);
             if (!returnTicket) throw new AppError('Return ticket not found', 404);
@@ -38,9 +38,8 @@ export const createByBank = async (req, res, next) => {
         const occupiedSeat = await checkSeatAvailability(seats); // return undefined if seat is not occupied, while return the seat if it is occupied
         if (occupiedSeat) throw new AppError(`Seat ${occupiedSeat.seatNumber} on flightId ${occupiedSeat.flightId} is occupied`, 400);
         const payment = await createPaymentByBankTransfer(req.body);
-        
         const order = await createOrder(req.body, payment.id, req.user.id);
-        await updateSeatOccupied(req.body.passengers, true);
+        await updateSeatOccupied(seats, true);
         await createPassengers(req.body.passengers, order.id);
         res.status(201).json({
             success: true,

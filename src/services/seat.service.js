@@ -1,5 +1,4 @@
 import prisma from '../utils/prisma.js';
-import AppError from '../utils/AppError.js';
 
 export const getSeatsById = async (id) => {
     try {

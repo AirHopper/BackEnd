@@ -45,7 +45,8 @@ export const notifications = async (req, res, next) => {
         const updatedPayment = await updatePaymentStatusById(payment.id, req.body);
         const updatedOrder = await updateOrderStatusByPaymentId(updatedPayment.id, updatedPayment.status);
         const passengers = await getPassegersByOrderId(updatedOrder.id);
-        if (updatedOrder.orderStatus === 'Cancelled' || updatedOrder.orderStatus === 'Expired') await updateSeatOccupied(passengers, false);
+        const seatIds = passengers.map(passenger => passenger.seatId);
+        if (updatedOrder.orderStatus === 'Cancelled' || updatedOrder.orderStatus === 'Expired') await updateSeatOccupied(seatIds, false);
 
         res.status(200).json({
             success: true,

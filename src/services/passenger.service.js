@@ -2,10 +2,15 @@ import prisma from '../utils/prisma.js';
 
 export const createPassengers = async (request, orderId) => { 
     try {
-        const passengers = request.map(passenger => ({
-            ...passenger,
-            orderId
-        }));
+        const passengers = request.flatMap(passenger => 
+            passenger.seatId.map(seat => ({
+                ...passenger,
+                seatId: seat,
+                orderId
+            }))
+        );
+
+        console.log(passengers);
         
         return prisma.passenger.createMany({ //return { count } not passenger's data
             data: passengers,

@@ -20,7 +20,6 @@ export const getOrdersByUserId = async (userId) => {
 export const createOrder = async (request, paymentId, userId) => { 
     try {
         const returnTicketId = (request.isRoundTrip) ? request.returnTicketId : null;
-
         return prisma.order.create({
             data: {
                 userId,
@@ -67,10 +66,6 @@ export const updateOrderStatusByPaymentId = async (paymentId, paymentStatus) => 
             data: {
                 orderStatus
             },
-            include: {
-                Flight: true,
-                Payment: true
-            }
         });
     } catch (error) {
         console.error('Error updating order status:', error);
