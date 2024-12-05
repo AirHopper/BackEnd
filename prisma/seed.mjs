@@ -4,6 +4,64 @@ import haversine from "haversine";
 
 const prisma = new PrismaClient();
 
+async function flightCapacity(classType) {
+  // Define capacity based on classType
+  return classType === "Economy"
+    ? 72
+    : classType === "Premium_economy"
+    ? 24
+    : classType === "Business"
+    ? 18
+    : 6;
+}
+
+async function store(flightData) {
+  const {
+    class: classType,
+    discountId,
+    departureTime,
+    arrivalTime,
+    price = 500,
+  } = flightData;
+
+  // Calculate capacity dynamically
+  const capacity = await flightCapacity(classType);
+
+  // Create the flight with nested Seat and Ticket
+  return prisma.flight.create({
+    data: {
+      ...flightData,
+      capacity,
+      duration: (new Date(arrivalTime) - new Date(departureTime)) / 60000, // Duration in minutes
+      price, // Base price or dynamic pricing logic here
+      Seat: {
+        create: Array.from({ length: capacity }, (_, index) => ({
+          seatNumber: index + 1,
+          isOccupied: false,
+        })),
+      },
+      Ticket: {
+        create: {
+          routeId: flightData.routeId,
+          class: classType,
+          isTransits: false,
+          departureTime: new Date(departureTime),
+          arrivalTime: new Date(arrivalTime),
+          totalPrice: price,
+          discountPrice: discountId ? price * 0.9 : price, // Example discount logic (10% off if discountId exists)
+          totalDuration:
+            (new Date(arrivalTime) - new Date(departureTime)) / 60000, // Duration in minutes
+          discountId,
+        },
+      },
+    },
+    include: {
+      Seat: true,
+      Ticket: true,
+    },
+  });
+}
+
 async function seedAccounts() {
   const hashedPassword = await bcrypt.hash("12345678", 10);
 
@@ -129,11 +187,19 @@ async function seedAirports() {
 
 async function seedRoutes() {
   const routes = [
+    // Direct routes
     { departureAirportId: "JFK", arrivalAirportId: "LAX" },
     { departureAirportId: "JFK", arrivalAirportId: "SIN" },
     { departureAirportId: "LAX", arrivalAirportId: "SIN" },
     { departureAirportId: "SIN", arrivalAirportId: "CGK" },
     { departureAirportId: "CGK", arrivalAirportId: "DPS" },
+
+    // Transit routes
+    { departureAirportId: "JFK", arrivalAirportId: "CGK" }, // Transit possible via SIN = JFK -> SIN -> CGK
+    { departureAirportId: "LAX", arrivalAirportId: "CGK" }, // Transit possible via SIN = LAX -> SIN -> CGK
+    { departureAirportId: "JFK", arrivalAirportId: "DPS" }, // Transit possible via CGK or SIN = JFK -> CGK -> DPS or JFK -> SIN -> DPS
+    { departureAirportId: "SIN", arrivalAirportId: "DPS" }, // Direct or transit via CGK = SIN -> DPS or SIN -> CGK -> DPS
+    { departureAirportId: "LAX", arrivalAirportId: "DPS" }, // Transit possible via SIN or CGK = LAX -> SIN -> DPS or LAX -> CGK -> DPS
   ];
 
   for (const route of routes) {
@@ -147,7 +213,9 @@ async function seedRoutes() {
     });
 
     if (!departureAirport || !arrivalAirport) {
-      console.error(`Could not find airports for route: ${departureAirportId} -> ${arrivalAirportId}`);
+      console.error(
+        `Could not find airports for route: ${departureAirportId} -> ${arrivalAirportId}`
+      );
       continue;
     }
 
@@ -171,7 +239,11 @@ async function seedRoutes() {
       },
     });
 
-    console.log(`Route created: ${departureAirportId} -> ${arrivalAirportId}, Distance: ${distance.toFixed(2)} km`);
+    console.log(
+      `Route created: ${departureAirportId} -> ${arrivalAirportId}, Distance: ${distance.toFixed(
+        2
+      )} km`
+    );
   }
 }
 
@@ -291,6 +363,87 @@ async function seedAirplanes() {
   });
 }
 
+async function seedFlights() {
+  try {
+    const flights = [
+      {
+        routeId: 1, // JFK -> LAX
+        class: "Economy",
+        airplaneId: 1, // Boeing 737
+        departureTime: "2024-12-10T08:00:00Z",
+        arrivalTime: "2024-12-10T11:00:00Z",
+        baggage: 20,
+        cabinBaggage: 7,
+        entertainment: true,
+        departureTerminalId: 1, // JFK Terminal 1
+        arrivalTerminalId: 5, // LAX Terminal 1
+        discountId: null,
+      },
+      {
+        routeId: 2, // JFK -> SIN
+        class: "Business",
+        airplaneId: 2, // Airbus A380
+        departureTime: "2024-12-11T14:00:00Z",
+        arrivalTime: "2024-12-12T04:00:00Z",
+        baggage: 30,
+        cabinBaggage: 10,
+        entertainment: true,
+        departureTerminalId: 4, // JFK Terminal 4
+        arrivalTerminalId: 7, // SIN Terminal 2
+        discountId: null,
+      },
+      {
+        routeId: 3, // LAX -> SIN
+        class: "Economy",
+        airplaneId: 3, // Boeing 787 Dreamliner
+        departureTime: "2024-12-13T10:00:00Z",
+        arrivalTime: "2024-12-14T03:00:00Z",
+        baggage: 25,
+        cabinBaggage: 8,
+        entertainment: true,
+        departureTerminalId: 6, // LAX Terminal 2
+        arrivalTerminalId: 8, // SIN Terminal 3
+        discountId: null,
+      },
+      {
+        routeId: 4, // SIN -> CGK
+        class: "Economy",
+        airplaneId: 4, // Boeing 737 MAX
+        departureTime: "2024-12-15T07:00:00Z",
+        arrivalTime: "2024-12-15T09:30:00Z",
+        baggage: 20,
+        cabinBaggage: 7,
+        entertainment: false,
+        departureTerminalId: 9, // SIN Terminal 1
+        arrivalTerminalId: 12, // CGK Terminal 1
+        discountId: null,
+      },
+      {
+        routeId: 5, // CGK -> DPS
+        class: "Economy",
+        airplaneId: 5, // Airbus A320
+        departureTime: "2024-12-16T12:00:00Z",
+        arrivalTime: "2024-12-16T13:30:00Z",
+        baggage: 15,
+        cabinBaggage: 7,
+        entertainment: false,
+        departureTerminalId: 13, // CGK Terminal 3
+        arrivalTerminalId: 15, // DPS Terminal 2
+        discountId: null,
+      },
+    ];
+
+    for (const flightData of flights) {
+      const flight = await store(flightData);
+      console.log(`Flight created:`, flight);
+    }
+
+    console.log("Flights seeded successfully!");
+  } catch (error) {
+    console.error("Error seeding flights:", error);
+  }
+}
+
 async function main() {
   try {
     await seedAccounts();
@@ -300,6 +453,7 @@ async function main() {
     await seedTerminals();
     await seedAirlines();
     await seedAirplanes();
+    await seedFlights();
 
     console.log("Seeding completed successfully!");
   } catch (e) {
