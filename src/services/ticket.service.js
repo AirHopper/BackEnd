@@ -87,12 +87,6 @@ export const getAll = async ({ page = 1, limit = 10, search, orderBy = "price_as
 
     let { departureCity, arrivalCity, flightDate, classType, continent, isTransit } = search || {};
 
-    if (isTransit == 1) {
-      isTransit = true;
-    } else {
-      isTransit = false;
-    }
-
     const searchFilters = {
       AND: [
         ...(departureCity
@@ -157,7 +151,7 @@ export const getAll = async ({ page = 1, limit = 10, search, orderBy = "price_as
         ...(isTransit
           ? [
               {
-                isTransits: isTransit,
+                isTransits: isTransit === "1" ? true : false,
               },
             ]
           : []),
