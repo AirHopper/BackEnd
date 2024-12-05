@@ -22,7 +22,7 @@ export const getRoutesController = async (req, res, next) => {
     res.status(200).json({
       success: true,
       message: "Routes fetched successfully",
-      data: routes.routes,
+      data: routes,
       error: null,
     });
   } catch (error) {
