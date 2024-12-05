@@ -17,12 +17,12 @@ export default (app) => {
   router.use("/cities", cities);
   router.use("/airlines", airlines);
   router.use("/airplanes", airplanes);
-  router.use("/airports", airports); 
+  router.use("/airports", airports);
   router.use("/terminals", terminals);
   router.use("/auth", auth);
   router.use("/flights", flightRoutes);
-  router.use ("/tickets", tickets);
-  router.use("/users", users)
+  router.use("/tickets", tickets);
+  router.use("/users", users);
 
   app.use("/api/v1", router);
 };

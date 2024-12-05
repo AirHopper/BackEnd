@@ -6,7 +6,7 @@ import { generateOTP } from "../utils/otpgenerator.js";
 import { sendEmail } from "../utils/nodemailer.js";
 import { generateStrongPassword } from "../utils/passwordgenerator.js";
 import cleanUpAccountData from "../utils/cleanUpAccountData.js";
-import isValidEmail from "../utils/isValidEmail.js"
+import isValidEmail from "../utils/isValidEmail.js";
 import ejs from "ejs";
 import path from "path";
 
@@ -157,9 +157,7 @@ export const googleLogin = async (userData) => {
   try {
     const { accessToken } = userData;
 
-    const response = await fetch(
-      `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${accessToken}`
-    );
+    const response = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${accessToken}`);
     if (!response.ok) {
       throw new customError("Invalid access token", 400);
     }
@@ -208,7 +206,7 @@ export const forgotPassword = async (userData) => {
     });
 
     if (!account) {
-      throw new customError('Invalid email', 404);
+      throw new customError("Invalid email", 404);
     }
 
     const token = getToken({ id: account.id, email: account.email });

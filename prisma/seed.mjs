@@ -147,9 +147,7 @@ async function seedRoutes() {
     });
 
     if (!departureAirport || !arrivalAirport) {
-      console.error(
-        `Could not find airports for route: ${departureAirportId} -> ${arrivalAirportId}`
-      );
+      console.error(`Could not find airports for route: ${departureAirportId} -> ${arrivalAirportId}`);
       continue;
     }
 
@@ -173,11 +171,7 @@ async function seedRoutes() {
       },
     });
 
-    console.log(
-      `Route created: ${departureAirportId} -> ${arrivalAirportId}, Distance: ${distance.toFixed(
-        2
-      )} km`
-    );
+    console.log(`Route created: ${departureAirportId} -> ${arrivalAirportId}, Distance: ${distance.toFixed(2)} km`);
   }
 }
 

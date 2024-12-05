@@ -25,7 +25,6 @@ async function validateFlights({ routeId, flightIds }) {
     throw new AppError("Some flights could not be found", 400);
   }
 
-  // Validate first and last flights match the route's airports
   const firstFlight = flights[0];
   const lastFlight = flights[flights.length - 1];
 
@@ -43,8 +42,15 @@ async function validateFlights({ routeId, flightIds }) {
     }
   }
 
-  if (firstFlight.Route.DepartureAirport.id !== route.DepartureAirport.id || lastFlight.Route.ArrivalAirport.id !== route.ArrivalAirport.id) {
-    throw new AppError("First flight's departure or last flight's arrival does not match the route", 400);
+  // Validate first and last flights match the route's airports
+  if (
+    firstFlight.Route.DepartureAirport.id !== route.DepartureAirport.id ||
+    lastFlight.Route.ArrivalAirport.id !== route.ArrivalAirport.id
+  ) {
+    throw new AppError(
+      "First flight's departure or last flight's arrival does not match the route",
+      400
+    );
   }
 
   // Validate connecting airports and sequence
