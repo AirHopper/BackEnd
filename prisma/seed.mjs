@@ -18,7 +18,6 @@ async function flightCapacity(classType) {
 async function store(flightData) {
   const {
     class: classType,
-    discountId,
     departureTime,
     arrivalTime,
     price = 500,
@@ -47,11 +46,9 @@ async function store(flightData) {
           isTransits: false,
           departureTime: new Date(departureTime),
           arrivalTime: new Date(arrivalTime),
-          totalPrice: price,
-          discountPrice: discountId ? price * 0.9 : price, // Example discount logic (10% off if discountId exists)
+          totalPrice: price,  
           totalDuration:
             (new Date(arrivalTime) - new Date(departureTime)) / 60000, // Duration in minutes
-          discountId,
         },
       },
     },
@@ -104,14 +101,14 @@ async function seedCities() {
         code: "NYC",
         country: "United States",
         countryCode: "US",
-        continent: Continent.America,
+        continent: Continent.Amerika,
       },
       {
         name: "Los Angeles",
         code: "LAX",
         country: "United States",
         countryCode: "US",
-        continent: Continent.America,
+        continent: Continent.Amerika,
       },
       {
         name: "Singapore",
@@ -143,19 +140,19 @@ async function seedAirports() {
     data: [
       {
         iataCode: "JFK",
-        name: "John F. Kennedy International Airport",
+        name: "John F. Kennedy Internasional Airport",
         cityId: "NYC",
         latitude: 40.6413,
         longitude: -73.7781,
-        type: RegionType.International,
+        type: RegionType.Internasional,
       },
       {
         iataCode: "LAX",
-        name: "Los Angeles International Airport",
+        name: "Los Angeles Internasional Airport",
         cityId: "LAX",
         latitude: 33.9416,
         longitude: -118.4085,
-        type: RegionType.International,
+        type: RegionType.Internasional,
       },
       {
         iataCode: "SIN",
@@ -163,23 +160,23 @@ async function seedAirports() {
         cityId: "SIN",
         latitude: 1.3644,
         longitude: 103.9915,
-        type: RegionType.International,
+        type: RegionType.Internasional,
       },
       {
         iataCode: "CGK",
-        name: "Soekarno-Hatta International Airport",
+        name: "Soekarno-Hatta Internasional Airport",
         cityId: "JKT",
         latitude: -6.1256,
         longitude: 106.6559,
-        type: RegionType.International,
+        type: RegionType.Internasional,
       },
       {
         iataCode: "DPS",
-        name: "Ngurah Rai International Airport",
+        name: "Ngurah Rai Internasional Airport",
         cityId: "DPS",
         latitude: -8.7482,
         longitude: 115.1675,
-        type: RegionType.International,
+        type: RegionType.Internasional,
       },
     ],
   });
@@ -252,62 +249,62 @@ async function seedTerminals() {
     data: [
       {
         name: "Terminal 1",
-        type: RegionType.International,
+        type: RegionType.Internasional,
         airportId: "JFK",
       },
-      { name: "Terminal 2", type: RegionType.Domestic, airportId: "JFK" },
+      { name: "Terminal 2", type: RegionType.Domestik, airportId: "JFK" },
       {
         name: "Terminal 4",
-        type: RegionType.International,
+        type: RegionType.Internasional,
         airportId: "JFK",
       },
-      { name: "Terminal 5", type: RegionType.Domestic, airportId: "JFK" },
-      { name: "Terminal 1", type: RegionType.Domestic, airportId: "LAX" },
+      { name: "Terminal 5", type: RegionType.Domestik, airportId: "JFK" },
+      { name: "Terminal 1", type: RegionType.Domestik, airportId: "LAX" },
       {
         name: "Terminal 2",
-        type: RegionType.International,
+        type: RegionType.Internasional,
         airportId: "LAX",
       },
       {
-        name: "Tom Bradley International Terminal",
-        type: RegionType.International,
+        name: "Tom Bradley Internasional Terminal",
+        type: RegionType.Internasional,
         airportId: "LAX",
       },
       {
         name: "Terminal 1",
-        type: RegionType.International,
+        type: RegionType.Internasional,
         airportId: "SIN",
       },
       {
         name: "Terminal 2",
-        type: RegionType.International,
+        type: RegionType.Internasional,
         airportId: "SIN",
       },
       {
         name: "Terminal 3",
-        type: RegionType.International,
+        type: RegionType.Internasional,
         airportId: "SIN",
       },
       {
         name: "Terminal 4",
-        type: RegionType.International,
+        type: RegionType.Internasional,
         airportId: "SIN",
       },
-      { name: "Terminal 1", type: RegionType.Domestic, airportId: "CGK" },
+      { name: "Terminal 1", type: RegionType.Domestik, airportId: "CGK" },
       {
         name: "Terminal 2",
-        type: RegionType.International,
+        type: RegionType.Internasional,
         airportId: "CGK",
       },
       {
         name: "Terminal 3",
-        type: RegionType.International,
+        type: RegionType.Internasional,
         airportId: "CGK",
       },
-      { name: "Terminal 1", type: RegionType.Domestic, airportId: "DPS" },
+      { name: "Terminal 1", type: RegionType.Domestik, airportId: "DPS" },
       {
         name: "Terminal 2",
-        type: RegionType.International,
+        type: RegionType.Internasional,
         airportId: "DPS",
       },
     ],
@@ -317,7 +314,7 @@ async function seedTerminals() {
 async function seedAirlines() {
   await prisma.airline.createMany({
     data: [
-      { iataCode: "AA", name: "American Airlines" },
+      { iataCode: "AA", name: "Amerikan Airlines" },
       { iataCode: "SQ", name: "Singapore Airlines" },
       { iataCode: "DL", name: "Delta Airlines" },
       { iataCode: "GA", name: "Garuda Indonesia" },
@@ -331,31 +328,31 @@ async function seedAirplanes() {
     data: [
       {
         name: "Boeing 737",
-        type: RegionType.Domestic,
+        type: RegionType.Domestik,
         pricePerKm: 2000.0,
         airlineId: "AA",
       },
       {
         name: "Airbus A380",
-        type: RegionType.International,
+        type: RegionType.Internasional,
         pricePerKm: 3000.0,
         airlineId: "SQ",
       },
       {
         name: "Boeing 787 Dreamliner",
-        type: RegionType.International,
+        type: RegionType.Internasional,
         pricePerKm: 2500.0,
         airlineId: "DL",
       },
       {
         name: "Boeing 737 MAX",
-        type: RegionType.Domestic,
+        type: RegionType.Domestik,
         pricePerKm: 1800.0,
         airlineId: "GA",
       },
       {
         name: "Airbus A320",
-        type: RegionType.Domestic,
+        type: RegionType.Domestik,
         pricePerKm: 1500.0,
         airlineId: "QZ",
       },
@@ -377,7 +374,6 @@ async function seedFlights() {
         entertainment: true,
         departureTerminalId: 1, // JFK Terminal 1
         arrivalTerminalId: 5, // LAX Terminal 1
-        discountId: null,
       },
       {
         routeId: 2, // JFK -> SIN
@@ -390,7 +386,6 @@ async function seedFlights() {
         entertainment: true,
         departureTerminalId: 4, // JFK Terminal 4
         arrivalTerminalId: 7, // SIN Terminal 2
-        discountId: null,
       },
       {
         routeId: 3, // LAX -> SIN
@@ -403,7 +398,6 @@ async function seedFlights() {
         entertainment: true,
         departureTerminalId: 6, // LAX Terminal 2
         arrivalTerminalId: 8, // SIN Terminal 3
-        discountId: null,
       },
       {
         routeId: 4, // SIN -> CGK
@@ -416,7 +410,6 @@ async function seedFlights() {
         entertainment: false,
         departureTerminalId: 9, // SIN Terminal 1
         arrivalTerminalId: 12, // CGK Terminal 1
-        discountId: null,
       },
       {
         routeId: 5, // CGK -> DPS
@@ -429,7 +422,6 @@ async function seedFlights() {
         entertainment: false,
         departureTerminalId: 13, // CGK Terminal 3
         arrivalTerminalId: 15, // DPS Terminal 2
-        discountId: null,
       },
     ];
 
