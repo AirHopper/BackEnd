@@ -292,6 +292,7 @@ export const getById = async (id) => {
     const totalSeats = flight.Seat.length;
     const occupiedSeats = flight.Seat.filter((seat) => seat.isOccupied).length;
     const availableSeats = totalSeats - occupiedSeats;
+
     const formattedFlight = {
       id: flight.id,
       class: flight.class,

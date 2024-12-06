@@ -202,6 +202,11 @@ export const getAll = async ({ page = 1, limit = 10, search, orderBy = "price_as
             },
             DepartureTerminal: true,
             ArrivalTerminal: true,
+            Seat: {
+              select: {
+                isOccupied: true,
+              },
+            },
           },
         },
         Route: {
@@ -267,62 +272,71 @@ export const getAll = async ({ page = 1, limit = 10, search, orderBy = "price_as
         },
         continent: ticket.Route.ArrivalAirport.City.continent,
       },
-      flights: ticket.Flights.map((flight) => ({
-        id: flight.id,
-        duration: flight.duration,
-        baggage: flight.baggage,
-        cabinBaggage: flight.cabinBaggage,
-        entertainment: flight.entertainment,
-        airline: flight.Airplane.Airline.name,
-        airplane: flight.Airplane.name,
-        departure: {
-          time: flight.departureTime,
-          airport: {
-            name: flight.Route.DepartureAirport.name,
-            code: flight.Route.DepartureAirport.iataCode,
-            type: flight.Route.DepartureAirport.type,
+      flights: ticket.Flights.map((flight) => {
+        const totalSeats = flight.Seat.length;
+        const occupiedSeats = flight.Seat.filter((seat) => seat.isOccupied).length;
+        const availableSeats = totalSeats - occupiedSeats;
+
+        return {
+          id: flight.id,
+          duration: flight.duration,
+          baggage: flight.baggage,
+          cabinBaggage: flight.cabinBaggage,
+          entertainment: flight.entertainment,
+          airline: flight.Airplane.Airline.name,
+          airplane: flight.Airplane.name,
+          departure: {
+            time: flight.departureTime,
+            airport: {
+              name: flight.Route.DepartureAirport.name,
+              code: flight.Route.DepartureAirport.iataCode,
+              type: flight.Route.DepartureAirport.type,
+            },
+            city: {
+              name: flight.Route.DepartureAirport.City.name,
+              code: flight.Route.DepartureAirport.City.code,
+              image: flight.Route.DepartureAirport.City.imageUrl,
+            },
+            country: {
+              name: flight.Route.DepartureAirport.City.country,
+              code: flight.Route.DepartureAirport.City.countryCode,
+            },
+            terminal: flight.DepartureTerminal
+              ? {
+                  name: flight.DepartureTerminal.name,
+                  type: flight.DepartureTerminal.type,
+                }
+              : null,
           },
-          city: {
-            name: flight.Route.DepartureAirport.City.name,
-            code: flight.Route.DepartureAirport.City.code,
-            image: flight.Route.DepartureAirport.City.imageUrl,
+          arrival: {
+            time: flight.arrivalTime,
+            airport: {
+              name: flight.Route.ArrivalAirport.name,
+              code: flight.Route.ArrivalAirport.iataCode,
+              type: flight.Route.ArrivalAirport.type,
+            },
+            city: {
+              name: flight.Route.ArrivalAirport.City.name,
+              code: flight.Route.ArrivalAirport.City.code,
+              image: flight.Route.ArrivalAirport.City.imageUrl,
+            },
+            country: {
+              name: flight.Route.ArrivalAirport.City.country,
+              code: flight.Route.ArrivalAirport.City.countryCode,
+            },
+            continent: flight.Route.ArrivalAirport.City.continent,
+            terminal: flight.ArrivalTerminal
+              ? {
+                  name: flight.ArrivalTerminal.name,
+                  type: flight.ArrivalTerminal.type,
+                }
+              : null,
           },
-          country: {
-            name: flight.Route.DepartureAirport.City.country,
-            code: flight.Route.DepartureAirport.City.countryCode,
-          },
-          terminal: flight.DepartureTerminal
-            ? {
-                name: flight.DepartureTerminal.name,
-                type: flight.DepartureTerminal.type,
-              }
-            : null,
-        },
-        arrival: {
-          time: flight.arrivalTime,
-          airport: {
-            name: flight.Route.ArrivalAirport.name,
-            code: flight.Route.ArrivalAirport.iataCode,
-            type: flight.Route.ArrivalAirport.type,
-          },
-          city: {
-            name: flight.Route.ArrivalAirport.City.name,
-            code: flight.Route.ArrivalAirport.City.code,
-            image: flight.Route.ArrivalAirport.City.imageUrl,
-          },
-          country: {
-            name: flight.Route.ArrivalAirport.City.country,
-            code: flight.Route.ArrivalAirport.City.countryCode,
-          },
-          continent: flight.Route.ArrivalAirport.City.continent,
-          terminal: flight.ArrivalTerminal
-            ? {
-                name: flight.ArrivalTerminal.name,
-                type: flight.ArrivalTerminal.type,
-              }
-            : null,
-        },
-      })),
+          totalSeats,
+          occupiedSeats,
+          availableSeats,
+        };
+      }),
     }));
 
     const totalTickets = await prisma.ticket.count({ where: searchFilters });
@@ -351,9 +365,14 @@ export const getAll = async ({ page = 1, limit = 10, search, orderBy = "price_as
 // TODO Get ticket by ID
 export const getById = async (id) => {
   try {
-    // Fetch ticket by ID, including all necessary relations
+    if (isNaN(id)) {
+      throw new AppError("Invalid flight ID", 400);
+    }
+
     const ticket = await prisma.ticket.findUnique({
-      where: { id },
+      where: {
+        id,
+      },
       include: {
         Flights: {
           include: {
@@ -378,6 +397,7 @@ export const getById = async (id) => {
             },
             DepartureTerminal: true,
             ArrivalTerminal: true,
+            Seat: true,
           },
         },
         Route: {
@@ -397,12 +417,10 @@ export const getById = async (id) => {
       },
     });
 
-    // If ticket is not found
     if (!ticket) {
-      return null;
+      throw new AppError("Tiket not found", 404);
     }
 
-    // Format the ticket response
     const formattedTicket = {
       id: ticket.id,
       class: ticket.class,
@@ -445,68 +463,77 @@ export const getById = async (id) => {
         },
         continent: ticket.Route.ArrivalAirport.City.continent,
       },
-      flights: ticket.Flights.map((flight) => ({
-        id: flight.id,
-        duration: flight.duration,
-        baggage: flight.baggage,
-        cabinBaggage: flight.cabinBaggage,
-        entertainment: flight.entertainment,
-        airline: flight.Airplane.Airline.name,
-        airplane: flight.Airplane.name,
-        departure: {
-          time: flight.departureTime,
-          airport: {
-            name: flight.Route.DepartureAirport.name,
-            code: flight.Route.DepartureAirport.iataCode,
-            type: flight.Route.DepartureAirport.type,
+      flights: ticket.Flights.map((flight) => {
+        const totalSeats = flight.Seat.length;
+        const occupiedSeats = flight.Seat.filter((seat) => seat.isOccupied).length;
+        const availableSeats = totalSeats - occupiedSeats;
+
+        return {
+          id: flight.id,
+          duration: flight.duration,
+          baggage: flight.baggage,
+          cabinBaggage: flight.cabinBaggage,
+          entertainment: flight.entertainment,
+          airline: flight.Airplane.Airline.name,
+          airplane: flight.Airplane.name,
+          departure: {
+            time: flight.departureTime,
+            airport: {
+              name: flight.Route.DepartureAirport.name,
+              code: flight.Route.DepartureAirport.iataCode,
+              type: flight.Route.DepartureAirport.type,
+            },
+            city: {
+              name: flight.Route.DepartureAirport.City.name,
+              code: flight.Route.DepartureAirport.City.code,
+              image: flight.Route.DepartureAirport.City.imageUrl,
+            },
+            country: {
+              name: flight.Route.DepartureAirport.City.country,
+              code: flight.Route.DepartureAirport.City.countryCode,
+            },
+            terminal: flight.DepartureTerminal
+              ? {
+                  name: flight.DepartureTerminal.name,
+                  type: flight.DepartureTerminal.type,
+                }
+              : null,
           },
-          city: {
-            name: flight.Route.DepartureAirport.City.name,
-            code: flight.Route.DepartureAirport.City.code,
-            image: flight.Route.DepartureAirport.City.imageUrl,
+          arrival: {
+            time: flight.arrivalTime,
+            airport: {
+              name: flight.Route.ArrivalAirport.name,
+              code: flight.Route.ArrivalAirport.iataCode,
+              type: flight.Route.ArrivalAirport.type,
+            },
+            city: {
+              name: flight.Route.ArrivalAirport.City.name,
+              code: flight.Route.ArrivalAirport.City.code,
+              image: flight.Route.ArrivalAirport.City.imageUrl,
+            },
+            country: {
+              name: flight.Route.ArrivalAirport.City.country,
+              code: flight.Route.ArrivalAirport.City.countryCode,
+            },
+            continent: flight.Route.ArrivalAirport.City.continent,
+            terminal: flight.ArrivalTerminal
+              ? {
+                  name: flight.ArrivalTerminal.name,
+                  type: flight.ArrivalTerminal.type,
+                }
+              : null,
           },
-          country: {
-            name: flight.Route.DepartureAirport.City.country,
-            code: flight.Route.DepartureAirport.City.countryCode,
-          },
-          terminal: flight.DepartureTerminal
-            ? {
-                name: flight.DepartureTerminal.name,
-                type: flight.DepartureTerminal.type,
-              }
-            : null,
-        },
-        arrival: {
-          time: flight.arrivalTime,
-          airport: {
-            name: flight.Route.ArrivalAirport.name,
-            code: flight.Route.ArrivalAirport.iataCode,
-            type: flight.Route.ArrivalAirport.type,
-          },
-          city: {
-            name: flight.Route.ArrivalAirport.City.name,
-            code: flight.Route.ArrivalAirport.City.code,
-            image: flight.Route.ArrivalAirport.City.imageUrl,
-          },
-          country: {
-            name: flight.Route.ArrivalAirport.City.country,
-            code: flight.Route.ArrivalAirport.City.countryCode,
-          },
-          continent: flight.Route.ArrivalAirport.City.continent,
-          terminal: flight.ArrivalTerminal
-            ? {
-                name: flight.ArrivalTerminal.name,
-                type: flight.ArrivalTerminal.type,
-              }
-            : null,
-        },
-      })),
+          totalSeats,
+          occupiedSeats,
+          availableSeats,
+        };
+      }),
     };
 
     return formattedTicket;
   } catch (error) {
     console.error("Error fetching ticket by ID:", error);
-    throw new Error("Failed to retrieve ticket.");
+    throw error;
   }
 };
 
