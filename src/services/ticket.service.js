@@ -43,8 +43,14 @@ async function validateFlights({ routeId, flightIds }) {
   }
 
   // Validate first and last flights match the route's airports
-  if (firstFlight.Route.DepartureAirport.id !== route.DepartureAirport.id || lastFlight.Route.ArrivalAirport.id !== route.ArrivalAirport.id) {
-    throw new AppError("First flight's departure or last flight's arrival does not match the route", 400);
+  if (
+    firstFlight.Route.DepartureAirport.id !== route.DepartureAirport.id ||
+    lastFlight.Route.ArrivalAirport.id !== route.ArrivalAirport.id
+  ) {
+    throw new AppError(
+      "First flight's departure or last flight's arrival does not match the route",
+      400
+    );
   }
 
   // Validate connecting airports and sequence
@@ -52,7 +58,10 @@ async function validateFlights({ routeId, flightIds }) {
     const currentFlight = flights[i];
     const nextFlight = flights[i + 1];
 
-    if (currentFlight.Route.ArrivalAirport.id !== nextFlight.Route.DepartureAirport.id) {
+    if (
+      currentFlight.Route.ArrivalAirport.id !==
+      nextFlight.Route.DepartureAirport.id
+    ) {
       throw new AppError("Connecting flights do not match", 400);
     }
 
@@ -66,20 +75,52 @@ async function validateFlights({ routeId, flightIds }) {
 
 // Calculate total price of all flights
 function calculatePrice(flights) {
-  return flights.reduce((total, flight) => total + flight.price, 0);
+  return flights.reduce((total, flight) => total + parseInt(flight.price), 0);
 }
 
-// Calculate total duration of all flights
+// Calculate total duration of all flights, including transit times
 function calculateDuration(flights) {
-  return flights.reduce((total, flight) => total + flight.duration, 0);
+  return flights.reduce((total, flight, index) => {
+    if (index === 0) {
+      return total + parseInt(flight.duration);
+    }
+
+    // Add transit time between current flight and the previous flight
+    const previousFlight = flights[index - 1];
+    const transitTime = calculateTransitTime(
+      previousFlight.arrivalTime,
+      flight.departureTime
+    );
+
+    return total + parseInt(flight.duration) + transitTime;
+  }, 0);
+}
+
+// Helper function to calculate transit time in minutes
+function calculateTransitTime(arrivalTime, departureTime) {
+  const arrival = new Date(arrivalTime);
+  const departure = new Date(departureTime);
+  return Math.max(0, (departure - arrival) / (1000 * 60)); 
 }
 
 // TODO Get all tickets
-export const getAll = async ({ page = 1, limit = 10, search, orderBy = "price_asc" }) => {
+export const getAll = async ({
+  page = 1,
+  limit = 10,
+  search,
+  orderBy = "price_asc",
+}) => {
   try {
     const offset = (page - 1) * limit;
 
-    let { departureCity, arrivalCity, flightDate, classType, continent, isTransit } = search || {};
+    let {
+      departureCity,
+      arrivalCity,
+      flightDate,
+      classType,
+      continent,
+      isTransit,
+    } = search || {};
 
     const searchFilters = {
       AND: [
@@ -117,7 +158,11 @@ export const getAll = async ({ page = 1, limit = 10, search, orderBy = "price_as
               {
                 departureTime: {
                   gte: new Date(flightDate),
-                  lt: new Date(new Date(flightDate).setDate(new Date(flightDate).getDate() + 1)),
+                  lt: new Date(
+                    new Date(flightDate).setDate(
+                      new Date(flightDate).getDate() + 1
+                    )
+                  ),
                 },
               },
             ]
@@ -618,7 +663,9 @@ export const update = async (id, payload) => {
 
       await Promise.all(updatePromises);
 
-      return { message: "All related tickets updated successfully (isTransits=false)" };
+      return {
+        message: "All related tickets updated successfully (isTransits=false)",
+      };
     }
   } catch (error) {
     console.error("Error updating ticket:", error);
