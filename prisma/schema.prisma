@@ -14,7 +14,7 @@ enum Role {
   Buyer
 }
 
-enum TicketStatus {
+enum OrderStatus {
   Issued
   Unpaid
   Cancelled
@@ -232,17 +232,17 @@ model Flight {
 }
 
 model Order {
-  id               Int          @id @default(autoincrement())
-  userId           Int          @map("user_id")
-  paymentId        Int          @unique @map("payment_id")
-  qrCodeUrl        String       @map("qr_code_url")
-  bookingDate      DateTime     @default(now()) @map("booking_date")
-  ticketStatus     TicketStatus @default(Unpaid) @map("ticket_status")
-  isRoundTrip      Boolean      @default(false)
-  outboundTicketId Int          @unique @map("outbound_ticket_id")
-  returnTicketId   Int?         @unique @map("return_ticket_id")
-  createdAt        DateTime     @default(now()) @map("created_at")
-  updatedAt        DateTime     @updatedAt @map("updated_at")
+  id               Int         @id @default(autoincrement())
+  userId           Int         @map("user_id")
+  paymentId        Int         @unique @map("payment_id")
+  qrCodeUrl        String      @map("qr_code_url")
+  bookingDate      DateTime    @default(now()) @map("booking_date")
+  orderStatus      OrderStatus @default(Unpaid) @map("ticket_status")
+  isRoundTrip      Boolean     @default(false)
+  outboundTicketId Int         @unique @map("outbound_ticket_id")
+  returnTicketId   Int?        @unique @map("return_ticket_id")
+  createdAt        DateTime    @default(now()) @map("created_at")
+  updatedAt        DateTime    @updatedAt @map("updated_at")
 
   User           User    @relation(fields: [userId], references: [id])
   Payment        Payment @relation(fields: [paymentId], references: [id])
