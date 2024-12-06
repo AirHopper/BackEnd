@@ -39,10 +39,9 @@ export const createPaymentByBankTransfer = async (request) => {
     }
 }
 
-export const createPaymentByCreditCard = async (request, price) => {
+export const createPaymentByCreditCard = async (request) => {
     try {
         const orderId = 'airHopper-' + nanoid(10);
-        const totalPrice = price * request.passengers.length;
         const cardData = {
             ...request.card,
             client_key: MIDTRANS_CLIENT_KEY
@@ -54,7 +53,7 @@ export const createPaymentByCreditCard = async (request, price) => {
         const parameter = {
             payment_type: 'credit_card',
             transaction_details: {
-                gross_amount: totalPrice,
+                gross_amount: request.finalPrice,
                 order_id: orderId,
             },
             credit_card: {

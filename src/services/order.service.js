@@ -1,14 +1,96 @@
 import prisma from '../utils/prisma.js';
 
-export const getOrdersByUserId = async (userId) => {
+export const getAllUserOwnedOrders = async (userId) => {
     try {
         return prisma.order.findMany({
             where: {
                 userId
             },
             include: {
-                Flight: true,
-                Payment: true
+                OutboundTicket: {
+                    include: {
+                        Flights: {
+                            include: {
+                                Route: true,
+                                Airplane: {
+                                    include: {
+                                        Airline: true
+                                    }
+                                },
+                                DepartureTerminal: true,
+                                ArrivalTerminal: true
+                            }
+                        },
+                        Route: {
+                            include: {
+                                DepartureAirport: {
+                                    include: {
+                                        City: true
+                                    }
+                                },
+                                ArrivalAirport: {
+                                    include: {
+                                        City: true
+                                    }
+                                }
+                            }   
+                        },
+                        Discount: true
+                    }
+                },
+                ReturnTicket: {
+                    include: {
+                        Flights: {
+                            include: {
+                                Route: true,
+                                Airplane: {
+                                    include: {
+                                        Airline: true
+                                    }
+                                },
+                                DepartureTerminal: true,
+                                ArrivalTerminal: true
+                            }
+                        },
+                        Route: {
+                            include: {
+                                DepartureAirport: {
+                                    include: {
+                                        City: true
+                                    }
+                                },
+                                ArrivalAirport: {
+                                    include: {
+                                        City: true
+                                    }
+                                }
+                            }   
+                        },
+                        Discount: true
+                    }
+                },
+                Payment: true,
+                Passengers: {
+                    include: {
+                        Seat: {
+                            include: {
+                                Flight: {
+                                    include: {
+                                        Route: true,
+                                        Airplane: {
+                                            include: {
+                                                Airline: true
+                                            }
+                                        },
+                                        DepartureTerminal: true,
+                                        ArrivalTerminal: true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                User: true
             }
         });
     } catch (error) {
@@ -17,15 +99,117 @@ export const getOrdersByUserId = async (userId) => {
     }
 }
 
+export const getUserOwnedOrderById = async (id, userId) => {
+    try {
+        return prisma.order.findUnique({
+            where: {
+                id,
+                userId
+            },
+            include: {
+                OutboundTicket: {
+                    include: {
+                        Flights: {
+                            include: {
+                                Route: true,
+                                Airplane: {
+                                    include: {
+                                        Airline: true
+                                    }
+                                },
+                                DepartureTerminal: true,
+                                ArrivalTerminal: true
+                            }
+                        },
+                        Route: {
+                            include: {
+                                DepartureAirport: {
+                                    include: {
+                                        City: true
+                                    }
+                                },
+                                ArrivalAirport: {
+                                    include: {
+                                        City: true
+                                    }
+                                }
+                            }   
+                        },
+                        Discount: true
+                    }
+                },
+                ReturnTicket: {
+                    include: {
+                        Flights: {
+                            include: {
+                                Route: true,
+                                Airplane: {
+                                    include: {
+                                        Airline: true
+                                    }
+                                },
+                                DepartureTerminal: true,
+                                ArrivalTerminal: true
+                            }
+                        },
+                        Route: {
+                            include: {
+                                DepartureAirport: {
+                                    include: {
+                                        City: true
+                                    }
+                                },
+                                ArrivalAirport: {
+                                    include: {
+                                        City: true
+                                    }
+                                }
+                            }   
+                        },
+                        Discount: true
+                    }
+                },
+                Payment: true,
+                Passengers: {
+                    include: {
+                        Seat: {
+                            include: {
+                                Flight: {
+                                    include: {
+                                        Route: true,
+                                        Airplane: {
+                                            include: {
+                                                Airline: true
+                                            }
+                                        },
+                                        DepartureTerminal: true,
+                                        ArrivalTerminal: true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                User: true
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching ticket:', error);
+        throw error;
+    }
+}
+
 export const createOrder = async (request, paymentId, userId) => { 
     try {
-        const returnTicketId = (request.isRoundTrip) ? request.returnTicketId : null;
+        const returnTicketId = (request.returnTicketId) ? request.returnTicketId : null;
+        const isRoundTrip = (request.returnTicketId) ? true : false;
+
         return prisma.order.create({
             data: {
                 userId,
                 paymentId,
+                isRoundTrip,
                 qrCodeUrl: 'test',
-                isRoundTrip: request.isRoundTrip,
                 outboundTicketId: request.outboundTicketId,
                 returnTicketId,
             }

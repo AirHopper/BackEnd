@@ -4,7 +4,7 @@ import { isValidSignatureMidtrans } from "../utils/midtrans.js";
 import { updateSeatOccupied } from "../services/seat.service.js";
 import { getPassegersByOrderId } from "../services/passenger.service.js";
 import AppError from '../utils/AppError.js';
-import { getAccountByUserId } from "../services/auth.service.js";
+import { getUser } from "../services/auth.service.js";
 import { sendEmail } from "../utils/nodemailer.js";
 
 export const createByBankTransfer = async (req, res, next) => {
@@ -44,15 +44,13 @@ export const notifications = async (req, res, next) => {
         if (!payment) throw new AppError('Payment not found', 404);
         const updatedPayment = await updatePaymentStatusById(payment.id, req.body);
         const updatedOrder = await updateOrderStatusByPaymentId(updatedPayment.id, updatedPayment.status);
-        const account = await getAccountByUserId(updatedOrder.user.id);
+        const account = await getUser(updatedOrder.User.accountId);
         const passengers = await getPassegersByOrderId(updatedOrder.id);
         const seatIds = passengers.map(passenger => passenger.seatId);
         if (updatedOrder.orderStatus === 'Cancelled' || updatedOrder.orderStatus === 'Expired') await updateSeatOccupied(seatIds, false);
         if (updatedOrder.orderStatus === 'Issued') {
-            const email = sendEmail(account.email, 'Invoice Payment', `Invoice for order ${updatedOrder.id} in airHopper`);
-            if (!email) throw new AppError('Failed to send email', 500);
+            sendEmail(account.email, 'Invoice Payment', `Invoice for order ${updatedOrder.id} in airHopper`);
         }
-
         res.status(200).json({
             success: true,
             message: 'Payment Webhook processed successfully',
