@@ -29,9 +29,9 @@ enum ClassType {
 }
 
 enum PassengerType {
-  Adult
-  Child
-  Baby
+  Dewasa
+  Anak
+  Bayi
 }
 
 enum TitleType {
@@ -40,16 +40,16 @@ enum TitleType {
 }
 
 enum RegionType {
-  Domestic
-  International
+  Domestik
+  Internasional
 }
 
 enum Continent {
-  Africa
-  America
+  Afrika
+  Amerika
   Asia
-  Europe
-  Oceania
+  Europa
+  Australia
 }
 
 model Account {

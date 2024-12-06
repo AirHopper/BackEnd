@@ -9,7 +9,6 @@ import { sendEmail } from "../utils/nodemailer.js";
 
 export const createByBankTransfer = async (req, res, next) => {
     try {
-        console.log(req.body)
         const payment = await createPaymentByBankTransfer(req.body);
         res.status(201).json({
             success: true,
@@ -17,14 +16,13 @@ export const createByBankTransfer = async (req, res, next) => {
             data: payment
         });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         next(error);
     }
 }
 
 export const createByCreditCard = async (req, res, next) => {
     try {
-        console.log(req.body)
         const payment = await createPaymentByCreditCard(req.body);
         res.status(201).json({
             success: true,
@@ -32,7 +30,7 @@ export const createByCreditCard = async (req, res, next) => {
             data: payment
         });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         next(error);
     }
 }
@@ -50,8 +48,8 @@ export const notifications = async (req, res, next) => {
         const passengers = await getPassegersByOrderId(updatedOrder.id);
         const seatIds = passengers.map(passenger => passenger.seatId);
         if (updatedOrder.orderStatus === 'Cancelled' || updatedOrder.orderStatus === 'Expired') await updateSeatOccupied(seatIds, false);
-        if (updatedOrder.oderStatus === 'Issued') {
-            const email = await sendEmail(account.email, 'Invoice Payment', `Invoice for order ${updatedOrder.id} in airHopper`);
+        if (updatedOrder.orderStatus === 'Issued') {
+            const email = sendEmail(account.email, 'Invoice Payment', `Invoice for order ${updatedOrder.id} in airHopper`);
             if (!email) throw new AppError('Failed to send email', 500);
         }
 
@@ -61,7 +59,7 @@ export const notifications = async (req, res, next) => {
             data: updatedOrder
         });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         next(error);
     }
 }

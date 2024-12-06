@@ -15,7 +15,7 @@ export const getManyByUserId = async (req, res, next) => {
             data: orders
         });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         next(error);
     }
 }
@@ -49,7 +49,7 @@ export const createByBank = async (req, res, next) => {
             data: order
         });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         next(error);
     }
 }
@@ -70,7 +70,7 @@ export const createByCreditCard = async (req, res, next) => {
         //     data: order
         // });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         next(error);
     }
 }
