@@ -237,7 +237,7 @@ model Order {
   paymentId        Int         @unique @map("payment_id")
   qrCodeUrl        String      @map("qr_code_url")
   bookingDate      DateTime    @default(now()) @map("booking_date")
-  orderStatus      OrderStatus @default(Unpaid) @map("ticket_status")
+  orderStatus      OrderStatus @default(Unpaid) @map("order_status")
   isRoundTrip      Boolean     @default(false)
   outboundTicketId Int         @unique @map("outbound_ticket_id")
   returnTicketId   Int?        @unique @map("return_ticket_id")
