@@ -263,3 +263,16 @@ export const getUser = async (userData) => {
     throw error;
   }
 };
+
+export const getAccountByUserId = async (userId) => {
+  try {
+    return prisma.account.findUnique({
+      where: {
+        userId,
+      },
+    });
+  } catch (error) {
+    console.error("Error get account by user id:", error);
+    throw error;
+  }
+};

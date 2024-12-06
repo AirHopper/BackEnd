@@ -66,6 +66,9 @@ export const updateOrderStatusByPaymentId = async (paymentId, paymentStatus) => 
             data: {
                 orderStatus
             },
+            include: {
+                User: true,
+            }
         });
     } catch (error) {
         console.error('Error updating order status:', error);

@@ -3,7 +3,7 @@ import { createPaymentByBankTransfer, createPaymentByCreditCard } from "../servi
 import { createPassengers } from "../services/passenger.service.js";
 import { checkSeatAvailability, updateSeatOccupied } from "../services/seat.service.js";
 import { getById } from "../services/ticket.service.js";
-
+import { getUserProfile } from "../services/user.service.js";
 import AppError from "../utils/AppError.js";
 
 export const getManyByUserId = async (req, res, next) => {
@@ -22,14 +22,16 @@ export const getManyByUserId = async (req, res, next) => {
 
 export const createByBank = async (req, res, next) => {
     try {
+        const { user } = await getUserProfile(req.user.id); // req.user.id is accountId while user.id is userId
+        const userId = user.id;
         if (isNaN(req.body.outboundTicketId)) throw new AppError('Invalid outbond ticketId', 400);
-        if (req.isRoundTrip) {
+        if (req.body.isRoundTrip) {
             if (isNaN(req.body.returnTicketId)) throw new AppError('Invalid return ticketId', 400);
         }
 
         const outboundTicket = await getById(req.body.outboundTicketId);
         if (!outboundTicket) throw new AppError('Outbond ticket not found', 404);
-        if (req.isRoundTrip) {
+        if (req.body.isRoundTrip) {
             const returnTicket = await getById(req.body.returnTicketId);
             if (!returnTicket) throw new AppError('Return ticket not found', 404);
         }
@@ -38,7 +40,7 @@ export const createByBank = async (req, res, next) => {
         const occupiedSeat = await checkSeatAvailability(seats); // return undefined if seat is not occupied, while return the seat if it is occupied
         if (occupiedSeat) throw new AppError(`Seat ${occupiedSeat.seatNumber} on flightId ${occupiedSeat.flightId} is occupied`, 400);
         const payment = await createPaymentByBankTransfer(req.body);
-        const order = await createOrder(req.body, payment.id, req.user.id);
+        const order = await createOrder(req.body, payment.id, userId);
         await updateSeatOccupied(seats, true);
         await createPassengers(req.body.passengers, order.id);
         res.status(201).json({

@@ -18,6 +18,7 @@ export const createPaymentByBankTransfer = async (request) => {
         };
 
         const chargeResponse = await coreApi.charge(parameter);
+        console.log(chargeResponse);
         if (chargeResponse.status_code !== '201') throw new AppError('Error on chargeResponse', 500);
 
         return prisma.payment.create({

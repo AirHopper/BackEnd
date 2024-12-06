@@ -9,8 +9,6 @@ export const createPassengers = async (request, orderId) => {
                 orderId
             }))
         );
-
-        console.log(passengers);
         
         return prisma.passenger.createMany({ //return { count } not passenger's data
             data: passengers,
