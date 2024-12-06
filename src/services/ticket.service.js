@@ -43,14 +43,8 @@ async function validateFlights({ routeId, flightIds }) {
   }
 
   // Validate first and last flights match the route's airports
-  if (
-    firstFlight.Route.DepartureAirport.id !== route.DepartureAirport.id ||
-    lastFlight.Route.ArrivalAirport.id !== route.ArrivalAirport.id
-  ) {
-    throw new AppError(
-      "First flight's departure or last flight's arrival does not match the route",
-      400
-    );
+  if (firstFlight.Route.DepartureAirport.id !== route.DepartureAirport.id || lastFlight.Route.ArrivalAirport.id !== route.ArrivalAirport.id) {
+    throw new AppError("First flight's departure or last flight's arrival does not match the route", 400);
   }
 
   // Validate connecting airports and sequence
@@ -570,9 +564,67 @@ export const store = async (payload) => {
 };
 
 // TODO Update tiket
-// export const update = async (id, payload) => {
+export const update = async (id, payload) => {
+  try {
+    if (isNaN(id)) {
+      throw new AppError("Invalid ticket ID", 400);
+    }
 
-// }
+    const { isActive } = payload;
+
+    // 1. Validate ticket existence
+    const ticket = await prisma.ticket.findUnique({
+      where: { id },
+      include: { Flights: true }, // Include flights to find related tickets
+    });
+
+    if (!ticket) {
+      throw new AppError("Ticket not found", 404);
+    }
+
+    if (ticket.isTransits) {
+      // 2. Update only this ticket if `isTransits` is true
+      await prisma.ticket.update({
+        where: { id },
+        data: { isActive },
+      });
+
+      return { message: "Ticket updated successfully (isTransits=true)" };
+    } else {
+      // 3. Find all related tickets for the same flight IDs
+      const flightIds = ticket.Flights.map((flight) => flight.id);
+
+      const relatedTickets = await prisma.ticket.findMany({
+        where: {
+          OR: [
+            { id }, // Include the original ticket
+            {
+              isTransits: true, // Transit tickets
+              Flights: {
+                some: { id: { in: flightIds } }, // Match any of the flight IDs
+              },
+            },
+          ],
+        },
+      });
+
+      // 4. Update all related tickets
+      const updatePromises = relatedTickets.map((relatedTicket) =>
+        prisma.ticket.update({
+          where: { id: relatedTicket.id },
+          data: { isActive },
+        })
+      );
+
+      await Promise.all(updatePromises);
+
+      return { message: "All related tickets updated successfully (isTransits=false)" };
+    }
+  } catch (error) {
+    console.error("Error updating ticket:", error);
+    throw error;
+  }
+};
 
 // TODO Delete ticket
 export const destroy = async (id) => {
