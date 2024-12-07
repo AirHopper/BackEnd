@@ -3,6 +3,10 @@ import * as airlineService from "../services/airline.service.js";
 // Create a new airline
 export const createAirline = async (req, res, next) => {
   try {
+    if (!req.file) {
+      return res.status(400).json({ error: "Please upload a airline image" });
+    }
+    
     const newAirline = await airlineService.createAirline(req.body, req.file);
     res.status(201).json({
       success: true,

@@ -3,9 +3,9 @@ import AppError from "../utils/AppError.js";
 import imagekit from "../utils/imageKit.js";
 
 // Create a new city
-export const createCity = async (payload) => {
+export const createCity = async (payload, file) => {
   try {
-    const { code, name, country, countryCode, continent, file } = payload;
+    const { code, name, country, countryCode, continent } = payload;
 
     const result = await imagekit.upload({
       file: file.buffer,

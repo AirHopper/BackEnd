@@ -13,7 +13,7 @@ export const createAirport = async (data) => {
         latitude,
         longitude,
         type,
-        city: { connect: { code: cityId } },
+        City: { connect: { code: cityId } },
       },
     });
 
