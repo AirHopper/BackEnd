@@ -6,13 +6,7 @@ const prisma = new PrismaClient();
 
 async function flightCapacity(classType) {
   // Define capacity based on classType
-  return classType === "Economy"
-    ? 72
-    : classType === "Premium_economy"
-    ? 24
-    : classType === "Business"
-    ? 18
-    : 6;
+  return classType === "Economy" ? 72 : classType === "Premium_economy" ? 24 : classType === "Business" ? 18 : 6;
 }
 
 async function calculateFlightPrice(flightData) {
@@ -47,14 +41,7 @@ async function calculateFlightPrice(flightData) {
   const business = 6; // 500% more expensive
   const firstClass = 17.5; // 1650% more expensive
 
-  price *=
-    classType === "Economy"
-      ? economy
-      : classType === "Premium_Economy"
-      ? premiumEconomy
-      : classType === "Business"
-      ? business
-      : firstClass;
+  price *= classType === "Economy" ? economy : classType === "Premium_Economy" ? premiumEconomy : classType === "Business" ? business : firstClass;
 
   return price;
 }
@@ -89,8 +76,7 @@ async function store(flightData) {
           departureTime: new Date(departureTime),
           arrivalTime: new Date(arrivalTime),
           totalPrice: price,
-          totalDuration:
-            (new Date(arrivalTime) - new Date(departureTime)) / 60000, // Duration in minutes
+          totalDuration: (new Date(arrivalTime) - new Date(departureTime)) / 60000, // Duration in minutes
         },
       },
     },
@@ -106,7 +92,6 @@ function calculateTicketPrice(flights) {
   let totalPrice = 0;
 
   for (const flight of flights) {
-    
     totalPrice += parseInt(flight.price);
   }
 
@@ -313,9 +298,7 @@ async function seedRoutes() {
     });
 
     if (!departureAirport || !arrivalAirport) {
-      console.error(
-        `Could not find airports for route: ${departureAirportId} -> ${arrivalAirportId}`
-      );
+      console.error(`Could not find airports for route: ${departureAirportId} -> ${arrivalAirportId}`);
       continue;
     }
 
@@ -339,11 +322,7 @@ async function seedRoutes() {
       },
     });
 
-    console.log(
-      `Route created: ${departureAirportId} -> ${arrivalAirportId}, Distance: ${distance.toFixed(
-        2
-      )} km`
-    );
+    console.log(`Route created: ${departureAirportId} -> ${arrivalAirportId}, Distance: ${distance.toFixed(2)} km`);
   }
 }
 

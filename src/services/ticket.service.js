@@ -43,14 +43,8 @@ async function validateFlights({ routeId, flightIds }) {
   }
 
   // Validate first and last flights match the route's airports
-  if (
-    firstFlight.Route.DepartureAirport.id !== route.DepartureAirport.id ||
-    lastFlight.Route.ArrivalAirport.id !== route.ArrivalAirport.id
-  ) {
-    throw new AppError(
-      "First flight's departure or last flight's arrival does not match the route",
-      400
-    );
+  if (firstFlight.Route.DepartureAirport.id !== route.DepartureAirport.id || lastFlight.Route.ArrivalAirport.id !== route.ArrivalAirport.id) {
+    throw new AppError("First flight's departure or last flight's arrival does not match the route", 400);
   }
 
   // Validate connecting airports and sequence
@@ -58,10 +52,7 @@ async function validateFlights({ routeId, flightIds }) {
     const currentFlight = flights[i];
     const nextFlight = flights[i + 1];
 
-    if (
-      currentFlight.Route.ArrivalAirport.id !==
-      nextFlight.Route.DepartureAirport.id
-    ) {
+    if (currentFlight.Route.ArrivalAirport.id !== nextFlight.Route.DepartureAirport.id) {
       throw new AppError("Connecting flights do not match", 400);
     }
 
@@ -87,10 +78,7 @@ function calculateDuration(flights) {
 
     // Add transit time between current flight and the previous flight
     const previousFlight = flights[index - 1];
-    const transitTime = calculateTransitTime(
-      previousFlight.arrivalTime,
-      flight.departureTime
-    );
+    const transitTime = calculateTransitTime(previousFlight.arrivalTime, flight.departureTime);
 
     return total + parseInt(flight.duration) + transitTime;
   }, 0);
@@ -100,27 +88,15 @@ function calculateDuration(flights) {
 function calculateTransitTime(arrivalTime, departureTime) {
   const arrival = new Date(arrivalTime);
   const departure = new Date(departureTime);
-  return Math.max(0, (departure - arrival) / (1000 * 60)); 
+  return Math.max(0, (departure - arrival) / (1000 * 60));
 }
 
 // TODO Get all tickets
-export const getAll = async ({
-  page = 1,
-  limit = 10,
-  search,
-  orderBy = "price_asc",
-}) => {
+export const getAll = async ({ page = 1, limit = 10, search, orderBy = "price_asc" }) => {
   try {
     const offset = (page - 1) * limit;
 
-    let {
-      departureCity,
-      arrivalCity,
-      flightDate,
-      classType,
-      continent,
-      isTransit,
-    } = search || {};
+    let { departureCity, arrivalCity, flightDate, classType, continent, isTransit } = search || {};
 
     const searchFilters = {
       AND: [
@@ -158,11 +134,7 @@ export const getAll = async ({
               {
                 departureTime: {
                   gte: new Date(flightDate),
-                  lt: new Date(
-                    new Date(flightDate).setDate(
-                      new Date(flightDate).getDate() + 1
-                    )
-                  ),
+                  lt: new Date(new Date(flightDate).setDate(new Date(flightDate).getDate() + 1)),
                 },
               },
             ]
