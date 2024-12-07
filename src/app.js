@@ -9,6 +9,8 @@ import Middleware from "./middlewares/index.js";
 import Views from "./views/index.js";
 import errorHandler from "./middlewares/errorHandler.js";
 import listEndpoints from "express-list-endpoints";
+import swaggerUi from "swagger-ui-express";
+import swaggerDocument from "./docs/swagger.json" with { type: "json" };
 
 dotenv.config();
 
@@ -25,6 +27,7 @@ app.set("view engine", "ejs");
 
 // Configure middlewares
 Middleware(app);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Configure routes
 Routes(app);

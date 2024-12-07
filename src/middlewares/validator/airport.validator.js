@@ -9,7 +9,7 @@ const createAirportSchema = z.object({
     .number()
     .min(-180)
     .max(180, "Longitude must be between -180 and 180"),
-  type: z.enum(["Domestic", "International"], "Invalid airport type"),
+  type: z.enum(["Domestik", "Internasional"], "Invalid airport type"),
   cityId: z.string().min(1, "City ID is required"),
 });
 
@@ -17,7 +17,7 @@ const updateAirportSchema = z.object({
   name: z.string().min(1).optional(),
   latitude: z.number().min(-90).max(90).optional(),
   longitude: z.number().min(-180).max(180).optional(),
-  type: z.enum(["Domestic", "International"]).optional(),
+  type: z.enum(["Domestik", "Internasional"]).optional(),
   cityId: z.string().optional(),
 });
 
@@ -27,8 +27,23 @@ const validate = (schema) => (req, res, next) => {
     schema.parse(req.body);
     next();
   } catch (error) {
-    const errorMessage = error.errors?.[0]?.message || "Invalid input data";
-    return res.status(400).json({ error: errorMessage });
+    if (error instanceof z.ZodError) {
+      const fieldErrors = error.errors.map((issue) => ({
+        field: issue.path.join("."),
+        message: issue.message,
+      }));
+
+      return res.status(400).json({
+        success: false,
+        message: "Validation failed",
+        errors: fieldErrors,
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
   }
 };
 
