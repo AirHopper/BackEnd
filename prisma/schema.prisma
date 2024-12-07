@@ -14,7 +14,7 @@ enum Role {
   Buyer
 }
 
-enum TicketStatus {
+enum OrderStatus {
   Issued
   Unpaid
   Cancelled
@@ -237,8 +237,8 @@ model Order {
   paymentId        Int          @unique @map("payment_id")
   qrCodeUrl        String       @map("qr_code_url")
   bookingDate      DateTime     @default(now()) @map("booking_date")
-  ticketStatus     TicketStatus @default(Unpaid) @map("ticket_status")
-  isRoundTrip      Boolean      @default(false)
+  orderStatus      OrderStatus  @default(Unpaid) @map("order_status")
+  isRoundTrip      Boolean      @default(false) @map("is_round_trip")
   outboundTicketId Int          @unique @map("outbound_ticket_id")
   returnTicketId   Int?         @unique @map("return_ticket_id")
   createdAt        DateTime     @default(now()) @map("created_at")
@@ -256,15 +256,15 @@ model Order {
 
 model Payment {
   id            Int       @id @default(autoincrement())
-  method        String // credit_card, e_wallet, etc.
-  status        String // Midtrans status: pending, settlement, expire, cancel
+  method        String    // credit_card, e_wallet, etc.
+  status        String    // Midtrans status: pending, settlement, expire, cancel
   amount        Decimal
-  payload       Json? // Full webhook payload
-  transactionId String?   @unique @map("transaction_id") // Unique transaction ID from Midtrans
+  payload       Json?     // Full webhook payload
+  transactionId String    @unique @map("transaction_id") // Unique transaction ID from Midtrans
   orderId       String    @unique @map("order_id") // Your system's unique order ID
-  fraudStatus   String?   @map("fraud_status") // Midtrans fraud status: accept, challenge, deny
-  validUntil    DateTime? @map("valid_until") // Expiration for pending payments
-  paymentDate   DateTime? @map("payment_date") // When payment is completed
+  fraudStatus   String    @map("fraud_status") // Midtrans fraud status: accept, challenge, deny
+  validUntil    DateTime  @map("valid_until") // Expiration for pending payments
+  paymentDate   DateTime? @map("payment_date") // When payment is completed (settlement/capture)
   bankName      String?   @map("bank_name") // only for bank_transfer method
   bankVa        String?   @map("bank_va") // only for bank_trasnfer method, virtual account number
   createdAt     DateTime  @default(now()) @map("created_at")

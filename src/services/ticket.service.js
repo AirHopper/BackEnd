@@ -58,7 +58,10 @@ async function validateFlights({ routeId, flightIds }) {
     const currentFlight = flights[i];
     const nextFlight = flights[i + 1];
 
-    if (currentFlight.Route.ArrivalAirport.id !== nextFlight.Route.DepartureAirport.id) {
+    if (
+      currentFlight.Route.ArrivalAirport.id !==
+      nextFlight.Route.DepartureAirport.id
+    ) {
       throw new AppError("Connecting flights do not match", 400);
     }
 
@@ -72,20 +75,52 @@ async function validateFlights({ routeId, flightIds }) {
 
 // Calculate total price of all flights
 function calculatePrice(flights) {
-  return flights.reduce((total, flight) => total + flight.price, 0);
+  return flights.reduce((total, flight) => total + parseInt(flight.price), 0);
 }
 
-// Calculate total duration of all flights
+// Calculate total duration of all flights, including transit times
 function calculateDuration(flights) {
-  return flights.reduce((total, flight) => total + flight.duration, 0);
+  return flights.reduce((total, flight, index) => {
+    if (index === 0) {
+      return total + parseInt(flight.duration);
+    }
+
+    // Add transit time between current flight and the previous flight
+    const previousFlight = flights[index - 1];
+    const transitTime = calculateTransitTime(
+      previousFlight.arrivalTime,
+      flight.departureTime
+    );
+
+    return total + parseInt(flight.duration) + transitTime;
+  }, 0);
+}
+
+// Helper function to calculate transit time in minutes
+function calculateTransitTime(arrivalTime, departureTime) {
+  const arrival = new Date(arrivalTime);
+  const departure = new Date(departureTime);
+  return Math.max(0, (departure - arrival) / (1000 * 60)); 
 }
 
 // TODO Get all tickets
-export const getAll = async ({ page = 1, limit = 10, search, orderBy = "price_asc" }) => {
+export const getAll = async ({
+  page = 1,
+  limit = 10,
+  search,
+  orderBy = "price_asc",
+}) => {
   try {
     const offset = (page - 1) * limit;
 
-    let { departureCity, arrivalCity, flightDate, classType, continent, isTransit } = search || {};
+    let {
+      departureCity,
+      arrivalCity,
+      flightDate,
+      classType,
+      continent,
+      isTransit,
+    } = search || {};
 
     const searchFilters = {
       AND: [
@@ -123,7 +158,11 @@ export const getAll = async ({ page = 1, limit = 10, search, orderBy = "price_as
               {
                 departureTime: {
                   gte: new Date(flightDate),
-                  lt: new Date(new Date(flightDate).setDate(new Date(flightDate).getDate() + 1)),
+                  lt: new Date(
+                    new Date(flightDate).setDate(
+                      new Date(flightDate).getDate() + 1
+                    )
+                  ),
                 },
               },
             ]
@@ -208,6 +247,11 @@ export const getAll = async ({ page = 1, limit = 10, search, orderBy = "price_as
             },
             DepartureTerminal: true,
             ArrivalTerminal: true,
+            Seat: {
+              select: {
+                isOccupied: true,
+              },
+            },
           },
         },
         Route: {
@@ -273,62 +317,71 @@ export const getAll = async ({ page = 1, limit = 10, search, orderBy = "price_as
         },
         continent: ticket.Route.ArrivalAirport.City.continent,
       },
-      flights: ticket.Flights.map((flight) => ({
-        id: flight.id,
-        duration: flight.duration,
-        baggage: flight.baggage,
-        cabinBaggage: flight.cabinBaggage,
-        entertainment: flight.entertainment,
-        airline: flight.Airplane.Airline.name,
-        airplane: flight.Airplane.name,
-        departure: {
-          time: flight.departureTime,
-          airport: {
-            name: flight.Route.DepartureAirport.name,
-            code: flight.Route.DepartureAirport.iataCode,
-            type: flight.Route.DepartureAirport.type,
+      flights: ticket.Flights.map((flight) => {
+        const totalSeats = flight.Seat.length;
+        const occupiedSeats = flight.Seat.filter((seat) => seat.isOccupied).length;
+        const availableSeats = totalSeats - occupiedSeats;
+
+        return {
+          id: flight.id,
+          duration: flight.duration,
+          baggage: flight.baggage,
+          cabinBaggage: flight.cabinBaggage,
+          entertainment: flight.entertainment,
+          airline: flight.Airplane.Airline.name,
+          airplane: flight.Airplane.name,
+          departure: {
+            time: flight.departureTime,
+            airport: {
+              name: flight.Route.DepartureAirport.name,
+              code: flight.Route.DepartureAirport.iataCode,
+              type: flight.Route.DepartureAirport.type,
+            },
+            city: {
+              name: flight.Route.DepartureAirport.City.name,
+              code: flight.Route.DepartureAirport.City.code,
+              image: flight.Route.DepartureAirport.City.imageUrl,
+            },
+            country: {
+              name: flight.Route.DepartureAirport.City.country,
+              code: flight.Route.DepartureAirport.City.countryCode,
+            },
+            terminal: flight.DepartureTerminal
+              ? {
+                  name: flight.DepartureTerminal.name,
+                  type: flight.DepartureTerminal.type,
+                }
+              : null,
           },
-          city: {
-            name: flight.Route.DepartureAirport.City.name,
-            code: flight.Route.DepartureAirport.City.code,
-            image: flight.Route.DepartureAirport.City.imageUrl,
+          arrival: {
+            time: flight.arrivalTime,
+            airport: {
+              name: flight.Route.ArrivalAirport.name,
+              code: flight.Route.ArrivalAirport.iataCode,
+              type: flight.Route.ArrivalAirport.type,
+            },
+            city: {
+              name: flight.Route.ArrivalAirport.City.name,
+              code: flight.Route.ArrivalAirport.City.code,
+              image: flight.Route.ArrivalAirport.City.imageUrl,
+            },
+            country: {
+              name: flight.Route.ArrivalAirport.City.country,
+              code: flight.Route.ArrivalAirport.City.countryCode,
+            },
+            continent: flight.Route.ArrivalAirport.City.continent,
+            terminal: flight.ArrivalTerminal
+              ? {
+                  name: flight.ArrivalTerminal.name,
+                  type: flight.ArrivalTerminal.type,
+                }
+              : null,
           },
-          country: {
-            name: flight.Route.DepartureAirport.City.country,
-            code: flight.Route.DepartureAirport.City.countryCode,
-          },
-          terminal: flight.DepartureTerminal
-            ? {
-                name: flight.DepartureTerminal.name,
-                type: flight.DepartureTerminal.type,
-              }
-            : null,
-        },
-        arrival: {
-          time: flight.arrivalTime,
-          airport: {
-            name: flight.Route.ArrivalAirport.name,
-            code: flight.Route.ArrivalAirport.iataCode,
-            type: flight.Route.ArrivalAirport.type,
-          },
-          city: {
-            name: flight.Route.ArrivalAirport.City.name,
-            code: flight.Route.ArrivalAirport.City.code,
-            image: flight.Route.ArrivalAirport.City.imageUrl,
-          },
-          country: {
-            name: flight.Route.ArrivalAirport.City.country,
-            code: flight.Route.ArrivalAirport.City.countryCode,
-          },
-          continent: flight.Route.ArrivalAirport.City.continent,
-          terminal: flight.ArrivalTerminal
-            ? {
-                name: flight.ArrivalTerminal.name,
-                type: flight.ArrivalTerminal.type,
-              }
-            : null,
-        },
-      })),
+          totalSeats,
+          occupiedSeats,
+          availableSeats,
+        };
+      }),
     }));
 
     const totalTickets = await prisma.ticket.count({ where: searchFilters });
@@ -357,9 +410,14 @@ export const getAll = async ({ page = 1, limit = 10, search, orderBy = "price_as
 // TODO Get ticket by ID
 export const getById = async (id) => {
   try {
-    // Fetch ticket by ID, including all necessary relations
+    if (isNaN(id)) {
+      throw new AppError("Invalid flight ID", 400);
+    }
+
     const ticket = await prisma.ticket.findUnique({
-      where: { id },
+      where: {
+        id,
+      },
       include: {
         Flights: {
           include: {
@@ -384,6 +442,7 @@ export const getById = async (id) => {
             },
             DepartureTerminal: true,
             ArrivalTerminal: true,
+            Seat: true,
           },
         },
         Route: {
@@ -403,12 +462,10 @@ export const getById = async (id) => {
       },
     });
 
-    // If ticket is not found
     if (!ticket) {
-      return null;
+      throw new AppError("Tiket not found", 404);
     }
 
-    // Format the ticket response
     const formattedTicket = {
       id: ticket.id,
       class: ticket.class,
@@ -451,68 +508,77 @@ export const getById = async (id) => {
         },
         continent: ticket.Route.ArrivalAirport.City.continent,
       },
-      flights: ticket.Flights.map((flight) => ({
-        id: flight.id,
-        duration: flight.duration,
-        baggage: flight.baggage,
-        cabinBaggage: flight.cabinBaggage,
-        entertainment: flight.entertainment,
-        airline: flight.Airplane.Airline.name,
-        airplane: flight.Airplane.name,
-        departure: {
-          time: flight.departureTime,
-          airport: {
-            name: flight.Route.DepartureAirport.name,
-            code: flight.Route.DepartureAirport.iataCode,
-            type: flight.Route.DepartureAirport.type,
+      flights: ticket.Flights.map((flight) => {
+        const totalSeats = flight.Seat.length;
+        const occupiedSeats = flight.Seat.filter((seat) => seat.isOccupied).length;
+        const availableSeats = totalSeats - occupiedSeats;
+
+        return {
+          id: flight.id,
+          duration: flight.duration,
+          baggage: flight.baggage,
+          cabinBaggage: flight.cabinBaggage,
+          entertainment: flight.entertainment,
+          airline: flight.Airplane.Airline.name,
+          airplane: flight.Airplane.name,
+          departure: {
+            time: flight.departureTime,
+            airport: {
+              name: flight.Route.DepartureAirport.name,
+              code: flight.Route.DepartureAirport.iataCode,
+              type: flight.Route.DepartureAirport.type,
+            },
+            city: {
+              name: flight.Route.DepartureAirport.City.name,
+              code: flight.Route.DepartureAirport.City.code,
+              image: flight.Route.DepartureAirport.City.imageUrl,
+            },
+            country: {
+              name: flight.Route.DepartureAirport.City.country,
+              code: flight.Route.DepartureAirport.City.countryCode,
+            },
+            terminal: flight.DepartureTerminal
+              ? {
+                  name: flight.DepartureTerminal.name,
+                  type: flight.DepartureTerminal.type,
+                }
+              : null,
           },
-          city: {
-            name: flight.Route.DepartureAirport.City.name,
-            code: flight.Route.DepartureAirport.City.code,
-            image: flight.Route.DepartureAirport.City.imageUrl,
+          arrival: {
+            time: flight.arrivalTime,
+            airport: {
+              name: flight.Route.ArrivalAirport.name,
+              code: flight.Route.ArrivalAirport.iataCode,
+              type: flight.Route.ArrivalAirport.type,
+            },
+            city: {
+              name: flight.Route.ArrivalAirport.City.name,
+              code: flight.Route.ArrivalAirport.City.code,
+              image: flight.Route.ArrivalAirport.City.imageUrl,
+            },
+            country: {
+              name: flight.Route.ArrivalAirport.City.country,
+              code: flight.Route.ArrivalAirport.City.countryCode,
+            },
+            continent: flight.Route.ArrivalAirport.City.continent,
+            terminal: flight.ArrivalTerminal
+              ? {
+                  name: flight.ArrivalTerminal.name,
+                  type: flight.ArrivalTerminal.type,
+                }
+              : null,
           },
-          country: {
-            name: flight.Route.DepartureAirport.City.country,
-            code: flight.Route.DepartureAirport.City.countryCode,
-          },
-          terminal: flight.DepartureTerminal
-            ? {
-                name: flight.DepartureTerminal.name,
-                type: flight.DepartureTerminal.type,
-              }
-            : null,
-        },
-        arrival: {
-          time: flight.arrivalTime,
-          airport: {
-            name: flight.Route.ArrivalAirport.name,
-            code: flight.Route.ArrivalAirport.iataCode,
-            type: flight.Route.ArrivalAirport.type,
-          },
-          city: {
-            name: flight.Route.ArrivalAirport.City.name,
-            code: flight.Route.ArrivalAirport.City.code,
-            image: flight.Route.ArrivalAirport.City.imageUrl,
-          },
-          country: {
-            name: flight.Route.ArrivalAirport.City.country,
-            code: flight.Route.ArrivalAirport.City.countryCode,
-          },
-          continent: flight.Route.ArrivalAirport.City.continent,
-          terminal: flight.ArrivalTerminal
-            ? {
-                name: flight.ArrivalTerminal.name,
-                type: flight.ArrivalTerminal.type,
-              }
-            : null,
-        },
-      })),
+          totalSeats,
+          occupiedSeats,
+          availableSeats,
+        };
+      }),
     };
 
     return formattedTicket;
   } catch (error) {
     console.error("Error fetching ticket by ID:", error);
-    throw new Error("Failed to retrieve ticket.");
+    throw error;
   }
 };
 
@@ -570,9 +636,69 @@ export const store = async (payload) => {
 };
 
 // TODO Update tiket
-// export const update = async (id, payload) => {
+export const update = async (id, payload) => {
+  try {
+    if (isNaN(id)) {
+      throw new AppError("Invalid ticket ID", 400);
+    }
 
-// }
+    const { isActive } = payload;
+
+    // 1. Validate ticket existence
+    const ticket = await prisma.ticket.findUnique({
+      where: { id },
+      include: { Flights: true }, // Include flights to find related tickets
+    });
+
+    if (!ticket) {
+      throw new AppError("Ticket not found", 404);
+    }
+
+    if (ticket.isTransits) {
+      // 2. Update only this ticket if `isTransits` is true
+      await prisma.ticket.update({
+        where: { id },
+        data: { isActive },
+      });
+
+      return { message: "Ticket updated successfully (isTransits=true)" };
+    } else {
+      // 3. Find all related tickets for the same flight IDs
+      const flightIds = ticket.Flights.map((flight) => flight.id);
+
+      const relatedTickets = await prisma.ticket.findMany({
+        where: {
+          OR: [
+            { id }, // Include the original ticket
+            {
+              isTransits: true, // Transit tickets
+              Flights: {
+                some: { id: { in: flightIds } }, // Match any of the flight IDs
+              },
+            },
+          ],
+        },
+      });
+
+      // 4. Update all related tickets
+      const updatePromises = relatedTickets.map((relatedTicket) =>
+        prisma.ticket.update({
+          where: { id: relatedTicket.id },
+          data: { isActive },
+        })
+      );
+
+      await Promise.all(updatePromises);
+
+      return {
+        message: "All related tickets updated successfully (isTransits=false)",
+      };
+    }
+  } catch (error) {
+    console.error("Error updating ticket:", error);
+    throw error;
+  }
+};
 
 // TODO Delete ticket
 export const destroy = async (id) => {

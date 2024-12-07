@@ -6,7 +6,9 @@ const authHandler = (req, res, next) => {
   const { authorization } = req.headers;
   const token = authorization && authorization.split(" ")[1];
   if (!token) {
-    next(new customError("Token not provided"), 401);
+    const error = new customError("Token not provided");
+    error.statusCode = 401;
+    return next(error);
   }
 
   try {
