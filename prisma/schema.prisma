@@ -53,15 +53,16 @@ enum Continent {
 }
 
 model Account {
-  id            Int       @id @default(autoincrement())
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
-  email         String    @unique
-  password      String
-  role          Role      @default(Buyer)
-  otpCode       String?   @map("otp_code")
-  otpExpiration DateTime? @map("otp_expiration")
-  isVerified    Boolean   @default(false) @map("is_verified")
+  id                       Int       @id @default(autoincrement())
+  createdAt                DateTime  @default(now()) @map("created_at")
+  updatedAt                DateTime  @updatedAt @map("updated_at")
+  email                    String    @unique
+  password                 String
+  role                     Role      @default(Buyer)
+  otpCode                  String?   @map("otp_code")
+  otpExpiration            DateTime? @map("otp_expiration")
+  isVerified               Boolean   @default(false) @map("is_verified")
+  notificationSubscription String?   @map("notification_subscription")
 
   user         User?
   Notification Notification[]
@@ -232,17 +233,17 @@ model Flight {
 }
 
 model Order {
-  id               Int          @id @default(autoincrement())
-  userId           Int          @map("user_id")
-  paymentId        Int          @unique @map("payment_id")
-  qrCodeUrl        String       @map("qr_code_url")
-  bookingDate      DateTime     @default(now()) @map("booking_date")
-  orderStatus      OrderStatus  @default(Unpaid) @map("order_status")
-  isRoundTrip      Boolean      @default(false) @map("is_round_trip")
-  outboundTicketId Int          @unique @map("outbound_ticket_id")
-  returnTicketId   Int?         @unique @map("return_ticket_id")
-  createdAt        DateTime     @default(now()) @map("created_at")
-  updatedAt        DateTime     @updatedAt @map("updated_at")
+  id               Int         @id @default(autoincrement())
+  userId           Int         @map("user_id")
+  paymentId        Int         @unique @map("payment_id")
+  qrCodeUrl        String      @map("qr_code_url")
+  bookingDate      DateTime    @default(now()) @map("booking_date")
+  orderStatus      OrderStatus @default(Unpaid) @map("order_status")
+  isRoundTrip      Boolean     @default(false) @map("is_round_trip")
+  outboundTicketId Int         @unique @map("outbound_ticket_id")
+  returnTicketId   Int?        @unique @map("return_ticket_id")
+  createdAt        DateTime    @default(now()) @map("created_at")
+  updatedAt        DateTime    @updatedAt @map("updated_at")
 
   User           User    @relation(fields: [userId], references: [id])
   Payment        Payment @relation(fields: [paymentId], references: [id])
@@ -256,10 +257,10 @@ model Order {
 
 model Payment {
   id            Int       @id @default(autoincrement())
-  method        String    // credit_card, e_wallet, etc.
-  status        String    // Midtrans status: pending, settlement, expire, cancel
+  method        String // credit_card, e_wallet, etc.
+  status        String // Midtrans status: pending, settlement, expire, cancel
   amount        Decimal
-  payload       Json?     // Full webhook payload
+  payload       Json? // Full webhook payload
   transactionId String    @unique @map("transaction_id") // Unique transaction ID from Midtrans
   orderId       String    @unique @map("order_id") // Your system's unique order ID
   fraudStatus   String    @map("fraud_status") // Midtrans fraud status: accept, challenge, deny

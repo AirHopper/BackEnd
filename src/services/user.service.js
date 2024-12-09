@@ -2,6 +2,7 @@ import prisma from "../utils/prisma.js";
 import customError from "../utils/AppError.js"
 import cleanUpAccountData from "../utils/cleanUpAccountData.js"
 import { comparePassword, hashPassword } from "../utils/bcrypt.js";
+import { sendNotification } from "../utils/webpush.js";
 
 // GET list of all users (Admin) 
 export const getAllUsers = async () => {
@@ -88,4 +89,40 @@ export const changePassword = async (userId, userData) => {
   }
 }
 
-// User notification
+// Subscribe user for push notification
+export const subscribeUser = async (userId, subscription) => {
+  try {
+    await prisma.account.update({ 
+      where: { id: userId },
+      data: { notificationSubscription: JSON.stringify(subscription) }
+    });
+  } catch(error) {
+    console.log("Error subscribing user for notification: ", error);
+    throw error;
+  }
+}
+
+// Send user notification to service worker
+export const getUserNotification = async (userId) => {
+  try {
+    const notification = await prisma.notification.findMany({
+      where: { accountId: userId, isRead: false },
+      include: { Account: true },
+      orderBy: { createdAt: 'asc' }
+    })
+    notification.forEach(async notif => {
+      await sendNotification(JSON.parse(notif.Account.notificationSubscription), notif.message);
+      await prisma.notification.update({ 
+        where: { id: notif.id },
+        data: { isRead: true },
+      })
+    })
+    return notification.map(notif => ({ 
+      message: notif.message, 
+      createdAt: notif.createdAt
+    }));
+  } catch(error) {
+    console.log("Failed to get user notification: ", error);
+    throw error;
+  }
+}
