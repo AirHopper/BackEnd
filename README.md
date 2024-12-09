@@ -103,7 +103,7 @@ Kami adalah kolaborasi antara developer Backend dan Fullstack dari program Studi
 https://documenter.getpostman.com/view/33280373/2sAYBbf9a7
 ```
 
-2 **Swagger**
+2 **Swagger :**
 
 ```bash
 https://airhopper-304285428031.asia-southeast1.run.app/api-docs
