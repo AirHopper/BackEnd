@@ -8,7 +8,7 @@ import terminals from "./terminal.routes.js";
 import auth from "./auth.routes.js";
 import flightRoutes from "./flight.routes.js";
 import payments from "./payment.routes.js";
-import orders from "./order.routes.js"
+import orders from "./order.routes.js";
 import passengers from "./passenger.routes.js";
 import authHandler from "../middlewares/authHandler.js";
 import tickets from "./ticket.routes.js";

@@ -27,6 +27,8 @@ app.set("view engine", "ejs");
 
 // Configure middlewares
 Middleware(app);
+
+// api docs swagger
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Configure routes
