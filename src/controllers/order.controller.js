@@ -5,7 +5,6 @@ import { checkSeatAvailability, updateSeatOccupied } from "../services/seat.serv
 import { getById } from "../services/ticket.service.js";
 import { getUserProfile } from "../services/user.service.js";
 import AppError from "../utils/AppError.js";
-import { nanoid } from "nanoid";
 
 export const getAllUserOwned = async (req, res, next) => {
     try {
@@ -42,7 +41,7 @@ export const getUserOwnedById = async (req, res, next) => {
     }
 }
 
-export const createByBank = async (req, res, next) => {
+export const create = async (req, res, next) => {
     try {
         const account = await getUserProfile(req.user.id); // req.user.id is accountId while user.id is userId
         const userId = account.user.id;
@@ -61,18 +60,16 @@ export const createByBank = async (req, res, next) => {
         const seats = req.body.passengers.flatMap(passenger => passenger.seatId);
         const occupiedSeat = await checkSeatAvailability(seats); // return undefined if seat is not occupied, while return the seat if it is occupied
         if (occupiedSeat) throw new AppError(`Seat ${occupiedSeat.seatNumber} on flight id ${occupiedSeat.flightId} is occupied`, 400);
-        const orderId = nanoid(8);
-        const payment = await createPayment(req.body, orderId, account);
-        const order = await createOrder(req.body, payment.id, userId);
-        // const order = await createOrder(req.body, payment.id, userId);
+        const payment = await createPayment(req.body, account);
+        const order = await createOrder(req.body, payment.id, payment.orderId, userId);
         // await updateSeatOccupied(seats, true);
         // await createPassengers(req.body.passengers, order.id);
         // const updatedOrder = await getUserOwnedOrderById(order.id, userId);
-        // res.status(201).json({
-        //     success: true,
-        //     message: 'Order created successfully',
-        //     data: updatedOrder
-        // });
+        res.status(201).json({
+            success: true,
+            message: 'Order created successfully',
+            data: order
+        });
     } catch (error) {
         console.error(error);
         next(error);

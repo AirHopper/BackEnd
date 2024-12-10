@@ -3,8 +3,9 @@ import { coreApi, MIDTRANS_CLIENT_KEY, snap } from '../utils/midtrans.js';
 import AppError from '../utils/AppError.js';
 import { nanoid } from 'nanoid';
 
-export const createPayment = async (request, orderId, account) => {
+export const createPayment = async (request, account) => {
     try {
+        const orderId = nanoid(8);
         const parameter = {
             transaction_details: {
                 gross_amount: request.finalPrice,
@@ -27,12 +28,11 @@ export const createPayment = async (request, orderId, account) => {
             // })
 
         const midtransToken = await snap.createTransactionToken(parameter);
-        console.log(midtransResponse);
-        if (midtransResponse.status_code !== '201') throw new AppError('Error on midtransResponse', 500);
+        console.log(midtransToken);
         
         return await prisma.payment.create({
             data: {
-                orderId,
+                orderId: orderId,
                 amount: request.finalPrice,
                 token: midtransToken,
                 status: 'pending',
@@ -182,9 +182,12 @@ export const updatePaymentStatusById = async (id, request) => {
                 id
             },
             data: {
+                method: request.payment_type,
                 status: request.transaction_status,
-                fraudStatus: request.fraud_status,
                 payload: JSON.stringify(request),
+                transactionId: request.transaction_id,
+                fraudStatus: request.fraud_status,
+                validUntil: new Date(request.expiry_time),
                 paymentDate
             }
         });

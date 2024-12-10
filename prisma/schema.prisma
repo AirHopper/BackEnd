@@ -232,7 +232,7 @@ model Flight {
 }
 
 model Order {
-  id               Int          @id @default(autoincrement())
+  id               String       @id 
   userId           Int          @map("user_id")
   paymentId        Int          @unique @map("payment_id")
   qrCodeUrl        String       @map("qr_code_url")
@@ -275,7 +275,7 @@ model Payment {
 
 model Passenger {
   id               Int           @id @default(autoincrement())
-  orderId          Int           @map("order_id")
+  orderId          String        @map("order_id")
   seatId           Int           @unique @map("seat_id")
   type             PassengerType
   title            TitleType

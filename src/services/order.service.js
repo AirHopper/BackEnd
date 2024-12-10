@@ -199,13 +199,14 @@ export const getUserOwnedOrderById = async (id, userId) => {
     }
 }
 
-export const createOrder = async (request, paymentId, userId) => { 
+export const createOrder = async (request, paymentId, orderId, userId) => { 
     try {
         const returnTicketId = (request.returnTicketId) ? request.returnTicketId : null;
         const isRoundTrip = (request.returnTicketId) ? true : false;
 
         return prisma.order.create({
             data: {
+                id: orderId,
                 userId,
                 paymentId,
                 isRoundTrip,
