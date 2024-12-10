@@ -106,7 +106,6 @@ function calculateTicketPrice(flights) {
   let totalPrice = 0;
 
   for (const flight of flights) {
-    
     totalPrice += parseInt(flight.price);
   }
 
@@ -205,6 +204,8 @@ async function seedCities() {
         country: "United States",
         countryCode: "US",
         continent: Continent.Amerika,
+        imageUrl:
+          "https://i.natgeofe.com/k/5b396b5e-59e7-43a6-9448-708125549aa1/new-york-statue-of-liberty.jpg",
       },
       {
         name: "Los Angeles",
@@ -212,6 +213,8 @@ async function seedCities() {
         country: "United States",
         countryCode: "US",
         continent: Continent.Amerika,
+        imageUrl:
+          "https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/20190616154621%21Echo_Park_Lake_with_Downtown_Los_Angeles_Skyline.jpg/800px-20190616154621%21Echo_Park_Lake_with_Downtown_Los_Angeles_Skyline.jpg",
       },
       {
         name: "Singapore",
@@ -219,6 +222,8 @@ async function seedCities() {
         country: "Singapore",
         countryCode: "SG",
         continent: Continent.Asia,
+        imageUrl:
+          "https://cdn0-production-images-kly.akamaized.net/gQGm2S2sX_HV5GdTNugjWm9wGAM=/1200x675/smart/filters:quality(75):strip_icc():format(webp)/kly-media-production/medias/2385815/original/045137000_1539769271-1.jpg",
       },
       {
         name: "Jakarta",
@@ -226,6 +231,8 @@ async function seedCities() {
         country: "Indonesia",
         countryCode: "ID",
         continent: Continent.Asia,
+        imageUrl:
+          "https://i0.wp.com/mytravelation.com/wp-content/uploads/2023/11/Jakarta.jpeg",
       },
       {
         name: "Bali",
@@ -233,6 +240,8 @@ async function seedCities() {
         country: "Indonesia",
         countryCode: "ID",
         continent: Continent.Asia,
+        imageUrl:
+          "https://ik.imagekit.io/tvlk/blog/2023/09/shutterstock_631736717.jpg?tr=c-at_max",
       },
     ],
   });
@@ -417,11 +426,36 @@ async function seedTerminals() {
 async function seedAirlines() {
   await prisma.airline.createMany({
     data: [
-      { iataCode: "AA", name: "Amerikan Airlines" },
-      { iataCode: "SQ", name: "Singapore Airlines" },
-      { iataCode: "DL", name: "Delta Airlines" },
-      { iataCode: "GA", name: "Garuda Indonesia" },
-      { iataCode: "QZ", name: "AirAsia Indonesia" },
+      {
+        iataCode: "AA",
+        name: "Amerikan Airlines",
+        imageUrl:
+          "https://s202.q4cdn.com/986123435/files/doc_downloads/logos/american-airlines/THUMB-aa_aa__ahz_4cp_grd_pos-(1).png",
+      },
+      {
+        iataCode: "SQ",
+        name: "Singapore Airlines",
+        imageUrl:
+          "https://upload.wikimedia.org/wikipedia/en/thumb/6/6b/Singapore_Airlines_Logo_2.svg/1200px-Singapore_Airlines_Logo_2.svg.png",
+      },
+      {
+        iataCode: "DL",
+        name: "Delta Airlines",
+        imageUrl:
+          "https://download.logo.wine/logo/Delta_Air_Lines/Delta_Air_Lines-Logo.wine.png",
+      },
+      {
+        iataCode: "GA",
+        name: "Garuda Indonesia",
+        imageUrl:
+          "https://e7.pngegg.com/pngimages/513/980/png-clipart-logo-garuda-indonesia-persero-tbk-airline-brand-garuda-indonesia-company-text.png",
+      },
+      {
+        iataCode: "QZ",
+        name: "AirAsia Indonesia",
+        imageUrl:
+          "https://upload.wikimedia.org/wikipedia/commons/f/f5/AirAsia_New_Logo.svg",
+      },
     ],
   });
 }

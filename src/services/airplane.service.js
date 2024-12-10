@@ -8,7 +8,7 @@ export const createAirplane = async (data) => {
 
     const newAirplane = await prisma.airplane.create({
       data: {
-        airline: { connect: { iataCode: airlineId } },
+        Airline: { connect: { iataCode: airlineId } },
         name,
         type,
         pricePerKm,
