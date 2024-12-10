@@ -259,3 +259,19 @@ export const updateOrderStatusByPaymentId = async (paymentId, paymentStatus) => 
         throw error;
     }
 }
+
+export const cancelOrderById = async (orderId) => {
+    try {
+        return prisma.order.update({
+            where: {
+                id: orderId
+            },
+            data: {
+                orderStatus: 'Cancelled'
+            }
+        });
+    } catch (error) {
+        console.error('Error cancelling order:', error);
+        throw error;
+    }
+}
