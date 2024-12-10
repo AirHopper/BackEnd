@@ -213,7 +213,7 @@ export const forgotPassword = async (userData) => {
 
     const emailTemplatePath = path.resolve("src/views/resetPassword.ejs");
 
-    const resetLink = `http://localhost:5173/reset-password?token=${token}`;
+    const resetLink = `${process.env.FE_URL}/reset-password?token=${token}`;
 
     const htmlContent = await ejs.renderFile(emailTemplatePath, {
       resetLink,
