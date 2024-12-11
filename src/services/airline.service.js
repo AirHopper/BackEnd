@@ -83,32 +83,28 @@ export const updateAirlinePhoto = async (iataCode, file) => {
     }
 
     let updatedImageData = {};
-    if (file) {
-      if (airline.imageId) {
-        // Delete the old image if it exists
-        await imagekit.deleteFile(airline.imageId);
-      }
-
-      const result = await imagekit.upload({
-        file: file.buffer,
-        fileName: `airline_${iataCode}_${Date.now()}`,
-        folder: "/airline_images/",
-      });
-
-      updatedImageData = {
-        imageUrl: result.url,
-        imageId: result.fileId,
-      };
-
-      const updatedAirline = await prisma.airline.update({
-        where: { iataCode },
-        data: updatedImageData,
-      });
-
-      return updatedAirline;
+    if (airline.imageId) {
+      // Delete the old image if it exists
+      await imagekit.deleteFile(airline.imageId);
     }
 
-    throw new AppError("No file provided for updating photo", 400);
+    const result = await imagekit.upload({
+      file: file.buffer,
+      fileName: `airline_${iataCode}_${Date.now()}`,
+      folder: "/airline_images/",
+    });
+
+    updatedImageData = {
+      imageUrl: result.url,
+      imageId: result.fileId,
+    };
+
+    const updatedAirline = await prisma.airline.update({
+      where: { iataCode },
+      data: updatedImageData,
+    });
+
+    return updatedAirline;
   } catch (error) {
     console.error("Error updating airline photo:", error);
     throw error;
