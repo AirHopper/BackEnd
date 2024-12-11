@@ -153,6 +153,7 @@ export const updateRoute = async (id, payload) => {
           404
         );
       }
+      
       if (!arrivalAirport) {
         throw new AppError(
           `Arrival airport ${arrivalAirportId} not found`,
