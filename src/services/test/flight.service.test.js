@@ -57,13 +57,13 @@ describe("Flight Service", () => {
             time: "2023-12-11T10:00:00.000Z",
             airport: {
               name: "Airport A",
-              code: undefined, // This might be undefined in your mock setup
-              type: undefined, // This might be undefined in your mock setup
+              code: undefined,
+              type: undefined,
             },
             city: {
               name: "City A",
               code: "A1",
-              image: undefined, // This might be undefined
+              image: undefined,
             },
             country: {
               name: "Country A",
@@ -78,19 +78,19 @@ describe("Flight Service", () => {
             time: "2023-12-11T12:30:00.000Z",
             airport: {
               name: "Airport B",
-              code: undefined, // This might be undefined
-              type: undefined, // This might be undefined
+              code: undefined,
+              type: undefined,
             },
             city: {
               name: "City B",
               code: "B1",
-              image: undefined, // This might be undefined
+              image: undefined,
             },
             country: {
               name: "Country B",
               code: "B",
             },
-            continent: undefined, // This might be undefined
+            continent: undefined,
             terminal: {
               name: "Terminal 2",
               type: "International",
@@ -176,13 +176,13 @@ describe("Flight Service", () => {
             time: "2023-12-11T10:00:00.000Z",
             airport: {
               name: "Airport A",
-              code: undefined, // This might be undefined in your mock setup
-              type: undefined, // This might be undefined in your mock setup
+              code: undefined,
+              type: undefined,
             },
             city: {
               name: "City A",
               code: "A1",
-              image: undefined, // This might be undefined
+              image: undefined,
             },
             country: {
               name: "Country A",
@@ -197,19 +197,19 @@ describe("Flight Service", () => {
             time: "2023-12-11T12:30:00.000Z",
             airport: {
               name: "Airport B",
-              code: undefined, // This might be undefined
-              type: undefined, // This might be undefined
+              code: undefined,
+              type: undefined,
             },
             city: {
               name: "City B",
               code: "B1",
-              image: undefined, // This might be undefined
+              image: undefined,
             },
             country: {
               name: "Country B",
               code: "B",
             },
-            continent: undefined, // This might be undefined
+            continent: undefined,
             terminal: {
               name: "Terminal 2",
               type: "International",
@@ -295,13 +295,13 @@ describe("Flight Service", () => {
             time: "2023-12-11T10:00:00.000Z",
             airport: {
               name: "Airport A",
-              code: undefined, // This might be undefined in your mock setup
-              type: undefined, // This might be undefined in your mock setup
+              code: undefined,
+              type: undefined,
             },
             city: {
               name: "City A",
               code: "A1",
-              image: undefined, // This might be undefined
+              image: undefined,
             },
             country: {
               name: "Country A",
@@ -316,19 +316,19 @@ describe("Flight Service", () => {
             time: "2023-12-11T12:30:00.000Z",
             airport: {
               name: "Airport B",
-              code: undefined, // This might be undefined
-              type: undefined, // This might be undefined
+              code: undefined,
+              type: undefined,
             },
             city: {
               name: "City B",
               code: "B1",
-              image: undefined, // This might be undefined
+              image: undefined,
             },
             country: {
               name: "Country B",
               code: "B",
             },
-            continent: undefined, // This might be undefined
+            continent: undefined,
             terminal: {
               name: "Terminal 2",
               type: "International",
@@ -414,13 +414,13 @@ describe("Flight Service", () => {
             time: "2023-12-11T10:00:00.000Z",
             airport: {
               name: "Airport A",
-              code: undefined, // This might be undefined in your mock setup
-              type: undefined, // This might be undefined in your mock setup
+              code: undefined,
+              type: undefined,
             },
             city: {
               name: "City A",
               code: "A1",
-              image: undefined, // This might be undefined
+              image: undefined,
             },
             country: {
               name: "Country A",
@@ -435,19 +435,19 @@ describe("Flight Service", () => {
             time: "2023-12-11T12:30:00.000Z",
             airport: {
               name: "Airport B",
-              code: undefined, // This might be undefined
-              type: undefined, // This might be undefined
+              code: undefined,
+              type: undefined,
             },
             city: {
               name: "City B",
               code: "B1",
-              image: undefined, // This might be undefined
+              image: undefined,
             },
             country: {
               name: "Country B",
               code: "B",
             },
-            continent: undefined, // This might be undefined
+            continent: undefined,
             terminal: {
               name: "Terminal 2",
               type: "International",
@@ -533,13 +533,13 @@ describe("Flight Service", () => {
             time: "2023-12-11T10:00:00.000Z",
             airport: {
               name: "Airport A",
-              code: undefined, // This might be undefined in your mock setup
-              type: undefined, // This might be undefined in your mock setup
+              code: undefined,
+              type: undefined,
             },
             city: {
               name: "City A",
               code: "A1",
-              image: undefined, // This might be undefined
+              image: undefined,
             },
             country: {
               name: "Country A",
@@ -554,19 +554,19 @@ describe("Flight Service", () => {
             time: "2023-12-11T12:30:00.000Z",
             airport: {
               name: "Airport B",
-              code: undefined, // This might be undefined
-              type: undefined, // This might be undefined
+              code: undefined,
+              type: undefined,
             },
             city: {
               name: "City B",
               code: "B1",
-              image: undefined, // This might be undefined
+              image: undefined,
             },
             country: {
               name: "Country B",
               code: "B",
             },
-            continent: undefined, // This might be undefined
+            continent: undefined,
             terminal: {
               name: "Terminal 2",
               type: "International",
@@ -652,13 +652,13 @@ describe("Flight Service", () => {
             time: "2023-12-11T10:00:00.000Z",
             airport: {
               name: "Airport A",
-              code: undefined, // This might be undefined in your mock setup
-              type: undefined, // This might be undefined in your mock setup
+              code: undefined,
+              type: undefined,
             },
             city: {
               name: "City A",
               code: "A1",
-              image: undefined, // This might be undefined
+              image: undefined,
             },
             country: {
               name: "Country A",
@@ -673,19 +673,19 @@ describe("Flight Service", () => {
             time: "2023-12-11T12:30:00.000Z",
             airport: {
               name: "Airport B",
-              code: undefined, // This might be undefined
-              type: undefined, // This might be undefined
+              code: undefined,
+              type: undefined,
             },
             city: {
               name: "City B",
               code: "B1",
-              image: undefined, // This might be undefined
+              image: undefined,
             },
             country: {
               name: "Country B",
               code: "B",
             },
-            continent: undefined, // This might be undefined
+            continent: undefined,
             terminal: {
               name: "Terminal 2",
               type: "International",
@@ -771,13 +771,13 @@ describe("Flight Service", () => {
             time: "2023-12-11T10:00:00.000Z",
             airport: {
               name: "Airport A",
-              code: undefined, // This might be undefined in your mock setup
-              type: undefined, // This might be undefined in your mock setup
+              code: undefined,
+              type: undefined,
             },
             city: {
               name: "City A",
               code: "A1",
-              image: undefined, // This might be undefined
+              image: undefined,
             },
             country: {
               name: "Country A",
@@ -792,19 +792,19 @@ describe("Flight Service", () => {
             time: "2023-12-11T12:30:00.000Z",
             airport: {
               name: "Airport B",
-              code: undefined, // This might be undefined
-              type: undefined, // This might be undefined
+              code: undefined,
+              type: undefined,
             },
             city: {
               name: "City B",
               code: "B1",
-              image: undefined, // This might be undefined
+              image: undefined,
             },
             country: {
               name: "Country B",
               code: "B",
             },
-            continent: undefined, // This might be undefined
+            continent: undefined,
             terminal: {
               name: "Terminal 2",
               type: "International",
