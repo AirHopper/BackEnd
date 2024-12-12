@@ -43,8 +43,14 @@ async function validateFlights({ routeId, flightIds }) {
   }
 
   // Validate first and last flights match the route's airports
-  if (firstFlight.Route.DepartureAirport.id !== route.DepartureAirport.id || lastFlight.Route.ArrivalAirport.id !== route.ArrivalAirport.id) {
-    throw new AppError("First flight's departure or last flight's arrival does not match the route", 400);
+  if (
+    firstFlight.Route.DepartureAirport.id !== route.DepartureAirport.id ||
+    lastFlight.Route.ArrivalAirport.id !== route.ArrivalAirport.id
+  ) {
+    throw new AppError(
+      "First flight's departure or last flight's arrival does not match the route",
+      400
+    );
   }
 
   // Validate connecting airports and sequence
@@ -52,7 +58,10 @@ async function validateFlights({ routeId, flightIds }) {
     const currentFlight = flights[i];
     const nextFlight = flights[i + 1];
 
-    if (currentFlight.Route.ArrivalAirport.id !== nextFlight.Route.DepartureAirport.id) {
+    if (
+      currentFlight.Route.ArrivalAirport.id !==
+      nextFlight.Route.DepartureAirport.id
+    ) {
       throw new AppError("Connecting flights do not match", 400);
     }
 
@@ -78,7 +87,10 @@ function calculateDuration(flights) {
 
     // Add transit time between current flight and the previous flight
     const previousFlight = flights[index - 1];
-    const transitTime = calculateTransitTime(previousFlight.arrivalTime, flight.departureTime);
+    const transitTime = calculateTransitTime(
+      previousFlight.arrivalTime,
+      flight.departureTime
+    );
 
     return total + parseInt(flight.duration) + transitTime;
   }, 0);
@@ -92,11 +104,23 @@ function calculateTransitTime(arrivalTime, departureTime) {
 }
 
 // TODO Get all tickets
-export const getAll = async ({ page = 1, limit = 10, search, orderBy = "price_asc" }) => {
+export const getAll = async ({
+  page = 1,
+  limit = 10,
+  search,
+  orderBy = "price_asc",
+}) => {
   try {
     const offset = (page - 1) * limit;
 
-    let { departureCity, arrivalCity, flightDate, classType, continent, isTransit } = search || {};
+    let {
+      departureCity,
+      arrivalCity,
+      flightDate,
+      classType,
+      continent,
+      isTransit,
+    } = search || {};
 
     const searchFilters = {
       AND: [
@@ -134,7 +158,11 @@ export const getAll = async ({ page = 1, limit = 10, search, orderBy = "price_as
               {
                 departureTime: {
                   gte: new Date(flightDate),
-                  lt: new Date(new Date(flightDate).setDate(new Date(flightDate).getDate() + 1)),
+                  lt: new Date(
+                    new Date(flightDate).setDate(
+                      new Date(flightDate).getDate() + 1
+                    )
+                  ),
                 },
               },
             ]
@@ -291,7 +319,9 @@ export const getAll = async ({ page = 1, limit = 10, search, orderBy = "price_as
       },
       flights: ticket.Flights.map((flight) => {
         const totalSeats = flight.Seat.length;
-        const occupiedSeats = flight.Seat.filter((seat) => seat.isOccupied).length;
+        const occupiedSeats = flight.Seat.filter(
+          (seat) => seat.isOccupied
+        ).length;
         const availableSeats = totalSeats - occupiedSeats;
 
         return {
@@ -301,8 +331,8 @@ export const getAll = async ({ page = 1, limit = 10, search, orderBy = "price_as
           cabinBaggage: flight.cabinBaggage,
           entertainment: flight.entertainment,
           airline: {
-            name : flight.Airplane.Airline.name,
-            logo : flight.Airplane.Airline.imageUrl,
+            name: flight.Airplane.Airline.name,
+            logo: flight.Airplane.Airline.imageUrl,
           },
           airplane: flight.Airplane.name,
           departure: {
@@ -385,10 +415,6 @@ export const getAll = async ({ page = 1, limit = 10, search, orderBy = "price_as
 // TODO Get ticket by ID
 export const getById = async (id) => {
   try {
-    if (isNaN(id)) {
-      throw new AppError("Invalid flight ID", 400);
-    }
-
     const ticket = await prisma.ticket.findUnique({
       where: {
         id,
@@ -485,7 +511,9 @@ export const getById = async (id) => {
       },
       flights: ticket.Flights.map((flight) => {
         const totalSeats = flight.Seat.length;
-        const occupiedSeats = flight.Seat.filter((seat) => seat.isOccupied).length;
+        const occupiedSeats = flight.Seat.filter(
+          (seat) => seat.isOccupied
+        ).length;
         const availableSeats = totalSeats - occupiedSeats;
 
         return {
@@ -495,8 +523,8 @@ export const getById = async (id) => {
           cabinBaggage: flight.cabinBaggage,
           entertainment: flight.entertainment,
           airline: {
-            name : flight.Airplane.Airline.name,
-            logo : flight.Airplane.Airline.imageUrl,
+            name: flight.Airplane.Airline.name,
+            logo: flight.Airplane.Airline.imageUrl,
           },
           airplane: flight.Airplane.name,
           departure: {
@@ -546,6 +574,7 @@ export const getById = async (id) => {
                 }
               : null,
           },
+          seats: flight.Seat,
           totalSeats,
           occupiedSeats,
           availableSeats,
@@ -595,7 +624,7 @@ export const store = async (payload) => {
         totalPrice,
         discountPrice,
         totalDuration,
-        Discount: discountId ? { connect: { id: discountId } } : undefined,
+        Discount: discountId ? { connect: { id: discountId } } : null,
         Flights: {
           connect: flightIds.map((id) => ({ id })),
         },
