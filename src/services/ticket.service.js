@@ -300,7 +300,10 @@ export const getAll = async ({ page = 1, limit = 10, search, orderBy = "price_as
           baggage: flight.baggage,
           cabinBaggage: flight.cabinBaggage,
           entertainment: flight.entertainment,
-          airline: flight.Airplane.Airline.name,
+          airline: {
+            name : flight.Airplane.Airline.name,
+            logo : flight.Airplane.Airline.imageUrl,
+          },
           airplane: flight.Airplane.name,
           departure: {
             time: flight.departureTime,
@@ -491,7 +494,10 @@ export const getById = async (id) => {
           baggage: flight.baggage,
           cabinBaggage: flight.cabinBaggage,
           entertainment: flight.entertainment,
-          airline: flight.Airplane.Airline.name,
+          airline: {
+            name : flight.Airplane.Airline.name,
+            logo : flight.Airplane.Airline.imageUrl,
+          },
           airplane: flight.Airplane.name,
           departure: {
             time: flight.departureTime,
