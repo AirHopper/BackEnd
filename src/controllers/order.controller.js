@@ -1,10 +1,28 @@
-import { getAllUserOwnedOrders, createOrder, getUserOwnedOrderById } from "../services/order.service.js";
+import { getAllUserOwnedOrders, createOrder, getUserOwnedOrderById, getAllOrders } from "../services/order.service.js";
 import { cancelPaymentByOrderId, createPayment } from "../services/payment.service.js";
 import { createPassengers } from "../services/passenger.service.js";
 import { checkSeatAvailability, updateSeatOccupied } from "../services/seat.service.js";
 import { getById } from "../services/ticket.service.js";
 import { getUserProfile } from "../services/user.service.js";
 import AppError from "../utils/AppError.js";
+
+// admin only
+export const getAll = async (req, res, next) => {
+    try {
+        const account = await getUserProfile(req.user.id); // req.user.id is accountId while user.id is userId
+        console.log(account);
+        if (account.role !== 'admin') throw new AppError('Unauthorized', 401); // still unauthorized, since jwt does not provide a role (need fix on subhan)
+        const orders = await getAllOrders();
+        res.status(200).json({
+            success: true,
+            message: 'Orders fetched successfully',
+            data: orders
+        });
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
+}
 
 export const getAllUserOwned = async (req, res, next) => {
     try {
