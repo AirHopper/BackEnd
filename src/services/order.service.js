@@ -1,9 +1,7 @@
 import prisma from '../utils/prisma.js';
 
-export const getAllUserOwnedOrders = async ({userId, page = 1, limit = 10, search}) => {
+export const getAllUserOwnedOrders = async ({userId, search}) => {
     try {
-        const offset = (page - 1) * limit;
-
         const { orderId, startFlightDate, endFlightDate } = search || {};
 
         const orders = await prisma.order.findMany({
@@ -121,8 +119,6 @@ export const getAllUserOwnedOrders = async ({userId, page = 1, limit = 10, searc
                     }
                 }
             },
-            skip: offset,
-            take: parseInt(limit),
             orderBy: {
                 OutboundTicket: {
                     departureTime: 'asc' // berdasarkan waktu keberangkatan tiket terawal
@@ -152,6 +148,7 @@ export const getAllUserOwnedOrders = async ({userId, page = 1, limit = 10, searc
             order.Passengers.forEach((passenger) => {
                 const passengerId = passenger.identifierNumber;
                 const seatInfo = {
+                    id: passenger.Seat.id,
                     number: passenger.Seat.seatNumber,
                     class: passenger.Seat.Flight.seatClass,
                     airplane: passenger.Seat.Flight.Airplane.name,
@@ -182,7 +179,9 @@ export const getAllUserOwnedOrders = async ({userId, page = 1, limit = 10, searc
             isRoundTrip: order.isRoundTrip,
             bookingDate: order.bookingDate,
             qrCodeUrl: order.qrCodeUrl,
+            detailPrice: order.detailPrice,
             payment: {
+                id: order.Payment.id,
                 method: order.Payment.method,
                 amount: order.Payment.amount,
                 fraudStatus: order.Payment.fraudStatus,
@@ -402,17 +401,7 @@ export const getAllUserOwnedOrders = async ({userId, page = 1, limit = 10, searc
         };
     });
 
-    // Count total orders
-    const totalOrders = await prisma.order.count();
-
-    const pagination = {
-        totalItems: totalOrders,
-        currentPage: parseInt(page),
-        totalPages: Math.ceil(totalOrders / limit),
-        pageSize: parseInt(limit),
-    };
-
-    return {pagination, formattedOrders};
+    return formattedOrders;
 
     } catch (error) {
         console.error('Error fetching orders:', error);
@@ -549,6 +538,7 @@ export const getUserOwnedOrderById = async (id, userId) => {
         order.Passengers.forEach((passenger) => {
             const passengerId = passenger.identifierNumber;
             const seatInfo = {
+                id: passenger.Seat.id,
                 number: passenger.Seat.seatNumber,
                 class: passenger.Seat.Flight.seatClass,
                 airplane: passenger.Seat.Flight.Airplane.name,
@@ -579,7 +569,9 @@ export const getUserOwnedOrderById = async (id, userId) => {
             isRoundTrip: order.isRoundTrip,
             bookingDate: order.bookingDate,
             qrCodeUrl: order.qrCodeUrl,
+            detailPrice: order.detailPrice,
             payment: {
+                id: order.Payment.id,
                 method: order.Payment.method,
                 amount: order.Payment.amount,
                 fraudStatus: order.Payment.fraudStatus,
@@ -817,9 +809,10 @@ export const createOrder = async (request, paymentId, orderId, userId) => {
                 userId,
                 paymentId,
                 isRoundTrip,
+                detailPrice: request.detailPrice,
                 qrCodeUrl: 'test',
                 outboundTicketId: request.outboundTicketId,
-                returnTicketId,
+                returnTicketId
             }
         });
     } catch (error) {

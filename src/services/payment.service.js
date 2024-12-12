@@ -78,7 +78,6 @@ export const updatePaymentStatusById = async (id, request) => {
 export const cancelPaymentByOrderId = async (orderId) => {
     try {
         const chargeResponse = await coreApi.transaction.cancel(orderId);
-        console.log({chargeResponse})
         if (chargeResponse.status_code !== '200') throw new AppError('Error on chargeResponse', 500);
         return;
     } catch (error) {

@@ -10,19 +10,16 @@ export const getAllUserOwned = async (req, res, next) => {
     try {
         const account = await getUserProfile(req.user.id); // req.user.id is accountId while user.id is userId
         const userId = account.user.id;
-        const { page, limit, search } = req.query;
+        const { search } = req.query;
 
-        const { orders, pagination } = await getAllUserOwnedOrders({
+        const orders = await getAllUserOwnedOrders({
             userId, 
-            page, 
-            limit, 
             search
         });
 
         res.status(200).json({
             success: true,
             message: 'Orders fetched successfully',
-            pagination,
             data: orders
         });
     } catch (error) {
@@ -92,7 +89,7 @@ export const cancelUserOwnedById = async (req, res, next) => {
         const order = await getUserOwnedOrderById(orderId, userId);
         if (!order) throw new AppError('Order not found', 404);
         if (order.orderStatus !== 'Unpaid') throw new AppError('Order cannot be cancelled', 400);
-        const seatIds = order.Passengers.flatMap(passenger => passenger.seatId);
+        const seatIds = order.passengers.flatMap(passenger => passenger.seat.map(seat => seat.id))
         await cancelPaymentByOrderId(orderId);
         await updateSeatOccupied(seatIds, false);
         return res.status(200).json({

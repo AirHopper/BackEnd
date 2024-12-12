@@ -53,15 +53,16 @@ enum Continent {
 }
 
 model Account {
-  id            Int       @id @default(autoincrement())
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
-  email         String    @unique
-  password      String
-  role          Role      @default(Buyer)
-  otpCode       String?   @map("otp_code")
-  otpExpiration DateTime? @map("otp_expiration")
-  isVerified    Boolean   @default(false) @map("is_verified")
+  id                       Int       @id @default(autoincrement())
+  createdAt                DateTime  @default(now()) @map("created_at")
+  updatedAt                DateTime  @updatedAt @map("updated_at")
+  email                    String    @unique
+  password                 String
+  role                     Role      @default(Buyer)
+  otpCode                  String?   @map("otp_code")
+  otpExpiration            DateTime? @map("otp_expiration")
+  isVerified               Boolean   @default(false) @map("is_verified")
+  notificationSubscription String?   @map("notification_subscription")
 
   user         User?
   Notification Notification[]
@@ -241,6 +242,7 @@ model Order {
   isRoundTrip      Boolean      @default(false) @map("is_round_trip")
   outboundTicketId Int          @map("outbound_ticket_id")
   returnTicketId   Int?         @map("return_ticket_id")
+  detailPrice      Json[]       @map("detail_price")
   createdAt        DateTime     @default(now()) @map("created_at")
   updatedAt        DateTime     @updatedAt @map("updated_at")
 
