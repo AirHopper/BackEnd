@@ -2,9 +2,11 @@ import * as flightService from "../../services/flight.service";
 import prismaMock from "../../utils/singleton";
 import AppError from "../../utils/AppError";
 
-jest.spyOn(console, "error").mockImplementation(() => {});
-
 describe("Flight Service", () => {
+  beforeEach(() => {
+    jest.spyOn(console, "error").mockImplementation(() => {});
+  });
+
   afterEach(() => {
     jest.restoreAllMocks();
   });
@@ -846,18 +848,12 @@ describe("Flight Service", () => {
     it("should throw an error if no flights are found", async () => {
       prismaMock.flight.findMany.mockResolvedValue([]);
 
-      const consoleErrorSpy = jest
-        .spyOn(console, "error")
-        .mockImplementation(() => {});
-
       await expect(flightService.getAll({})).rejects.toThrow(AppError);
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect(console.error).toHaveBeenCalledWith(
         "Error getting flight data:",
         expect.any(Error)
       );
-
-      consoleErrorSpy.mockRestore();
     });
   });
 
@@ -957,21 +953,13 @@ describe("Flight Service", () => {
     it("should throw an error if flight is not found", async () => {
       prismaMock.flight.findUnique.mockResolvedValue(null);
 
-      // Mocking console.error to check for the error log
-      const consoleErrorMock = jest
-        .spyOn(console, "error")
-        .mockImplementation(() => {});
-
       await expect(flightService.getById(999)).rejects.toThrow(AppError);
 
       // Correct the error message comparison
-      expect(consoleErrorMock).toHaveBeenCalledWith(
+      expect(console.error).toHaveBeenCalledWith(
         "Error getting flight data:",
         expect.any(Error)
       );
-
-      // Restore console.error to its original implementation
-      consoleErrorMock.mockRestore();
     });
   });
 
@@ -1082,21 +1070,13 @@ describe("Flight Service", () => {
         arrivalTime: new Date("2023-12-11T12:30:00Z"),
       };
 
-      // Mocking console.error to check for the error log
-      const consoleErrorMock = jest
-        .spyOn(console, "error")
-        .mockImplementation(() => {});
-
       await expect(flightService.store(payload)).rejects.toThrow(AppError);
 
       // Check if console.error was called
-      expect(consoleErrorMock).toHaveBeenCalledWith(
+      expect(console.error).toHaveBeenCalledWith(
         "Error creating flight:",
         expect.any(Error)
       );
-
-      // Restore console.error to its original implementation
-      consoleErrorMock.mockRestore();
     });
 
     it("should throw an error if the route is not found", async () => {
@@ -1130,6 +1110,12 @@ describe("Flight Service", () => {
       prismaMock.airplane.findUnique.mockResolvedValue(null);
 
       await expect(flightService.store(payload)).rejects.toThrow(AppError);
+
+      // Check if console.error was called
+      expect(console.error).toHaveBeenCalledWith(
+        "Error creating flight:",
+        expect.any(Error)
+      );
     });
 
     it("should throw an error if the departure terminal is not found", async () => {
@@ -1148,6 +1134,12 @@ describe("Flight Service", () => {
       prismaMock.terminal.findUnique.mockResolvedValueOnce(null);
 
       await expect(flightService.store(payload)).rejects.toThrow(AppError);
+
+      // Check if console.error was called
+      expect(console.error).toHaveBeenCalledWith(
+        "Error creating flight:",
+        expect.any(Error)
+      );
     });
 
     it("should throw an error if the arrival terminal is not found", async () => {
@@ -1168,6 +1160,12 @@ describe("Flight Service", () => {
         .mockResolvedValueOnce(null);
 
       await expect(flightService.store(payload)).rejects.toThrow(AppError);
+
+      // Check if console.error was called
+      expect(console.error).toHaveBeenCalledWith(
+        "Error creating flight:",
+        expect.any(Error)
+      );
     });
 
     it("should throw an error if the discount is not found", async () => {
@@ -1190,6 +1188,12 @@ describe("Flight Service", () => {
       prismaMock.discount.findUnique.mockResolvedValue(null);
 
       await expect(flightService.store(payload)).rejects.toThrow(AppError);
+
+      // Check if console.error was called
+      expect(console.error).toHaveBeenCalledWith(
+        "Error creating flight:",
+        expect.any(Error)
+      );
     });
   });
 
@@ -1288,6 +1292,12 @@ describe("Flight Service", () => {
       prismaMock.flight.findUnique.mockResolvedValue(existingFlight);
 
       await expect(flightService.update(payload, 1)).rejects.toThrow(AppError);
+
+      // Check if console.error was called
+      expect(console.error).toHaveBeenCalledWith(
+        "Error updating flight:",
+        expect.any(Error)
+      );
     });
 
     it("should throw an error if route is not found", async () => {
@@ -1298,6 +1308,12 @@ describe("Flight Service", () => {
       prismaMock.route.findUnique.mockResolvedValue(null);
 
       await expect(flightService.update(payload, 1)).rejects.toThrow(AppError);
+
+      // Check if console.error was called
+      expect(console.error).toHaveBeenCalledWith(
+        "Error updating flight:",
+        expect.any(Error)
+      );
     });
 
     it("should throw an error if airplane is not found", async () => {
@@ -1310,6 +1326,12 @@ describe("Flight Service", () => {
       prismaMock.airplane.findUnique.mockResolvedValue(null);
 
       await expect(flightService.update(payload, 1)).rejects.toThrow(AppError);
+
+      // Check if console.error was called
+      expect(console.error).toHaveBeenCalledWith(
+        "Error updating flight:",
+        expect.any(Error)
+      );
     });
 
     it("should throw an error if departure terminal is not found", async () => {
@@ -1324,6 +1346,12 @@ describe("Flight Service", () => {
       prismaMock.terminal.findUnique.mockResolvedValueOnce(null);
 
       await expect(flightService.update(payload, 1)).rejects.toThrow(AppError);
+
+      // Check if console.error was called
+      expect(console.error).toHaveBeenCalledWith(
+        "Error updating flight:",
+        expect.any(Error)
+      );
     });
 
     it("should throw an error if arrival terminal is not found", async () => {
@@ -1342,6 +1370,12 @@ describe("Flight Service", () => {
         .mockResolvedValueOnce(null); // Mock missing arrival terminal
 
       await expect(flightService.update(payload, 1)).rejects.toThrow(AppError);
+
+      // Check if console.error was called
+      expect(console.error).toHaveBeenCalledWith(
+        "Error updating flight:",
+        expect.any(Error)
+      );
     });
   });
 
