@@ -157,7 +157,7 @@ model Seat {
   isOccupied Boolean @default(false) @map("is_occupied")
 
   Flight    Flight     @relation(fields: [flightId], references: [id], onDelete: Cascade)
-  Passenger Passenger?
+  Passenger Passenger[]
 
   @@map("seats")
 }
@@ -239,8 +239,8 @@ model Order {
   bookingDate      DateTime     @default(now()) @map("booking_date")
   orderStatus      OrderStatus  @default(Unpaid) @map("order_status")
   isRoundTrip      Boolean      @default(false) @map("is_round_trip")
-  outboundTicketId Int          @unique @map("outbound_ticket_id")
-  returnTicketId   Int?         @unique @map("return_ticket_id")
+  outboundTicketId Int          @map("outbound_ticket_id")
+  returnTicketId   Int?         @map("return_ticket_id")
   createdAt        DateTime     @default(now()) @map("created_at")
   updatedAt        DateTime     @updatedAt @map("updated_at")
 
@@ -257,7 +257,7 @@ model Order {
 model Payment {
   id            Int       @id @default(autoincrement())
   method        String?   // credit_card, e_wallet, etc.
-  status        String?   // Midtrans status: pending, settlement, expire, cancel
+  status        String    @default("pending") // Midtrans status: pending, settlement, expire, cancel
   amount        Decimal
   payload       Json?     // Full webhook payload
   transactionId String?   @unique @map("transaction_id") // Unique transaction ID from Midtrans
@@ -276,7 +276,7 @@ model Payment {
 model Passenger {
   id               Int           @id @default(autoincrement())
   orderId          String        @map("order_id")
-  seatId           Int           @unique @map("seat_id")
+  seatId           Int           @map("seat_id")
   type             PassengerType
   title            TitleType
   name             String

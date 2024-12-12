@@ -22,5 +22,3 @@ export const isValidSignatureMidtrans = (request) => {
 
     return hash === request.signature_key;
 }
-
-export const MIDTRANS_CLIENT_KEY = process.env.MIDTRANS_CLIENT_KEY;
