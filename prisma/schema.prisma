@@ -244,6 +244,7 @@ model Order {
   returnTicketId   Int?        @unique @map("return_ticket_id")
   createdAt        DateTime    @default(now()) @map("created_at")
   updatedAt        DateTime    @updatedAt @map("updated_at")
+  detailPrice      Json[]      @map("detail_price")
 
   User           User    @relation(fields: [userId], references: [id])
   Payment        Payment @relation(fields: [paymentId], references: [id])
