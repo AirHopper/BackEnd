@@ -5,7 +5,7 @@ import * as validator from '../middlewares/validator/notification.validator.js';
 
 const router = express.Router();
 
-router.post('/promotion', authHandler, notificationController.createPromotionNotif);
-router.get('/', validator.validateCreatePromotion, authHandler, notificationController.getUserNotification);
+router.post('/promotion', validator.validateCreatePromotion, authHandler, notificationController.createPromotionNotif);
+router.get('/', authHandler, notificationController.getUserNotification);
 
 export default router;
