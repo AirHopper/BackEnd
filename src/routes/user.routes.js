@@ -10,6 +10,5 @@ router.get('/profile', authHandler, userController.getUserProfile);
 router.put('/profile', validator.validateUpdateUserProfile, authHandler, userController.updateUserProfile);
 router.put('/change-password', validator.validateChangePassword, authHandler, userController.changePassword);
 router.post('/notification', authHandler, userController.subscribeUser);
-router.get('/notification', authHandler, userController.readAllUserNotifications);
 
 export default router;

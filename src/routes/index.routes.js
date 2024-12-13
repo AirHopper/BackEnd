@@ -12,6 +12,7 @@ import orders from "./order.routes.js";
 import authHandler from "../middlewares/authHandler.js";
 import tickets from "./ticket.routes.js";
 import users from "./user.routes.js";
+import notifications from "./notification.routes.js";
 
 export default (app) => {
   const router = express.Router();
@@ -28,6 +29,7 @@ export default (app) => {
   router.use("/payments", payments);
   router.use("/tickets", tickets);
   router.use("/users", users);
+  router.use("/notifications", notifications);
 
   app.use("/api/v1", router);
 };

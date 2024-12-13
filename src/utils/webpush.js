@@ -6,6 +6,11 @@ webpush.setVapidDetails(
   process.env.WEB_PUSH_PRIVATE_KEY
 )
 
-export const sendNotification = async (subscription, message) => {
-  await webpush.sendNotification(subscription, message);
+export const sendNotification = async (subscription, title, description) => {
+  const payload = JSON.stringify({
+    title: title, 
+    body: description, 
+    // icon
+  });
+  await webpush.sendNotification(subscription, payload);
 }
