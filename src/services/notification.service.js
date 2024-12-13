@@ -65,4 +65,4 @@ export const createOrderNotification = async (userId, title, description) => {
   }
 }
 
-createOrderNotification(3, "Order", "OrderSuksesBang!");
+// createOrderNotification(3, "Order", "OrderSuksesBang!");
