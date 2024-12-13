@@ -145,11 +145,13 @@ export const getAll = async ({
           ? [
               {
                 Flights: {
-                  Airplane: {
-                    Airline: {
-                      name: {
-                        contains: airline,
-                        mode: "insensitive",
+                  some: {
+                    Airplane: {
+                      Airline: {
+                        name: {
+                          contains: airline,
+                          mode: "insensitive",
+                        },
                       },
                     },
                   },
