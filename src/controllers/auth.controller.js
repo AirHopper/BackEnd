@@ -1,4 +1,5 @@
 import * as authService from "../services/auth.service.js";
+import customError from "../utils/AppError.js"
 
 export const register = async (req, res, next) => {
   try {
@@ -119,5 +120,24 @@ export const getUser = async (req, res, next) => {
   } catch (error) {
     console.log(error);
     next(error)
+  }
+}
+
+export const registerAdmin = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'Admin') {
+      throw new customError('You do not have permission to perform this action', 403);
+    }
+
+    const data = await authService.registerAdmin(req.body);
+    res.status(201).json({
+      success: true,
+      message: "Admin registered successfully",
+      data: data,
+      error: null,
+    })
+  } catch (error) {
+    console.log(error);
+    next(error);
   }
 }

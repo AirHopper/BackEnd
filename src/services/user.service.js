@@ -2,6 +2,7 @@ import prisma from "../utils/prisma.js";
 import customError from "../utils/AppError.js"
 import cleanUpAccountData from "../utils/cleanUpAccountData.js"
 import { comparePassword, hashPassword } from "../utils/bcrypt.js";
+import { sendNotification } from "../utils/webpush.js";
 
 // GET list of all users (Admin) 
 export const getAllUsers = async () => {
@@ -10,7 +11,7 @@ export const getAllUsers = async () => {
     accounts.forEach(account => cleanUpAccountData(account));
     return accounts;
   } catch(error) {
-    console.log("Error get all users information: ", error);
+    console.log("Error get all users information");
     throw error;
   }
 }
@@ -20,12 +21,12 @@ export const getUserProfile = async (userId) => {
   try {
     const account = await prisma.account.findUnique({ 
       where: { id: userId }, 
-      include: { user: true} }
+      include: { user: true, Notification: true } }
     );
     cleanUpAccountData(account)
     return account;
   } catch (error) {
-    console.log("Error get a user information: ", error);
+    console.log("Error get a user information");
     throw error;
   }
 }
@@ -83,9 +84,58 @@ export const changePassword = async (userId, userData) => {
     cleanUpAccountData(account);
     return account;
   } catch(error) {
-    console.log("Error change user password: ", error);
+    console.log("Error change user password");
     throw error;
   }
 }
 
-// User notification
+// Subscribe user for push notification
+export const subscribeUser = async (userId, subscription) => {
+  try {
+    await prisma.account.update({ 
+      where: { id: userId },
+      data: { notificationSubscription: JSON.stringify(subscription) }
+    });
+  } catch(error) {
+    console.log("Error subscribing user for notification");
+    throw error;
+  }
+}
+
+// // Send user notification to service worker
+// export const getUserNotification = async (userId) => {
+//   try {
+//     const notification = await prisma.notification.findMany({
+//       where: { accountId: userId, isRead: false },
+//       include: { Account: true },
+//       orderBy: { createdAt: 'asc' }
+//     })
+//     notification.forEach(async notif => {
+//       await sendNotification(JSON.parse(notif.Account.notificationSubscription), notif.message);
+//       await prisma.notification.update({ 
+//         where: { id: notif.id },
+//         data: { isRead: true },
+//       })
+//     })
+//     return notification.map(notif => ({ 
+//       message: notif.message, 
+//       createdAt: notif.createdAt
+//     }));
+//   } catch(error) {
+//     console.log("Failed to get user notification: ", error);
+//     throw error;
+//   }
+// }
+
+export const readAllUserNotifications = async (userId) => {
+  try {
+    await prisma.notification.updateMany({
+      where: { accountId: userId },
+      data: { isRead: true }
+    })
+    return "Successfully update all notification\'s isRead to true";
+  } catch(error) {
+    console.log("Error read all user notification");
+    throw error;
+  }
+}

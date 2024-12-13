@@ -65,3 +65,48 @@ export const changePassword = async (req, res, next) => {
     next(error);
   }
 }
+
+export const subscribeUser = async (req, res, next) => {
+  try {
+    await userService.subscribeUser(req.user.id, req.body);
+    res.status(200).json({
+      success: true,
+      message: "Subscription saved!",
+      data: null,
+      error: null,
+    })
+  } catch(error) {
+    console.log(error);
+    next(error);
+  }
+}
+
+export const getUserNotification = async (req, res, next) => {
+  try {
+    const notifications = await userService.getUserNotification(req.user.id);
+    res.status(200).json({
+      success: true,
+      message: "Notification has been sent successfully!",
+      data: notifications,
+      error: null,
+    })
+  } catch(error) {
+    console.log(error);
+    next(error);
+  }
+}
+
+export const readAllUserNotifications = async (req, res, next) => {
+  try {
+    const notifications = await userService.readAllUserNotifications(req.user.id);
+    res.status(200).json({
+      success: true,
+      message: "All notifications has been read successfully!",
+      data: notifications,
+      error: null,
+    })
+  } catch(error) {
+    console.log(error);
+    next(error);
+  }
+}
