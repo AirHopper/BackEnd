@@ -285,6 +285,7 @@ export const getAll = async ({
             },
           },
         },
+        Discount: true,
       },
       skip: offset,
       take: parseInt(limit, 10),
@@ -295,6 +296,7 @@ export const getAll = async ({
     const formattedTickets = tickets.map((ticket) => ({
       id: ticket.id,
       class: ticket.class,
+      discount: ticket.Discount,
       isTransits: ticket.isTransits,
       price: ticket.price,
       totalPrice: ticket.totalPrice,
@@ -477,6 +479,7 @@ export const getById = async (id) => {
             },
           },
         },
+        Discount: true,
       },
     });
 
@@ -490,6 +493,7 @@ export const getById = async (id) => {
       isTransits: ticket.isTransits,
       price: ticket.price,
       totalPrice: ticket.totalPrice,
+      discount: ticket.Discount,
       isActive: ticket.isActive,
       departure: {
         time: ticket.departureTime,
@@ -617,7 +621,6 @@ export const store = async (payload) => {
     // Calculate total price and duration
     let totalPrice = calculatePrice(flights);
     let totalDuration = calculateDuration(flights);
-    let discountPrice = null;
 
     if (discountId) {
       const discount = await prisma.discount.findUnique({
@@ -628,7 +631,7 @@ export const store = async (payload) => {
         throw new AppError("Discount not found", 404);
       }
 
-      discountPrice = totalPrice - totalPrice * (discount.percentage / 100);
+      totalPrice = totalPrice - totalPrice * (discount.percentage / 100);
     }
 
     const ticket = await prisma.ticket.create({
@@ -639,7 +642,6 @@ export const store = async (payload) => {
         departureTime: flights[0].departureTime,
         arrivalTime: flights[flights.length - 1].arrivalTime,
         totalPrice,
-        discountPrice,
         totalDuration,
         Discount: discountId ? { connect: { id: discountId } } : null,
         Flights: {

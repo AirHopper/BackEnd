@@ -192,7 +192,6 @@ model Ticket {
   departureTime DateTime  @map("departure_date")
   arrivalTime   DateTime  @map("arrival_date")
   totalPrice    Decimal   @map("total_price")
-  discountPrice Decimal?  @map("price_discount")
   totalDuration Int       @map("total_duration")
   discountId    Int?      @map("discount_id")
   createdAt     DateTime  @default(now()) @map("created_at")

@@ -1,7 +1,7 @@
 import { PrismaClient, RegionType, Continent, Role } from "@prisma/client";
 import bcrypt from "bcrypt";
 import haversine from "haversine";
-import { nanoid } from 'nanoid';
+import { nanoid } from "nanoid";
 
 const prisma = new PrismaClient();
 
@@ -193,6 +193,65 @@ async function seedAccounts() {
         phoneNumber: "1234567890",
       },
     });
+  }
+}
+
+async function seedNotifications() {
+  try {
+    // Find the buyer account
+    const buyerAccount = await prisma.account.findUnique({
+      where: { email: "buyer@example.com" },
+    });
+
+    if (!buyerAccount) {
+      console.error("Buyer account not found. Notifications cannot be seeded.");
+      return;
+    }
+
+    // Seed notifications for the buyer account
+    const notifications = [
+      {
+        accountId: buyerAccount.id,
+        type: "Promosi",
+        title: "Special Discount Offer!",
+        description:
+          "Get 20% off on your next booking. Offer valid until December 31st.",
+        isRead: false,
+      },
+      {
+        accountId: buyerAccount.id,
+        type: "Notifikasi",
+        title: "Payment Successful",
+        description:
+          "Your payment for order #12345 has been successfully processed.",
+        isRead: false,
+      },
+      {
+        accountId: buyerAccount.id,
+        type: "Promosi",
+        title: "Refer & Earn",
+        description:
+          "Refer a friend and earn reward points on their first purchase.",
+        isRead: false,
+      },
+      {
+        accountId: buyerAccount.id,
+        type: "Notifikasi",
+        title: "Booking Confirmation",
+        description:
+          "Your booking for flight #ABC123 has been confirmed. Check your email for details.",
+        isRead: false,
+      },
+    ];
+
+    // Create the notifications in the database
+    await prisma.notification.createMany({
+      data: notifications,
+    });
+
+    console.log("4 notifications seeded successfully for the buyer account.");
+  } catch (error) {
+    console.error("Error seeding notifications:", error);
   }
 }
 
@@ -862,6 +921,7 @@ async function seedOrders() {
 async function main() {
   try {
     await seedAccounts();
+    await seedNotifications();
     await seedCities();
     await seedAirports();
     await seedRoutes();
