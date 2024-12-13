@@ -859,8 +859,6 @@ async function seedOrders() {
   }
 }
 
-
-
 async function main() {
   try {
     await seedAccounts();
