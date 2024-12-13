@@ -95,32 +95,29 @@ export const updateCityPhoto = async (code, file) => {
     }
 
     let updatedImageData = {};
-    if (file) {
-      if (city.imageId) {
-        // Delete the existing image if present
-        await imagekit.deleteFile(city.imageId);
-      }
 
-      const result = await imagekit.upload({
-        file: file.buffer,
-        fileName: `city_${code}_${Date.now()}`,
-        folder: "/city_images/",
-      });
-
-      updatedImageData = {
-        imageUrl: result.url,
-        imageId: result.fileId,
-      };
-
-      const updatedCity = await prisma.city.update({
-        where: { code },
-        data: updatedImageData,
-      });
-
-      return updatedCity;
+    if (city.imageId) {
+      // Delete the existing image if present
+      await imagekit.deleteFile(city.imageId);
     }
 
-    throw new AppError("No file provided for updating photo", 400);
+    const result = await imagekit.upload({
+      file: file.buffer,
+      fileName: `city_${code}_${Date.now()}`,
+      folder: "/city_images/",
+    });
+
+    updatedImageData = {
+      imageUrl: result.url,
+      imageId: result.fileId,
+    };
+
+    const updatedCity = await prisma.city.update({
+      where: { code },
+      data: updatedImageData,
+    });
+
+    return updatedCity;
   } catch (error) {
     console.error("Error updating city photo:", error);
     throw error;
@@ -138,7 +135,9 @@ export const deleteCity = async (code) => {
       throw new AppError("City not found", 404);
     }
 
-    await imagekit.deleteFile(city.imageId);
+    if (city.imageId) {
+      await imagekit.deleteFile(city.imageId);
+    }
 
     await prisma.city.delete({
       where: { code },
