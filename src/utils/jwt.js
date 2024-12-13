@@ -5,7 +5,7 @@ import customError from "../utils/AppError.js";
 const getToken = (payloadData) => {
   const payload = payloadData;
   const options = {
-    expiresIn: "1h",
+    expiresIn: "48h",
     issuer: "AirHopper",
   };
   return jwt.sign(payload, secretKey, options);

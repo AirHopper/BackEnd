@@ -7,6 +7,7 @@ const cleanUpAccountData = (account) => {
     "password",
     "otpCode",
     "otpExpiration",
+    "notificationSubscription"
   ].forEach((key) => delete account[key]);
 };
 
