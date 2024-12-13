@@ -21,7 +21,7 @@ export const getUserProfile = async (userId) => {
   try {
     const account = await prisma.account.findUnique({ 
       where: { id: userId }, 
-      include: { user: true} }
+      include: { user: true, Notification: true } }
     );
     cleanUpAccountData(account)
     return account;
