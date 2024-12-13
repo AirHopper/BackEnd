@@ -120,6 +120,7 @@ export const getAll = async ({
       classType,
       continent,
       isTransit,
+      airline,
     } = search || {};
 
     const searchFilters = {
@@ -132,6 +133,22 @@ export const getAll = async ({
                     City: {
                       name: {
                         contains: departureCity,
+                        mode: "insensitive",
+                      },
+                    },
+                  },
+                },
+              },
+            ]
+          : []),
+        ...(airline
+          ? [
+              {
+                Flights: {
+                  Airplane: {
+                    Airline: {
+                      name: {
+                        contains: airline,
                         mode: "insensitive",
                       },
                     },
