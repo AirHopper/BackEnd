@@ -45,6 +45,11 @@ const resetPasswordSchema = z
     path: ["confirmPassword"],
   });
 
+  const registerAdminSchema = z.object({
+    email: z.string().email("Please input a valid email"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+  });
+
 // Middleware for validation
 const validate = (schema) => (req, res, next) => {
   try {
@@ -64,3 +69,4 @@ export const validateLogin = validate(loginSchema);
 export const validateGoogleLogin = validate(googleLoginSchema);
 export const validateForgotPassword = validate(forgotPasswordSchema);
 export const validateResetPassword = validate(resetPasswordSchema);
+export const validateRegisterAdmin = validate(registerAdminSchema);

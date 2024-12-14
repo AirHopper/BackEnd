@@ -213,7 +213,7 @@ export const forgotPassword = async (userData) => {
 
     const emailTemplatePath = path.resolve("src/views/resetPassword.ejs");
 
-    const resetLink = `http://localhost:5173/reset-password?token=${token}`;
+    const resetLink = `${process.env.FE_URL}/reset-password?token=${token}`;
 
     const htmlContent = await ejs.renderFile(emailTemplatePath, {
       resetLink,
@@ -263,3 +263,27 @@ export const getUser = async (userData) => {
     throw error;
   }
 };
+
+// Register admin by other admin
+export const registerAdmin = async (userData) => {
+  const { email, password } = userData;
+  const hashedPassword = await hashPassword(password);
+  try {
+    const account = await prisma.account.create({
+      data: {
+        email: email,
+        password: hashedPassword,
+        role: 'Admin',
+        isVerified: true
+      }
+    })
+    cleanUpAccountData(account);
+    return account;
+  } catch (error) {
+    console.error("Error registering admin:", error);
+    if (error.code === "P2002") {
+      throw new customError("Email, phone number, or fullname already used", 409);
+    }
+    throw error;
+  }
+}
