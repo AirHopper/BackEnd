@@ -57,7 +57,9 @@ export const createOrderNotification = async (userId, title, description) => {
     })
 
     // Push notification
-    await sendNotification(JSON.parse(notification.Account.notificationSubscription), notification.title, notification.description);
+    if (notification.Account.notificationSubscription) {
+      await sendNotification(JSON.parse(notification.Account.notificationSubscription), notification.title, notification.description);
+    }
     return notification;
   } catch (error) {
     console.log("Error create notification of order!");
@@ -65,4 +67,8 @@ export const createOrderNotification = async (userId, title, description) => {
   }
 }
 
-// createOrderNotification(3, "Order", "OrderSuksesBang!");
+try {
+  await createOrderNotification(1, "Order", "OrderSuksesBang!");
+} catch(error) {
+  console.log(error);
+}
