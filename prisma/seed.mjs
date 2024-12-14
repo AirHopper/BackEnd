@@ -60,7 +60,7 @@ async function calculateFlightPrice(flightData) {
   return price;
 }
 
-async function store(flightData) {
+async function store(flightData, discountId = null) {
   const { class: classType, departureTime, arrivalTime } = flightData;
 
   // Calculate capacity dynamically
@@ -68,6 +68,14 @@ async function store(flightData) {
 
   // Calculate price based on airplane, route, and class type
   const price = await calculateFlightPrice(flightData);
+  let ticketPrice = price;
+
+  if (discountId) {
+    const discount = await prisma.discount.findUnique({
+      where: { id: discountId },
+    });
+    ticketPrice -= (price * discount.percentage) / 100;
+  }
 
   // Create the flight with nested Seat and Ticket
   return prisma.flight.create({
@@ -89,7 +97,8 @@ async function store(flightData) {
           isTransits: false,
           departureTime: new Date(departureTime),
           arrivalTime: new Date(arrivalTime),
-          totalPrice: price,
+          totalPrice: ticketPrice,
+          discountId,
           totalDuration:
             (new Date(arrivalTime) - new Date(departureTime)) / 60000, // Duration in minutes
         },
@@ -137,8 +146,15 @@ async function storeTicket(payload) {
   }
 
   // Calculate total price and duration
-  const totalPrice = calculateTicketPrice(flights);
+  let totalPrice = calculateTicketPrice(flights);
   const totalDuration = calculateTicketDuration(flights);
+
+  if (discountId) {
+    const discount = await prisma.discount.findUnique({
+      where: { id: discountId },
+    });
+    totalPrice -= (totalPrice * discount.percentage) / 100;
+  }
 
   // Create the ticket
   return prisma.ticket.create({
@@ -150,7 +166,7 @@ async function storeTicket(payload) {
       arrivalTime: flights[flights.length - 1].arrivalTime,
       totalPrice,
       totalDuration,
-      Discount: discountId ? { connect: { id: discountId } } : undefined,
+      discountId,
       Flights: {
         connect: flightIds.map((id) => ({ id })),
       },
@@ -252,6 +268,25 @@ async function seedNotifications() {
     console.log("4 notifications seeded successfully for the buyer account.");
   } catch (error) {
     console.error("Error seeding notifications:", error);
+  }
+}
+
+async function seedDiscounts() {
+  try {
+    const discounts = [
+      { percentage: 15 },
+      { percentage: 25 },
+      { percentage: 50 },
+      { percentage: 75 },
+    ];
+
+    await prisma.discount.createMany({
+      data: discounts,
+    });
+
+    console.log("Discounts seeded successfully!");
+  } catch (error) {
+    console.error("Error seeding discounts:", error);
   }
 }
 
@@ -364,7 +399,7 @@ async function seedRoutes() {
     { departureAirportId: "CGK", arrivalAirportId: "DPS" },
 
     // Transit routes
-    { departureAirportId: "JFK", arrivalAirportId: "CGK" }, // Transit possible via SIN = JFK -> SIN -> CGK => 2, 4
+    { departureAirportId: "JFK", arrivalAirportId: "CGK" }, // Transit possible via SIN = JFK -> SIN -> CGK => 2, 4 or JFK -> LAX -> SIN -> CGK => 1, 3, 4
     { departureAirportId: "LAX", arrivalAirportId: "CGK" }, // Transit possible via SIN = LAX -> SIN -> CGK => 3, 4
     { departureAirportId: "JFK", arrivalAirportId: "DPS" }, // Transit possible via CGK or SIN = JFK -> CGK -> DPS => 6, 5  or JFK -> SIN -> DPS => 2, 8
     { departureAirportId: "SIN", arrivalAirportId: "DPS" }, // Transit via CGK = SIN -> CGK -> DPS => 4, 5
@@ -737,10 +772,54 @@ async function seedFlights() {
         departureTerminalId: 7, // SIN Terminal 2
         arrivalTerminalId: 15, // DPS Terminal 2
       },
+
+      // JFK -> LAX -> SIN -> CGK (Transit via LAX and SIN)
+      {
+        routeId: 1, // JFK -> LAX
+        class: "Economy",
+        airplaneId: 1, // Boeing 737
+        departureTime: "2024-12-16T08:00:00Z",
+        arrivalTime: "2024-12-16T11:00:00Z",
+        baggage: 20,
+        cabinBaggage: 7,
+        entertainment: true,
+        departureTerminalId: 1, // JFK Terminal 1
+        arrivalTerminalId: 5, // LAX Terminal 1
+      },
+      {
+        routeId: 3, // LAX -> SIN
+        class: "Economy",
+        airplaneId: 3, // Boeing 787 Dreamliner
+        departureTime: "2024-12-16T12:00:00Z", // LAX -> SIN
+        arrivalTime: "2024-12-16T19:00:00Z", // Adjust to match SIN arrival
+        baggage: 25,
+        cabinBaggage: 8,
+        entertainment: true,
+        departureTerminalId: 6, // LAX Terminal 2
+        arrivalTerminalId: 8, // SIN Terminal 3
+      },
+      {
+        routeId: 4, // SIN -> CGK
+        class: "Economy",
+        airplaneId: 4, // Boeing 737 MAX
+        departureTime: "2024-12-16T19:30:00Z", // SIN -> CGK, after LAX -> SIN arrival
+        arrivalTime: "2024-12-16T22:30:00Z",
+        baggage: 20,
+        cabinBaggage: 7,
+        entertainment: false,
+        departureTerminalId: 8, // SIN Terminal 3
+        arrivalTerminalId: 12, // CGK Terminal 1
+      },
     ];
 
+    // Random discount Id
+    const discountIds = [null, 1, 2, 3, 4];
+
     for (const flightData of flights) {
-      const flight = await store(flightData);
+      const flight = await store(
+        flightData,
+        discountIds[Math.floor(Math.random() * discountIds.length)]
+      );
       console.log(`Flight created:`, flight);
     }
 
@@ -754,9 +833,10 @@ async function seedTickets() {
   try {
     // Create transit tickets for multi-flight routes
     const transitTickets = [
-      { routeId: 6, flightIds: [9, 10] }, // JFK -> CGK (Transit via SIN)
-      { routeId: 10, flightIds: [11, 12] }, // LAX -> DPS (Transit via SIN)
+      { routeId: 6, flightIds: [9, 10], discountId: 1 }, // JFK -> CGK (Transit via SIN)
+      { routeId: 10, flightIds: [11, 12], discountId: 3 }, // LAX -> DPS (Transit via SIN)
       { routeId: 8, flightIds: [13, 14] }, // JFK -> DPS (Transit via CGK)
+      { routeId: 6, flightIds: [15, 16, 17], discountId: 2 }, // JFK -> CGK (Transit via LAX and SIN)
     ];
 
     for (const ticketData of transitTickets) {
@@ -922,6 +1002,7 @@ async function main() {
   try {
     await seedAccounts();
     await seedNotifications();
+    await seedDiscounts();
     await seedCities();
     await seedAirports();
     await seedRoutes();

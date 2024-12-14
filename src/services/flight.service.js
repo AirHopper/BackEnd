@@ -456,7 +456,7 @@ export const store = async (payload) => {
       classType
     );
 
-    let discountPrice = null;
+    let ticketPrice = price;
 
     if (discountId) {
       const discount = await prisma.discount.findUnique({
@@ -469,7 +469,7 @@ export const store = async (payload) => {
         throw new AppError("Discount not found", 404);
       }
 
-      discountPrice = price - price * (discount.percentage / 100);
+      ticketPrice -= price * (discount.percentage / 100);
     }
 
     // Calculate capacity based on class type
@@ -508,8 +508,7 @@ export const store = async (payload) => {
             isTransits: false,
             departureTime: new Date(departureTime),
             arrivalTime: new Date(arrivalTime),
-            totalPrice: price,
-            discountPrice,
+            totalPrice: ticketPrice,
             totalDuration: duration,
             discountId,
           },
