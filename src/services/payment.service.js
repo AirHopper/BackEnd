@@ -1,7 +1,6 @@
 import prisma from '../utils/prisma.js';
 import { coreApi, snap } from '../utils/midtrans.js';
 import { nanoid } from 'nanoid';
-import { createQrCodeUrlByOrderId } from '../utils/qrCode.js';
 import AppError from '../utils/AppError.js';
 
 export const createPayment = async (request, account) => {
@@ -54,11 +53,7 @@ export const getPaymentByOrderId = async (orderId) => {
 export const updatePaymentStatusById = async (id, request) => {
     try {
         let paymentDate = null;
-        let qrCodeUrl = null;
-        if (request.transaction_status === 'settlement' || request.transaction_status === 'capture') {
-            qrCodeUrl = await createQrCodeUrlByOrderId(request.order_id);
-            paymentDate = new Date();
-        }
+        if (request.transaction_status === 'settlement' || request.transaction_status === 'capture') paymentDate = new Date();
 
         return prisma.payment.update({
             where: {
@@ -71,8 +66,7 @@ export const updatePaymentStatusById = async (id, request) => {
                 transactionId: request.transaction_id,
                 fraudStatus: request.fraud_status,
                 validUntil: new Date(request.expiry_time),
-                paymentDate,
-                qrCodeUrl
+                paymentDate
             }
         });
     } catch (error) {
