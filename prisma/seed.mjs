@@ -397,6 +397,8 @@ async function seedRoutes() {
     { departureAirportId: "LAX", arrivalAirportId: "SIN" },
     { departureAirportId: "SIN", arrivalAirportId: "CGK" },
     { departureAirportId: "CGK", arrivalAirportId: "DPS" },
+    { departureAirportId: "CGK", arrivalAirportId: "SIN" },
+    { departureAirportId: "DPS", arrivalAirportId: "SIN" },
 
     // Transit routes
     { departureAirportId: "JFK", arrivalAirportId: "CGK" }, // Transit possible via SIN = JFK -> SIN -> CGK => 2, 4 or JFK -> LAX -> SIN -> CGK => 1, 3, 4
@@ -692,9 +694,58 @@ async function seedFlights() {
         departureTerminalId: 1, // JFK Terminal 1
         arrivalTerminalId: 15, // DPS Terminal 2
       },
+      {
+        routeId: 4, 
+        class: "Economy",
+        airplaneId: 4,
+        departureTime: "2024-12-17T08:00:00Z",
+        arrivalTime: "2024-12-17T11:00:00Z",
+        baggage: 20,
+        cabinBaggage: 7,
+        entertainment: true,
+        departureTerminalId: 8,
+        arrivalTerminalId: 12,
+      },
+      {
+        routeId: 6, 
+        class: "Economy",
+        airplaneId: 4,
+        departureTime: "2024-12-16T08:00:00Z",
+        arrivalTime: "2024-12-16T11:00:00Z",
+        baggage: 20,
+        cabinBaggage: 7,
+        entertainment: true,
+        departureTerminalId: 8,
+        arrivalTerminalId: 12,
+      },
 
       // **Transit Flights**
 
+      // CGK -> DPS -> SIN (Transit via DPS)
+      {
+        routeId: 5, // CGK -> DPS
+        class: "Economy",
+        airplaneId: 4, // Boeing 737 MAX
+        departureTime: "2024-12-16T10:00:00Z",
+        arrivalTime: "2024-12-16T12:30:00Z",
+        baggage: 15,
+        cabinBaggage: 7,
+        entertainment: false,
+        departureTerminalId: 13, // CGK Terminal 3
+        arrivalTerminalId: 15, // DPS Terminal 2
+      },
+      {
+        routeId: 7, // DPS -> SIN
+        class: "Economy",
+        airplaneId: 5, // Airbus A320
+        departureTime: "2024-12-16T13:00:00Z", // DPS -> SIN, after CGK -> DPS arrival
+        arrivalTime: "2024-12-16T15:00:00Z",
+        baggage: 15,
+        cabinBaggage: 7,
+        entertainment: false,
+        departureTerminalId: 15, // DPS Terminal 2
+        arrivalTerminalId: 7, // SIN Terminal 2
+      },
       // JFK -> SIN -> CGK (Transit via SIN)
       {
         routeId: 2, // JFK -> SIN
@@ -833,10 +884,11 @@ async function seedTickets() {
   try {
     // Create transit tickets for multi-flight routes
     const transitTickets = [
-      { routeId: 6, flightIds: [9, 10], discountId: 1 }, // JFK -> CGK (Transit via SIN)
-      { routeId: 10, flightIds: [11, 12], discountId: 3 }, // LAX -> DPS (Transit via SIN)
-      { routeId: 8, flightIds: [13, 14] }, // JFK -> DPS (Transit via CGK)
-      { routeId: 6, flightIds: [15, 16, 17], discountId: 2 }, // JFK -> CGK (Transit via LAX and SIN)
+      { routeId: 6, flightIds: [11, 12], discountId: 1 },
+      { routeId: 8, flightIds: [13, 14], discountId: 1 }, // JFK -> CGK (Transit via SIN)
+      { routeId: 12, flightIds: [15, 16], discountId: 3 }, // LAX -> DPS (Transit via SIN)
+      { routeId: 10, flightIds: [17, 18] }, // JFK -> DPS (Transit via CGK)
+      { routeId: 8, flightIds: [19, 20, 21], discountId: 2 }, // JFK -> CGK (Transit via LAX and SIN)
     ];
 
     for (const ticketData of transitTickets) {
