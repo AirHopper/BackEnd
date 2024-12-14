@@ -847,7 +847,6 @@ export const createOrder = async (request, paymentId, orderId, userId) => {
                 paymentId,
                 isRoundTrip,
                 detailPrice: request.detailPrice,
-                qrCodeUrl: 'test',
                 outboundTicketId: request.outboundTicketId,
                 returnTicketId
             }

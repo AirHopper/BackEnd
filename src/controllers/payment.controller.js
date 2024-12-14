@@ -21,7 +21,7 @@ export const notifications = async (req, res, next) => {
         const passengers = await getPassegersByOrderId(updatedOrder.id);
         const seatIds = passengers.map(passenger => passenger.seatId);
         
-        // Cek status pembayaran
+        // Check Payment Status
         if (updatedOrder.orderStatus === 'Expired') {
             await updateSeatOccupied(seatIds, false);
             await createOrderNotification(account.user.id, 'Pemesanan kadaluwarsa', `Pemesanan dengan id ${updatedOrder.id} telah kadaluwarsa`);
