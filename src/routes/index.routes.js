@@ -9,10 +9,11 @@ import auth from "./auth.routes.js";
 import flightRoutes from "./flight.routes.js";
 import payments from "./payment.routes.js";
 import orders from "./order.routes.js";
-import passengers from "./passenger.routes.js";
 import authHandler from "../middlewares/authHandler.js";
 import tickets from "./ticket.routes.js";
 import users from "./user.routes.js";
+import notifications from "./notification.routes.js";
+import discounts from "./discount.routes.js";
 
 export default (app) => {
   const router = express.Router();
@@ -27,9 +28,10 @@ export default (app) => {
   router.use("/flights", flightRoutes);
   router.use("/orders", authHandler, orders);
   router.use("/payments", payments);
-  router.use("/passengers", passengers);
   router.use("/tickets", tickets);
   router.use("/users", users);
+  router.use("/notifications", notifications);
+  router.use("/discounts", discounts);
 
   app.use("/api/v1", router);
 };

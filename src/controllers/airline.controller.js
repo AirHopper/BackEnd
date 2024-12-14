@@ -6,7 +6,7 @@ export const createAirline = async (req, res, next) => {
     if (!req.file) {
       return res.status(400).json({ error: "Please upload a airline image" });
     }
-    
+
     const newAirline = await airlineService.createAirline(req.body, req.file);
     res.status(201).json({
       success: true,
@@ -24,7 +24,7 @@ export const getAllAirlines = async (req, res, next) => {
   try {
     const airlines = await airlineService.getAllAirlines();
     res.status(200).json({
-      success : true,
+      success: true,
       message: "Airlines fetched successfully",
       data: airlines,
       error: null,
@@ -54,10 +54,7 @@ export const getAirlineById = async (req, res, next) => {
 export const updateAirlineDetails = async (req, res, next) => {
   try {
     const { iataCode } = req.params;
-    const updatedAirline = await airlineService.updateAirlineDetails(
-      iataCode,
-      req.body
-    );
+    const updatedAirline = await airlineService.updateAirlineDetails(iataCode, req.body);
     res.status(200).json({
       success: true,
       message: "Airline details updated successfully",
@@ -73,10 +70,7 @@ export const updateAirlineDetails = async (req, res, next) => {
 export const updateAirlinePhoto = async (req, res, next) => {
   try {
     const { iataCode } = req.params;
-    const updatedAirline = await airlineService.updateAirlinePhoto(
-      iataCode,
-      req.file
-    );
+    const updatedAirline = await airlineService.updateAirlinePhoto(iataCode, req.file);
     res.status(200).json({
       message: "Airline photo updated successfully",
       data: updatedAirline,

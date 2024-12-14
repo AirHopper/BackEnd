@@ -65,3 +65,18 @@ export const changePassword = async (req, res, next) => {
     next(error);
   }
 }
+
+export const subscribeUser = async (req, res, next) => {
+  try {
+    await userService.subscribeUser(req.user.id, req.body);
+    res.status(200).json({
+      success: true,
+      message: "Subscription saved!",
+      data: null,
+      error: null,
+    })
+  } catch(error) {
+    console.log(error);
+    next(error);
+  }
+}
