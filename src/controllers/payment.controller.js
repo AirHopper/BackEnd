@@ -22,14 +22,14 @@ export const notifications = async (req, res, next) => {
         const seatIds = passengers.map(passenger => passenger.seatId);
         
         // Cek status pembayaran
-        console.log(account.email);
         if (updatedOrder.orderStatus === 'Expired') {
             await updateSeatOccupied(seatIds, false);
-            await createOrderNotification(account.user.id, 'Pemesanan kadaluwarsa', `Pemesanan dengan id ${order.id} kadaluwarsa`);
+            await createOrderNotification(account.user.id, 'Pemesanan kadaluwarsa', `Pemesanan dengan id ${updatedOrder.id} telah kadaluwarsa`);
         }
         // Cancelled already handle in order service
         if (updatedOrder.orderStatus === 'Issued') {
             sendEmail(account.email, 'Invoice Payment', `Invoice for order ${updatedOrder.id} in airHopper`);
+            await createOrderNotification(account.user.id, 'Pembayaran berhasil', `Pemesanan dengan id ${updatedOrder.id} berhasil dibayar`);
         }
         res.status(200).json({
             success: true,

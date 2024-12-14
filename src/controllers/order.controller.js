@@ -118,8 +118,8 @@ export const cancelUserOwnedById = async (req, res, next) => {
             data: {}
         });
     } catch (error) {
+        await createOrderNotification(req.user.id, `Pemesanan Gagal Dibatalkan`, `Pemesanan dengan id ${req.params.id} gagal dibatalkan`);
         console.error(error);
-        await createOrderNotification(req.user.id, `Pemesanan Gagal Dibatalkan`, `Pemesanan dengan id ${order.id} gagal dibatalkan`);
         next(error);
     }
 }
