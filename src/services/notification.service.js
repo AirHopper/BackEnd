@@ -67,8 +67,8 @@ export const createOrderNotification = async (userId, title, description) => {
   }
 }
 
-try {
-  await createOrderNotification(1, "Order", "OrderSuksesBang!");
-} catch(error) {
-  console.log(error);
-}
+// try {
+//   await createOrderNotification(1, "Order", "OrderSuksesBang!");
+// } catch(error) {
+//   console.log(error);
+// }
