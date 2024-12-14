@@ -4,14 +4,13 @@ import { createPassengers } from "../services/passenger.service.js";
 import { checkSeatAvailability, updateSeatOccupied } from "../services/seat.service.js";
 import { getById } from "../services/ticket.service.js";
 import { getUserProfile } from "../services/user.service.js";
+import { createOrderNotification } from "../services/notification.service.js";
 import AppError from "../utils/AppError.js";
 
 // admin only
 export const getAll = async (req, res, next) => {
     try {
-        const account = await getUserProfile(req.user.id); // req.user.id is accountId while user.id is userId
-        console.log(account);
-        if (account.role !== 'admin') throw new AppError('Unauthorized', 401); // still unauthorized, since jwt does not provide a role (need fix on subhan)
+        if (req.user.role !== 'Admin') throw new AppError('Unauthorized', 401);
         const orders = await getAllOrders();
         res.status(200).json({
             success: true,
@@ -88,12 +87,14 @@ export const create = async (req, res, next) => {
         await updateSeatOccupied(seats, true);
         await createPassengers(req.body.passengers, order.id);
         const updatedOrder = await getUserOwnedOrderById(order.id, userId);
+        await createOrderNotification(userId, `Pemesanan Berhasil`, `Pemesanan dengan id ${order.id} berhasil dibuat`);
         res.status(201).json({
             success: true,
             message: 'Order created successfully',
             data: updatedOrder
         });
     } catch (error) {
+        await createOrderNotification(req.user.id, `Pemesanan Gagal`, `Pemesanan gagal dibuat`);
         console.error(error);
         next(error);
     }
@@ -110,6 +111,7 @@ export const cancelUserOwnedById = async (req, res, next) => {
         const seatIds = order.passengers.flatMap(passenger => passenger.seat.map(seat => seat.id))
         await cancelPaymentByOrderId(orderId);
         await updateSeatOccupied(seatIds, false);
+        await createOrderNotification(userId, `Pemesanan Dibatalkan`, `Pemesanan dengan id ${order.id} berhasil dibatalkan`);
         return res.status(200).json({
             success: true,
             message: 'Order cancelled successfully',
@@ -117,6 +119,7 @@ export const cancelUserOwnedById = async (req, res, next) => {
         });
     } catch (error) {
         console.error(error);
+        await createOrderNotification(req.user.id, `Pemesanan Gagal Dibatalkan`, `Pemesanan dengan id ${order.id} gagal dibatalkan`);
         next(error);
     }
 }

@@ -898,11 +898,11 @@ export const updateOrderStatusByPaymentId = async (paymentId, paymentStatus) => 
     }
 }
 
-export const cancelOrderById = async (orderId) => {
+export const cancelOrderById = async (id) => {
     try {
         return prisma.order.update({
             where: {
-                id: orderId
+                id
             },
             data: {
                 orderStatus: 'Cancelled'
