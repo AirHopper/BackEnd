@@ -1,5 +1,5 @@
 import prisma from "../utils/prisma.js";
-import customError from "../utils/AppError.js"
+// import customError from "../utils/AppError.js"
 import cleanUpAccountData from "../utils/cleanUpAccountData.js";
 import { sendNotification } from "../utils/webpush.js";
 
@@ -7,41 +7,41 @@ export const createPromotionNotif = async (userData) => {
   try {
     const { title, description } = userData;
     const accounts = await prisma.account.findMany({
-      where: { role: "Buyer"}
-    })
-    accounts.forEach(async account => {
+      where: { role: "Buyer" },
+    });
+    accounts.forEach(async (account) => {
       await prisma.notification.create({
         data: {
           title: title,
           description: description,
-          accountId: account.id
-        }
-      })
-    })
-    return `Successfully create notification to ${accounts.length} users`
+          accountId: account.id,
+        },
+      });
+    });
+    return `Successfully create notification to ${accounts.length} users`;
   } catch (error) {
     console.log("Error create notification of promotion!");
     throw error;
   }
-}
+};
 
 export const getUserNotification = async (userId) => {
   try {
     const account = await prisma.account.findUnique({
       where: { id: userId },
-      include: { Notification: true }
-    })
+      include: { Notification: true },
+    });
     await prisma.notification.updateMany({
       where: { accountId: userId },
-      data: { isRead: true }
-    })
+      data: { isRead: true },
+    });
     cleanUpAccountData(account);
     return account;
-  } catch(error) {
+  } catch (error) {
     console.log("Error read all user notification");
     throw error;
   }
-}
+};
 
 export const createOrderNotification = async (userId, title, description) => {
   try {
@@ -51,10 +51,10 @@ export const createOrderNotification = async (userId, title, description) => {
         title: title,
         accountId: userId,
         description: description,
-        type: "Notifikasi"
+        type: "Notifikasi",
       },
-      include: { Account: true }
-    })
+      include: { Account: true },
+    });
 
     // Push notification
     await sendNotification(JSON.parse(notification.Account.notificationSubscription), notification.title, notification.description);
@@ -63,6 +63,6 @@ export const createOrderNotification = async (userId, title, description) => {
     console.log("Error create notification of order!");
     throw error;
   }
-}
+};
 
 // createOrderNotification(3, "Order", "OrderSuksesBang!");
