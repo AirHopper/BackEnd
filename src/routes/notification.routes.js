@@ -7,5 +7,6 @@ const router = express.Router();
 
 router.post('/promotion', validator.validateCreatePromotion, authHandler, notificationController.createPromotionNotif);
 router.get('/', validator.validategetUserNotification, authHandler, notificationController.getUserNotification);
+router.delete('/', authHandler, notificationController.clearAllUserNotification);
 
 export default router;
