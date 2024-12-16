@@ -1,6 +1,5 @@
 import prisma from "../utils/prisma.js";
 // import customError from "../utils/AppError.js"
-import cleanUpAccountData from "../utils/cleanUpAccountData.js";
 import { sendNotification } from "../utils/webpush.js";
 
 export const createPromotionNotif = async (userData) => {
@@ -42,6 +41,9 @@ export const getUserNotification = async (userId, params) => {
           ],
         }),
       },
+      orderBy: {
+        createdAt: 'desc'
+      }
     })
     notifications.forEach(async notif => {
       await prisma.notification.update({
@@ -79,6 +81,18 @@ export const createOrderNotification = async (userId, title, description) => {
     throw error;
   }
 };
+
+export const clearAllUserNotification = async (userId) => {
+  try {
+    const notification = await prisma.notification.deleteMany({
+      where: { accountId: userId }
+    })
+    return `Success to delete ${notification.count} notifications!`
+  } catch (error) {
+    console.log("Error delete all user notifications");
+    throw error;
+  }
+}
 
 // try {
 //   await createOrderNotification(1, "Order", "OrderSuksesBang!");
