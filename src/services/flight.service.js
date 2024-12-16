@@ -189,10 +189,6 @@ export const getAll = async ({
     // Count total flights
     const totalFlights = await prisma.flight.count({ where: searchFilters });
 
-    if (!flights.length) {
-      throw new AppError("No flights found", 404);
-    }
-
     // Format response
     const formattedFlights = flights.map((flight) => {
       const totalSeats = flight.Seat.length;
@@ -312,6 +308,7 @@ export const getById = async (id) => {
 
     // Format response
     const totalSeats = flight.Seat.length;
+    const totalTickets = flight.Ticket.length;
     const occupiedSeats = flight.Seat.filter((seat) => seat.isOccupied).length;
     const availableSeats = totalSeats - occupiedSeats;
 
@@ -370,6 +367,7 @@ export const getById = async (id) => {
       price: flight.price,
       totalPrice: flight.price,
       totalSeats,
+      totalTickets,
       occupiedSeats,
       availableSeats,
     };
@@ -526,131 +524,15 @@ export const store = async (payload) => {
   }
 };
 
-// TODO Update flight
-export const update = async (payload, id) => {
-  try {
-    const {
-      routeId,
-      class: classType,
-      isActive,
-      airplaneId,
-      departureTime,
-      arrivalTime,
-      duration,
-      baggage,
-      cabinBaggage,
-      entertainment,
-      departureTerminalId,
-      arrivalTerminalId,
-      discountId = null,
-    } = payload;
-
-    const flightExists = await prisma.flight.findUnique({
-      where: {
-        id,
-      },
-    });
-
-    if (!flightExists) {
-      throw new AppError("Flight not found", 404);
-    }
-
-    const updatedRouteId = routeId ?? flightExists.routeId;
-    const updatedClass = classType ?? flightExists.class;
-    const updatedIsActive = isActive ?? flightExists.isActive;
-    const updatedAirplaneId = airplaneId ?? flightExists.airplaneId;
-    const updatedDepartureTime = departureTime
-      ? new Date(departureTime)
-      : flightExists.departureTime;
-    const updatedArrivalTime = arrivalTime
-      ? new Date(arrivalTime)
-      : flightExists.arrivalTime;
-    const updatedDuration = duration ?? flightExists.duration;
-    const updatedBaggage = baggage ?? flightExists.baggage;
-    const updatedCabinBaggage = cabinBaggage ?? flightExists.cabinBaggage;
-    const updatedEntertainment = entertainment ?? flightExists.entertainment;
-    const updatedDepartureTerminalId =
-      departureTerminalId ?? flightExists.departureTerminalId;
-    const updatedArrivalTerminalId =
-      arrivalTerminalId ?? flightExists.arrivalTerminalId;
-
-    if (updatedDepartureTime >= updatedArrivalTime) {
-      throw new AppError(
-        "Departure time must be earlier than arrival time",
-        400
-      );
-    }
-
-    const routeExists = await prisma.route.findUnique({
-      where: {
-        id: updatedRouteId,
-      },
-    });
-    if (!routeExists) {
-      throw new AppError("Route not found", 404);
-    }
-
-    const airplaneExists = await prisma.airplane.findUnique({
-      where: {
-        id: updatedAirplaneId,
-      },
-    });
-    if (!airplaneExists) {
-      throw new AppError("Airplane not found", 404);
-    }
-
-    const departureTerminalExists = await prisma.terminal.findUnique({
-      where: {
-        id: updatedDepartureTerminalId,
-      },
-    });
-    if (!departureTerminalExists) {
-      throw new AppError("Departure terminal not found", 404);
-    }
-
-    const arrivalTerminalExists = await prisma.terminal.findUnique({
-      where: {
-        id: updatedArrivalTerminalId,
-      },
-    });
-    if (!arrivalTerminalExists) {
-      throw new AppError("Arrival terminal not found", 404);
-    }
-
-    const updatedFlight = await prisma.flight.update({
-      where: {
-        id,
-      },
-      data: {
-        routeId: updatedRouteId,
-        class: updatedClass,
-        isActive: updatedIsActive,
-        airplaneId: updatedAirplaneId,
-        departureTime: updatedDepartureTime,
-        arrivalTime: updatedArrivalTime,
-        duration: updatedDuration,
-        baggage: updatedBaggage,
-        cabinBaggage: updatedCabinBaggage,
-        entertainment: updatedEntertainment,
-        departureTerminalId: updatedDepartureTerminalId,
-        arrivalTerminalId: updatedArrivalTerminalId,
-        discountId,
-      },
-    });
-
-    return updatedFlight;
-  } catch (error) {
-    console.error("Error updating flight:", error);
-    throw error;
-  }
-};
-
 // TODO Delete flight
 export const destroy = async (id) => {
   try {
     const flightExists = await prisma.flight.findUnique({
       where: {
         id,
+      },
+      include: {
+        Ticket: true,
       },
     });
 
@@ -664,8 +546,18 @@ export const destroy = async (id) => {
       },
     });
 
+    const ticketIds = flightExists.Ticket.map((ticket) => ticket.id);
+
+    await prisma.ticket.deleteMany({
+      where: {
+        id: {
+          in: ticketIds,
+        },
+      },
+    });
+
     return {
-      message: "Flight deleted successfully",
+      message: "Flight and connected Tickets deleted successfully",
     };
   } catch (error) {
     console.error("Error deleting flight:", error);

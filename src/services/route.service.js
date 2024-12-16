@@ -7,6 +7,10 @@ export const createRoute = async (payload) => {
   try {
     const { departureAirportId, arrivalAirportId } = payload;
 
+    if(departureAirportId === arrivalAirportId) {
+      throw new AppError("Departure and arrival airports cannot be the same", 400);
+    }
+
     const departureAirport = await prisma.airport.findUnique({
       where: { iataCode: departureAirportId },
     });
