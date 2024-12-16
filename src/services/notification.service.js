@@ -27,12 +27,21 @@ export const createPromotionNotif = async (userData) => {
 
 export const getUserNotification = async (userId, params) => {
   try {
-    let { type } = params
+    let { type, q } = params
     if (type)
       type = params.type.charAt(0).toUpperCase() + params.type.slice(1);
 
     const notifications = await prisma.notification.findMany({
-      where: { accountId: userId, ...(type && { type }) },
+      where: { 
+        accountId: userId, 
+        ...(type && { type }),
+        ...(q && {
+          OR: [
+            { title: { contains: q, mode: 'insensitive' } },
+            { description: { contains: q, mode: 'insensitive' } },
+          ],
+        }),
+      },
     })
     notifications.forEach(async notif => {
       await prisma.notification.update({
