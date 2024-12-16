@@ -23,7 +23,7 @@ export const createPromotionNotif = async (req, res, next) => {
 
 export const getUserNotification = async (req, res, next) => {
   try {
-    const data = await notificationService.getUserNotification(req.user.id);
+    const data = await notificationService.getUserNotification(req.user.id, req.query);
     res.status(200).json({
       success: true,
       message: "All notifications has been read successfully!",

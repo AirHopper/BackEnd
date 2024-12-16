@@ -25,18 +25,22 @@ export const createPromotionNotif = async (userData) => {
   }
 };
 
-export const getUserNotification = async (userId) => {
+export const getUserNotification = async (userId, params) => {
   try {
-    const account = await prisma.account.findUnique({
-      where: { id: userId },
-      include: { Notification: true },
-    });
-    await prisma.notification.updateMany({
-      where: { accountId: userId },
-      data: { isRead: true },
-    });
-    cleanUpAccountData(account);
-    return account;
+    let { type } = params
+    if (type)
+      type = params.type.charAt(0).toUpperCase() + params.type.slice(1);
+
+    const notifications = await prisma.notification.findMany({
+      where: { accountId: userId, ...(type && { type }) },
+    })
+    notifications.forEach(async notif => {
+      await prisma.notification.update({
+        where: { id: notif.id },
+        data: { isRead: true },
+      });
+    })
+    return notifications;
   } catch (error) {
     console.log("Error read all user notification");
     throw error;
