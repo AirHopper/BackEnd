@@ -8,6 +8,7 @@ const createPromotionSchema = z.object({
 
 const getUserNotificationSchema = z.object({
   type: z.enum(["promosi", "notifikasi"]).optional(),
+  q: z.string().optional()
 })
 
 const validate = (schema) => (req, res, next) => {
