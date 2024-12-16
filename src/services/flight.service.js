@@ -384,7 +384,7 @@ export const store = async (payload) => {
   try {
     const {
       routeId,
-      class: classType,
+      class: classTypes, // Now an array of strings
       isActive = true,
       airplaneId,
       departureTime,
@@ -447,79 +447,87 @@ export const store = async (payload) => {
       throw new AppError("Arrival terminal not found", 404);
     }
 
-    // Calculate price
-    const price = await calculatePrice(
-      route.distance,
-      airplane.pricePerKm,
-      classType
-    );
+    // Array to hold the created flights
+    const flights = [];
 
-    let ticketPrice = price;
+    for (const classType of classTypes) {
+      // Calculate price
+      const price = await calculatePrice(
+        route.distance,
+        airplane.pricePerKm,
+        classType
+      );
 
-    if (discountId) {
-      const discount = await prisma.discount.findUnique({
-        where: {
-          id: discountId,
+      let ticketPrice = price;
+
+      if (discountId) {
+        const discount = await prisma.discount.findUnique({
+          where: {
+            id: discountId,
+          },
+        });
+
+        if (!discount) {
+          throw new AppError("Discount not found", 404);
+        }
+
+        ticketPrice -= price * (discount.percentage / 100);
+      }
+
+      // Calculate capacity based on class type
+      const capacity = flightCapacity(classType);
+
+      // Calculate duration in minutes
+      const duration = flightDuration(departureDate, arrivalDate);
+
+      // Create flight data
+      const flight = await prisma.flight.create({
+        data: {
+          routeId,
+          class: classType,
+          isActive,
+          airplaneId,
+          departureTime: new Date(departureTime),
+          arrivalTime: new Date(arrivalTime),
+          duration,
+          price,
+          capacity,
+          baggage,
+          cabinBaggage,
+          entertainment,
+          departureTerminalId,
+          arrivalTerminalId,
+          Seat: {
+            create: Array.from({ length: capacity }, (_, index) => ({
+              seatNumber: index + 1,
+              isOccupied: false,
+            })),
+          },
+          Ticket: {
+            create: {
+              routeId,
+              class: classType,
+              isTransits: false,
+              departureTime: new Date(departureTime),
+              arrivalTime: new Date(arrivalTime),
+              totalPrice: ticketPrice,
+              totalDuration: duration,
+              discountId,
+            },
+          },
+        },
+        include: {
+          Ticket: true,
         },
       });
 
-      if (!discount) {
-        throw new AppError("Discount not found", 404);
-      }
-
-      ticketPrice -= price * (discount.percentage / 100);
+      // Add to flights array
+      flights.push(flight);
     }
 
-    // Calculate capacity based on class type
-    const capacity = flightCapacity(classType);
-
-    // Calculate duration in minutes
-    const duration = flightDuration(departureDate, arrivalDate);
-
-    // Membuat data flight
-    const flight = await prisma.flight.create({
-      data: {
-        routeId,
-        class: classType,
-        isActive,
-        airplaneId,
-        departureTime: new Date(departureTime),
-        arrivalTime: new Date(arrivalTime),
-        duration,
-        price,
-        capacity,
-        baggage,
-        cabinBaggage,
-        entertainment,
-        departureTerminalId,
-        arrivalTerminalId,
-        Seat: {
-          create: Array.from({ length: capacity }, (_, index) => ({
-            seatNumber: index + 1,
-            isOccupied: false,
-          })),
-        },
-        Ticket: {
-          create: {
-            routeId,
-            class: classType,
-            isTransits: false,
-            departureTime: new Date(departureTime),
-            arrivalTime: new Date(arrivalTime),
-            totalPrice: ticketPrice,
-            totalDuration: duration,
-            discountId,
-          },
-        },
-      },
-      include: {
-        Ticket: true,
-      },
-    });
-
-    return flight;
+    return flights;
   } catch (error) {
-    console.error("Error creating flight:", error);
+    console.error("Error creating flights:", error);
     throw error;
   }
 };

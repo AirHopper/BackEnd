@@ -1,9 +1,11 @@
 import { z } from "zod";
 
-// Schema untuk create flight
+// Schema for create flight
 const createFlightSchema = z.object({
   routeId: z.number().int().positive(),
-  class: z.enum(["Economy", "Premium_Economy", "Business", "First_Class"]),
+  class: z
+    .array(z.enum(["Economy", "Premium_Economy", "Business", "First_Class"]))
+    .nonempty("Class array must contain at least one class"), // Ensures the array is not empty
   isActive: z.boolean(),
   airplaneId: z.number().int().positive(),
   departureTime: z.string().datetime(),
@@ -16,10 +18,13 @@ const createFlightSchema = z.object({
   discountId: z.number().int().nullable().optional(),
 });
 
-// Schema untuk update flight
+// Schema for update flight
 const updateFlightSchema = z.object({
   routeId: z.number().int().positive().optional(),
-  class: z.enum(["Economy", "Premium_Economy", "Business", "First_Class"]).optional(),
+  class: z
+    .array(z.enum(["Economy", "Premium_Economy", "Business", "First_Class"]))
+    .nonempty("Class array must contain at least one class")
+    .optional(), // Optional for updates
   isActive: z.boolean().optional(),
   airplaneId: z.number().int().positive().optional(),
   departureTime: z.string().datetime().optional(),
