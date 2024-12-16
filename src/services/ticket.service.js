@@ -461,7 +461,11 @@ export const getById = async (id) => {
             },
             DepartureTerminal: true,
             ArrivalTerminal: true,
-            Seat: true,
+            Seat: {
+              orderBy: {
+                seatNumber: 'asc', // Order by seatNumber in descending order
+              },
+            },
           },
         },
         Route: {
@@ -481,6 +485,7 @@ export const getById = async (id) => {
         Discount: true,
       },
     });
+    
 
     if (!ticket) {
       throw new AppError("Tiket not found", 404);
