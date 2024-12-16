@@ -18,25 +18,6 @@ const createFlightSchema = z.object({
   discountId: z.number().int().nullable().optional(),
 });
 
-// Schema for update flight
-const updateFlightSchema = z.object({
-  routeId: z.number().int().positive().optional(),
-  class: z
-    .array(z.enum(["Economy", "Premium_Economy", "Business", "First_Class"]))
-    .nonempty("Class array must contain at least one class")
-    .optional(), // Optional for updates
-  isActive: z.boolean().optional(),
-  airplaneId: z.number().int().positive().optional(),
-  departureTime: z.string().datetime().optional(),
-  arrivalTime: z.string().datetime().optional(),
-  baggage: z.number().int().nonnegative().optional(),
-  cabinBaggage: z.number().int().nonnegative().optional(),
-  entertainment: z.boolean().optional(),
-  departureTerminalId: z.number().int().positive().optional(),
-  arrivalTerminalId: z.number().int().positive().optional(),
-  discountId: z.number().int().nullable().optional(),
-});
-
 // Middleware validator
 const validate = (schema) => (req, res, next) => {
   try {
@@ -64,4 +45,3 @@ const validate = (schema) => (req, res, next) => {
 };
 
 export const validateCreateFlight = validate(createFlightSchema);
-export const validateUpdateFlight = validate(updateFlightSchema);

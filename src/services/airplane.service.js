@@ -51,13 +51,13 @@ export const getAirplaneById = async (id) => {
       include: { Airline: true, Flights: true },
     });
 
-    const flightCount = airplane.Flights.length;
-
-    airplane.flightCount = flightCount;
-
     if (!airplane) {
       throw new AppError("Airplane not found", 404);
     }
+
+    const flightCount = airplane.Flights.length;
+
+    airplane.flightCount = flightCount;
 
     return airplane;
   } catch (error) {

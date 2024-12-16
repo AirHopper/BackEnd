@@ -52,13 +52,13 @@ export const getAirlineById = async (iataCode) => {
       include: { Airplanes: true },
     });
 
-    const airplaneCount = airline.Airplanes.length;
-
-    airline.airplaneCount = airplaneCount;
-
     if (!airline) {
       throw new AppError("Airline not found", 404);
     }
+
+    const airplaneCount = airline.Airplanes.length;
+
+    airline.airplaneCount = airplaneCount;
 
     return airline;
   } catch (error) {

@@ -299,6 +299,7 @@ export const getById = async (id) => {
         DepartureTerminal: true,
         ArrivalTerminal: true,
         Seat: true,
+        Ticket: true,
       },
     });
 
