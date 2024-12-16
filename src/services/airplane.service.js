@@ -23,9 +23,16 @@ export const createAirplane = async (data) => {
 };
 
 // Get all airplanes
-export const getAllAirplanes = async () => {
+export const getAllAirplanes = async (airlineId) => {
   try {
+    let filter = {};
+
+    if (airlineId) {
+      filter = { where: { airlineId } };
+    }
+
     const airplanes = await prisma.airplane.findMany({
+      ...filter,
       include: { Airline: true },
     });
     return airplanes;
