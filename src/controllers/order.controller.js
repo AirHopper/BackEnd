@@ -89,7 +89,7 @@ export const create = async (req, res, next) => {
         await updateSeatOccupied(seats, true);
         await createPassengers(req.body.passengers, order.id);
         const updatedOrder = await getUserOwnedOrderById(order.id, userId);
-        await createOrderNotification(userId, `Pemesanan Berhasil`, `Pemesanan dengan id ${order.id} berhasil dibuat`);
+        await createOrderNotification(req.user.id, `Pemesanan Berhasil`, `Pemesanan dengan id ${order.id} berhasil dibuat`);
         res.status(201).json({
             success: true,
             message: 'Order created successfully',
@@ -113,7 +113,7 @@ export const cancelUserOwnedById = async (req, res, next) => {
         const seatIds = order.passengers.flatMap(passenger => passenger.seat.map(seat => seat.id))
         await cancelPaymentByOrderId(orderId);
         await updateSeatOccupied(seatIds, false);
-        await createOrderNotification(userId, `Pemesanan Dibatalkan`, `Pemesanan dengan id ${order.id} berhasil dibatalkan`);
+        await createOrderNotification(req.user.id, `Pemesanan Dibatalkan`, `Pemesanan dengan id ${order.id} berhasil dibatalkan`);
         return res.status(200).json({
             success: true,
             message: 'Order cancelled successfully',
