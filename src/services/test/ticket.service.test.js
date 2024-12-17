@@ -17,6 +17,237 @@ describe("Ticket Service", () => {
         {
           id: 1,
           totalPrice: 100,
+          isActive: true,
+          departureTime: "2023-12-12T08:00:00Z",
+          arrivalTime: "2023-12-12T10:00:00Z",
+          Route: {
+            DepartureAirport: {
+              name: "Airport A",
+              iataCode: "AAA",
+              type: "international",
+              City: {
+                name: "City A",
+                code: "CA",
+                imageUrl: "city_a.png",
+                country: "Country A",
+                countryCode: "CNA",
+              },
+            },
+            ArrivalAirport: {
+              name: "Airport B",
+              iataCode: "BBB",
+              type: "domestic",
+              City: {
+                name: "City B",
+                code: "CB",
+                imageUrl: "city_b.png",
+                country: "Country B",
+                countryCode: "CNB",
+                continent: "Europe",
+              },
+            },
+          },
+          Flights: [
+            {
+              id: 101,
+              price: 100,
+              duration: 120,
+              departureTime: "2023-12-12T08:00:00Z",
+              arrivalTime: "2023-12-12T10:00:00Z",
+              class: "economy",
+              isActive: true,
+              Seat: [
+                { isOccupied: false },
+                { isOccupied: false },
+                { isOccupied: true },
+                { isOccupied: false },
+                { isOccupied: true },
+              ], // Mocked seat data (some seats occupied, some not)
+              baggage: "20kg",
+              cabinBaggage: "7kg",
+              entertainment: true,
+              Airplane: {
+                name: "Boeing 747",
+                Airline: {
+                  name: "Airline A",
+                  imageUrl: "airline_a_logo.png",
+                },
+              },
+              Route: {
+                DepartureAirport: {
+                  name: "Airport A",
+                  iataCode: "AAA",
+                  type: "international",
+                  City: {
+                    name: "City A",
+                    code: "CA",
+                    imageUrl: "city_a.png",
+                    country: "Country A",
+                    countryCode: "CNA",
+                  },
+                },
+                ArrivalAirport: {
+                  name: "Airport B",
+                  iataCode: "BBB",
+                  type: "domestic",
+                  City: {
+                    name: "City B",
+                    code: "CB",
+                    imageUrl: "city_b.png",
+                    country: "Country B",
+                    countryCode: "CNB",
+                    continent: "Europe",
+                  },
+                },
+              },
+              DepartureTerminal: {
+                name: "Terminal 1",
+                type: "Domestic",
+              },
+              ArrivalTerminal: {
+                name: "Terminal 2",
+                type: "International",
+              },
+            },
+          ],
+        },
+      ];
+
+      const count = 1;
+
+      prismaMock.ticket.findMany.mockResolvedValue(tickets);
+      prismaMock.ticket.count.mockResolvedValue(count);
+
+      const result = await ticketService.getAll({
+        page: 1,
+        limit: 10,
+        orderBy: "default",
+      });
+
+      // Define the expected response structure for tickets
+      const expectedResponse = [
+        {
+          id: 1,
+          class: undefined, // Since class is not defined in the sample data
+          discount: undefined, // Since discount is not defined in the sample data
+          isTransits: undefined, // Since isTransits is not defined in the sample data
+          totalPrice: 100,
+          isActive: true,
+          departure: {
+            time: "2023-12-12T08:00:00Z",
+            airport: {
+              name: "Airport A",
+              code: "AAA",
+              type: "international",
+            },
+            city: {
+              name: "City A",
+              code: "CA",
+              image: "city_a.png",
+            },
+            country: {
+              name: "Country A",
+              code: "CNA",
+            },
+          },
+          arrival: {
+            time: "2023-12-12T10:00:00Z",
+            airport: {
+              name: "Airport B",
+              code: "BBB",
+              type: "domestic",
+            },
+            city: {
+              name: "City B",
+              code: "CB",
+              image: "city_b.png",
+            },
+            country: {
+              name: "Country B",
+              code: "CNB",
+            },
+            continent: "Europe",
+          },
+          flights: [
+            {
+              id: 101,
+              duration: 120,
+              baggage: "20kg",
+              cabinBaggage: "7kg",
+              entertainment: true,
+              airline: {
+                name: "Airline A",
+                logo: "airline_a_logo.png",
+              },
+              airplane: "Boeing 747",
+              departure: {
+                time: "2023-12-12T08:00:00Z",
+                airport: {
+                  name: "Airport A",
+                  code: "AAA",
+                  type: "international",
+                },
+                city: {
+                  name: "City A",
+                  code: "CA",
+                  image: "city_a.png",
+                },
+                country: {
+                  name: "Country A",
+                  code: "CNA",
+                },
+                terminal: {
+                  name: "Terminal 1",
+                  type: "Domestic",
+                },
+              },
+              arrival: {
+                time: "2023-12-12T10:00:00Z",
+                airport: {
+                  name: "Airport B",
+                  code: "BBB",
+                  type: "domestic",
+                },
+                city: {
+                  name: "City B",
+                  code: "CB",
+                  image: "city_b.png",
+                },
+                country: {
+                  name: "Country B",
+                  code: "CNB",
+                },
+                continent: "Europe",
+                terminal: {
+                  name: "Terminal 2",
+                  type: "International",
+                },
+              },
+              totalSeats: 5,
+              occupiedSeats: 2,
+              availableSeats: 3,
+            },
+          ],
+        },
+      ];
+
+      // Compare the formattedTickets to the expectedResponse
+      expect(result.formattedTickets).toEqual(expectedResponse);
+
+      // Check pagination
+      expect(result.pagination).toEqual({
+        totalItems: count,
+        currentPage: 1,
+        totalPages: 1,
+        pageSize: 10,
+      });
+    });
+
+    it("should return tickets with pagination and price_asc sorting", async () => {
+      const tickets = [
+        {
+          id: 1,
+          totalPrice: 100,
           departureTime: "2023-12-12T08:00:00Z",
           Route: {
             DepartureAirport: {
@@ -53,7 +284,296 @@ describe("Ticket Service", () => {
       prismaMock.ticket.findMany.mockResolvedValue(tickets);
       prismaMock.ticket.count.mockResolvedValue(count);
 
-      const result = await ticketService.getAll({ page: 1, limit: 10 });
+      const result = await ticketService.getAll({
+        page: 1,
+        limit: 10,
+        orderBy: "price_asc",
+      });
+
+      expect(result.formattedTickets).toHaveLength(1);
+      expect(result.formattedTickets[0]).toHaveProperty("id", 1);
+      expect(result.pagination).toEqual({
+        totalItems: count,
+        currentPage: 1,
+        totalPages: 1,
+        pageSize: 10,
+      });
+    });
+
+    it("should return tickets with pagination and duration_asc sorting", async () => {
+      const tickets = [
+        {
+          id: 1,
+          totalPrice: 100,
+          departureTime: "2023-12-12T08:00:00Z",
+          Route: {
+            DepartureAirport: {
+              name: "Airport A",
+              iataCode: "AAA",
+              type: "international",
+              City: {
+                name: "City A",
+                code: "CA",
+                imageUrl: "city_a.png",
+                country: "Country A",
+                countryCode: "CNA",
+              },
+            },
+            ArrivalAirport: {
+              name: "Airport B",
+              iataCode: "BBB",
+              type: "domestic",
+              City: {
+                name: "City B",
+                code: "CB",
+                imageUrl: "city_b.png",
+                country: "Country B",
+                countryCode: "CNB",
+                continent: "Europe",
+              },
+            },
+          },
+          Flights: [],
+        },
+      ];
+      const count = 1;
+
+      prismaMock.ticket.findMany.mockResolvedValue(tickets);
+      prismaMock.ticket.count.mockResolvedValue(count);
+
+      const result = await ticketService.getAll({
+        page: 1,
+        limit: 10,
+        orderBy: "duration_asc",
+      });
+
+      expect(result.formattedTickets).toHaveLength(1);
+      expect(result.formattedTickets[0]).toHaveProperty("id", 1);
+      expect(result.pagination).toEqual({
+        totalItems: count,
+        currentPage: 1,
+        totalPages: 1,
+        pageSize: 10,
+      });
+    });
+
+    it("should return tickets with pagination and departure_soon sorting", async () => {
+      const tickets = [
+        {
+          id: 1,
+          totalPrice: 100,
+          departureTime: "2023-12-12T08:00:00Z",
+          Route: {
+            DepartureAirport: {
+              name: "Airport A",
+              iataCode: "AAA",
+              type: "international",
+              City: {
+                name: "City A",
+                code: "CA",
+                imageUrl: "city_a.png",
+                country: "Country A",
+                countryCode: "CNA",
+              },
+            },
+            ArrivalAirport: {
+              name: "Airport B",
+              iataCode: "BBB",
+              type: "domestic",
+              City: {
+                name: "City B",
+                code: "CB",
+                imageUrl: "city_b.png",
+                country: "Country B",
+                countryCode: "CNB",
+                continent: "Europe",
+              },
+            },
+          },
+          Flights: [],
+        },
+      ];
+      const count = 1;
+
+      prismaMock.ticket.findMany.mockResolvedValue(tickets);
+      prismaMock.ticket.count.mockResolvedValue(count);
+
+      const result = await ticketService.getAll({
+        page: 1,
+        limit: 10,
+        orderBy: "departure_soon",
+      });
+
+      expect(result.formattedTickets).toHaveLength(1);
+      expect(result.formattedTickets[0]).toHaveProperty("id", 1);
+      expect(result.pagination).toEqual({
+        totalItems: count,
+        currentPage: 1,
+        totalPages: 1,
+        pageSize: 10,
+      });
+    });
+
+    it("should return tickets with pagination and departure_late sorting", async () => {
+      const tickets = [
+        {
+          id: 1,
+          totalPrice: 100,
+          departureTime: "2023-12-12T08:00:00Z",
+          Route: {
+            DepartureAirport: {
+              name: "Airport A",
+              iataCode: "AAA",
+              type: "international",
+              City: {
+                name: "City A",
+                code: "CA",
+                imageUrl: "city_a.png",
+                country: "Country A",
+                countryCode: "CNA",
+              },
+            },
+            ArrivalAirport: {
+              name: "Airport B",
+              iataCode: "BBB",
+              type: "domestic",
+              City: {
+                name: "City B",
+                code: "CB",
+                imageUrl: "city_b.png",
+                country: "Country B",
+                countryCode: "CNB",
+                continent: "Europe",
+              },
+            },
+          },
+          Flights: [],
+        },
+      ];
+      const count = 1;
+
+      prismaMock.ticket.findMany.mockResolvedValue(tickets);
+      prismaMock.ticket.count.mockResolvedValue(count);
+
+      const result = await ticketService.getAll({
+        page: 1,
+        limit: 10,
+        orderBy: "departure_late",
+      });
+
+      expect(result.formattedTickets).toHaveLength(1);
+      expect(result.formattedTickets[0]).toHaveProperty("id", 1);
+      expect(result.pagination).toEqual({
+        totalItems: count,
+        currentPage: 1,
+        totalPages: 1,
+        pageSize: 10,
+      });
+    });
+
+    it("should return tickets with pagination and arrival_soon sorting", async () => {
+      const tickets = [
+        {
+          id: 1,
+          totalPrice: 100,
+          departureTime: "2023-12-12T08:00:00Z",
+          Route: {
+            DepartureAirport: {
+              name: "Airport A",
+              iataCode: "AAA",
+              type: "international",
+              City: {
+                name: "City A",
+                code: "CA",
+                imageUrl: "city_a.png",
+                country: "Country A",
+                countryCode: "CNA",
+              },
+            },
+            ArrivalAirport: {
+              name: "Airport B",
+              iataCode: "BBB",
+              type: "domestic",
+              City: {
+                name: "City B",
+                code: "CB",
+                imageUrl: "city_b.png",
+                country: "Country B",
+                countryCode: "CNB",
+                continent: "Europe",
+              },
+            },
+          },
+          Flights: [],
+        },
+      ];
+      const count = 1;
+
+      prismaMock.ticket.findMany.mockResolvedValue(tickets);
+      prismaMock.ticket.count.mockResolvedValue(count);
+
+      const result = await ticketService.getAll({
+        page: 1,
+        limit: 10,
+        orderBy: "arrival_soon",
+      });
+
+      expect(result.formattedTickets).toHaveLength(1);
+      expect(result.formattedTickets[0]).toHaveProperty("id", 1);
+      expect(result.pagination).toEqual({
+        totalItems: count,
+        currentPage: 1,
+        totalPages: 1,
+        pageSize: 10,
+      });
+    });
+
+    it("should return tickets with pagination and arrival_late sorting", async () => {
+      const tickets = [
+        {
+          id: 1,
+          totalPrice: 100,
+          departureTime: "2023-12-12T08:00:00Z",
+          Route: {
+            DepartureAirport: {
+              name: "Airport A",
+              iataCode: "AAA",
+              type: "international",
+              City: {
+                name: "City A",
+                code: "CA",
+                imageUrl: "city_a.png",
+                country: "Country A",
+                countryCode: "CNA",
+              },
+            },
+            ArrivalAirport: {
+              name: "Airport B",
+              iataCode: "BBB",
+              type: "domestic",
+              City: {
+                name: "City B",
+                code: "CB",
+                imageUrl: "city_b.png",
+                country: "Country B",
+                countryCode: "CNB",
+                continent: "Europe",
+              },
+            },
+          },
+          Flights: [],
+        },
+      ];
+      const count = 1;
+
+      prismaMock.ticket.findMany.mockResolvedValue(tickets);
+      prismaMock.ticket.count.mockResolvedValue(count);
+
+      const result = await ticketService.getAll({
+        page: 1,
+        limit: 10,
+        orderBy: "arrival_late",
+      });
 
       expect(result.formattedTickets).toHaveLength(1);
       expect(result.formattedTickets[0]).toHaveProperty("id", 1);
@@ -231,7 +751,9 @@ describe("Ticket Service", () => {
       const ticket = {
         id: 1,
         totalPrice: 100,
+        isActive: true,
         departureTime: "2023-12-12T08:00:00Z",
+        arrivalTime: "2023-12-12T10:00:00Z",
         Route: {
           DepartureAirport: {
             name: "Airport A",
@@ -259,18 +781,191 @@ describe("Ticket Service", () => {
             },
           },
         },
-        Flights: [],
+        Flights: [
+          {
+            id: 101,
+            price: 100,
+            duration: 120,
+            departureTime: "2023-12-12T08:00:00Z",
+            arrivalTime: "2023-12-12T10:00:00Z",
+            class: "economy",
+            isActive: true,
+            Seat: [
+              { isOccupied: false },
+              { isOccupied: false },
+              { isOccupied: true },
+              { isOccupied: false },
+              { isOccupied: true },
+            ], // Mocked seat data (some seats occupied, some not)
+            baggage: "20kg",
+            cabinBaggage: "7kg",
+            entertainment: true,
+            Airplane: {
+              name: "Boeing 747",
+              Airline: {
+                name: "Airline A",
+                imageUrl: "airline_a_logo.png",
+              },
+            },
+            Route: {
+              DepartureAirport: {
+                name: "Airport A",
+                iataCode: "AAA",
+                type: "international",
+                City: {
+                  name: "City A",
+                  code: "CA",
+                  imageUrl: "city_a.png",
+                  country: "Country A",
+                  countryCode: "CNA",
+                },
+              },
+              ArrivalAirport: {
+                name: "Airport B",
+                iataCode: "BBB",
+                type: "domestic",
+                City: {
+                  name: "City B",
+                  code: "CB",
+                  imageUrl: "city_b.png",
+                  country: "Country B",
+                  countryCode: "CNB",
+                  continent: "Europe",
+                },
+              },
+            },
+            DepartureTerminal: {
+              name: "Terminal 1",
+              type: "Domestic",
+            },
+            ArrivalTerminal: {
+              name: "Terminal 2",
+              type: "International",
+            },
+          },
+        ],
       };
-
+    
+      // Mock the result of the findUnique query
       prismaMock.ticket.findUnique.mockResolvedValue(ticket);
-
+    
       const result = await ticketService.getById(1);
-
-      expect(result).toBeDefined();
-      expect(result.id).toBe(1);
-      expect(result.departure.airport.name).toBe("Airport A");
-      expect(result.arrival.airport.name).toBe("Airport B");
-    });
+    
+      // Define the expected response structure for the ticket by ID
+      const expectedResponse = {
+        id: 1,
+        class: undefined, // Since class is not defined in the sample data
+        discount: undefined, // Since discount is not defined in the sample data
+        isTransits: undefined, // Since isTransits is not defined in the sample data
+        totalPrice: 100,
+        isActive: true,
+        departure: {
+          time: "2023-12-12T08:00:00Z",
+          airport: {
+            name: "Airport A",
+            code: "AAA",
+            type: "international",
+          },
+          city: {
+            name: "City A",
+            code: "CA",
+            image: "city_a.png",
+          },
+          country: {
+            name: "Country A",
+            code: "CNA",
+          },
+        },
+        arrival: {
+          time: "2023-12-12T10:00:00Z",
+          airport: {
+            name: "Airport B",
+            code: "BBB",
+            type: "domestic",
+          },
+          city: {
+            name: "City B",
+            code: "CB",
+            image: "city_b.png",
+          },
+          country: {
+            name: "Country B",
+            code: "CNB",
+          },
+          continent: "Europe",
+        },
+        flights: [
+          {
+            id: 101,
+            duration: 120,
+            baggage: "20kg",
+            cabinBaggage: "7kg",
+            entertainment: true,
+            airline: {
+              name: "Airline A",
+              logo: "airline_a_logo.png",
+            },
+            airplane: "Boeing 747",
+            departure: {
+              time: "2023-12-12T08:00:00Z",
+              airport: {
+                name: "Airport A",
+                code: "AAA",
+                type: "international",
+              },
+              city: {
+                name: "City A",
+                code: "CA",
+                image: "city_a.png",
+              },
+              country: {
+                name: "Country A",
+                code: "CNA",
+              },
+              terminal: {
+                name: "Terminal 1",
+                type: "Domestic",
+              },
+            },
+            arrival: {
+              time: "2023-12-12T10:00:00Z",
+              airport: {
+                name: "Airport B",
+                code: "BBB",
+                type: "domestic",
+              },
+              city: {
+                name: "City B",
+                code: "CB",
+                image: "city_b.png",
+              },
+              country: {
+                name: "Country B",
+                code: "CNB",
+              },
+              continent: "Europe",
+              terminal: {
+                name: "Terminal 2",
+                type: "International",
+              },
+            },
+            seats: [
+              { isOccupied: false },
+              { isOccupied: false },
+              { isOccupied: true },
+              { isOccupied: false },
+              { isOccupied: true },
+            ],
+            totalSeats: 5,
+            occupiedSeats: 2,
+            availableSeats: 3,
+          },
+        ],
+      };
+    
+      // Compare the result to the expected response
+      expect(result).toEqual(expectedResponse);
+    });    
 
     it("should throw an error if ticket is not found", async () => {
       prismaMock.ticket.findUnique.mockResolvedValue(null);
@@ -289,13 +984,24 @@ describe("Ticket Service", () => {
           id: 1,
           class: "economy",
           duration: 120,
-          price: "100",
+          price: 100,
           departureTime: "2023-12-12T08:00:00Z",
           arrivalTime: "2023-12-12T10:00:00Z",
           Route: {
-            // Mock the Route relation
             DepartureAirport: { id: 1 }, // Departure airport id
             ArrivalAirport: { id: 2 }, // Arrival airport id
+          },
+        },
+        {
+          id: 2,
+          class: "economy",
+          duration: 90,
+          price: 150,
+          departureTime: "2023-12-12T12:00:00Z",
+          arrivalTime: "2023-12-12T13:30:00Z",
+          Route: {
+            DepartureAirport: { id: 2 }, // Departure airport id
+            ArrivalAirport: { id: 3 }, // Arrival airport id
           },
         },
       ];
@@ -304,7 +1010,7 @@ describe("Ticket Service", () => {
       const route = {
         id: 1,
         DepartureAirport: { id: 1 },
-        ArrivalAirport: { id: 2 },
+        ArrivalAirport: { id: 3 },
       };
 
       // Mock prisma calls
@@ -312,7 +1018,7 @@ describe("Ticket Service", () => {
       prismaMock.route.findUnique.mockResolvedValue(route); // Mock the route lookup to return the route
       prismaMock.ticket.create.mockResolvedValue({ id: 1 });
 
-      const payload = { routeId: 1, flightIds: [1] };
+      const payload = { routeId: 1, flightIds: [1, 2] };
       const result = await ticketService.store(payload);
 
       expect(result.id).toBe(1);
@@ -320,50 +1026,17 @@ describe("Ticket Service", () => {
         expect.objectContaining({
           data: expect.objectContaining({
             routeId: 1,
-            totalPrice: 100,
-            totalDuration: 120,
+            totalPrice: 250, // Updated to reflect the correct total price (100 + 150)
+            totalDuration: 330, // Updated to reflect the correct total duration (120 + 90 + some connection time)
             Discount: null,
+            Flights: {
+              connect: [{ id: 1 }, { id: 2 }],
+            },
+            arrivalTime: "2023-12-12T13:30:00Z", // Assuming the arrival time is for the second flight
+            departureTime: "2023-12-12T08:00:00Z", // Assuming the departure time is for the first flight
+            isTransits: true, // Assuming the second flight is considered a transit
           }),
         })
-      );
-    });
-
-    it("should throw error when flights are not in sequential order", async () => {
-      // Ensure route mock is correctly defined
-      const route = {
-        id: 1,
-        DepartureAirport: { id: 1 },
-        ArrivalAirport: { id: 2 },
-      };
-
-      prismaMock.route.findUnique.mockResolvedValue(route); // Mock the route lookup to return the route
-
-      const flights = [
-        {
-          id: 1,
-          class: "economy",
-          duration: 120,
-          price: "100",
-          departureTime: "2023-12-12T08:00:00Z",
-          arrivalTime: "2023-12-12T10:00:00Z",
-          
-        },
-        {
-          id: 2,
-          class: "economy",
-          duration: 90,
-          price: "150",
-          departureTime: "2023-12-12T09:00:00Z", // This is out of order
-          arrivalTime: "2023-12-12T10:30:00Z",
-        },
-      ];
-
-      prismaMock.flight.findMany.mockResolvedValue(flights);
-
-      const payload = { routeId: 1, flightIds: [1, 2] };
-
-      await expect(ticketService.store(payload)).rejects.toThrow(
-        new AppError("Flights are not in sequential order by time", 400)
       );
     });
 
@@ -377,7 +1050,24 @@ describe("Ticket Service", () => {
       );
     });
 
-    it("should throw error if discount not found", async () => {
+    it("should throw error if flights cannot be found", async () => {
+      const route = {
+        id: 1,
+        DepartureAirport: { id: 1 },
+        ArrivalAirport: { id: 2 },
+      };
+      prismaMock.route.findUnique.mockResolvedValue(route); // Mock route
+
+      prismaMock.flight.findMany.mockResolvedValue([]); // No flights found
+
+      const payload = { routeId: 1, flightIds: [1] };
+
+      await expect(ticketService.store(payload)).rejects.toThrow(
+        new AppError("Some flights could not be found", 400)
+      );
+    });
+
+    it("should throw error if flights are not on the same day", async () => {
       const route = {
         id: 1,
         DepartureAirport: { id: 1 },
@@ -394,15 +1084,22 @@ describe("Ticket Service", () => {
           departureTime: "2023-12-12T08:00:00Z",
           arrivalTime: "2023-12-12T10:00:00Z",
         },
+        {
+          id: 2,
+          class: "economy",
+          duration: 90,
+          price: "150",
+          departureTime: "2023-12-13T12:00:00Z", // Different day
+          arrivalTime: "2023-12-13T13:30:00Z",
+        },
       ];
 
       prismaMock.flight.findMany.mockResolvedValue(flights);
-      prismaMock.discount.findUnique.mockResolvedValue(null); // No discount found
 
-      const payload = { routeId: 1, flightIds: [1], discountId: 1 };
+      const payload = { routeId: 1, flightIds: [1, 2] };
 
       await expect(ticketService.store(payload)).rejects.toThrow(
-        new AppError("Discount not found", 404)
+        new AppError("All flights must be on the same day", 400)
       );
     });
 
@@ -442,20 +1139,278 @@ describe("Ticket Service", () => {
       );
     });
 
-    it("should throw error if flights cannot be found", async () => {
+    it("should throw error if first flight's departure does not match the route departure", async () => {
+      const route = {
+        id: 1,
+        DepartureAirport: { id: 1 },
+        ArrivalAirport: { id: 3 },
+      };
+      prismaMock.route.findUnique.mockResolvedValue(route);
+
+      const flights = [
+        {
+          id: 1,
+          class: "economy",
+          duration: 120,
+          price: "100",
+          departureTime: "2023-12-12T08:00:00Z",
+          arrivalTime: "2023-12-12T10:00:00Z",
+          Route: {
+            DepartureAirport: { id: 2 }, // Does not match route's DepartureAirport
+            ArrivalAirport: { id: 4 },
+          },
+        },
+        {
+          id: 2,
+          class: "economy",
+          duration: 90,
+          price: "150",
+          departureTime: "2023-12-12T12:00:00Z",
+          arrivalTime: "2023-12-12T13:30:00Z",
+          Route: {
+            DepartureAirport: { id: 4 },
+            ArrivalAirport: { id: 3 },
+          },
+        },
+      ];
+
+      prismaMock.flight.findMany.mockResolvedValue(flights);
+
+      const payload = { routeId: 1, flightIds: [1, 2] };
+
+      await expect(ticketService.store(payload)).rejects.toThrow(
+        new AppError(
+          "First flight's departure or last flight's arrival does not match the route",
+          400
+        )
+      );
+    });
+
+    it("should throw error if connecting flights do not match", async () => {
+      const route = {
+        id: 1,
+        DepartureAirport: { id: 1 },
+        ArrivalAirport: { id: 4 },
+      };
+      prismaMock.route.findUnique.mockResolvedValue(route);
+
+      const flights = [
+        {
+          id: 1,
+          class: "economy",
+          duration: 120,
+          price: "100",
+          departureTime: "2023-12-12T08:00:00Z",
+          arrivalTime: "2023-12-12T10:00:00Z",
+          Route: {
+            DepartureAirport: { id: 1 },
+            ArrivalAirport: { id: 2 },
+          },
+        },
+        {
+          id: 2,
+          class: "economy",
+          duration: 90,
+          price: "150",
+          departureTime: "2023-12-12T12:00:00Z",
+          arrivalTime: "2023-12-12T13:30:00Z",
+          Route: {
+            DepartureAirport: { id: 3 }, // Does not match the previous flight's ArrivalAirport
+            ArrivalAirport: { id: 4 },
+          },
+        },
+      ];
+
+      prismaMock.flight.findMany.mockResolvedValue(flights);
+
+      const payload = { routeId: 1, flightIds: [1, 2] };
+
+      await expect(ticketService.store(payload)).rejects.toThrow(
+        new AppError("Connecting flights do not match", 400)
+      );
+    });
+
+    it("should throw error when flights are not in sequential order", async () => {
+      // Ensure route mock is correctly defined
+      const route = {
+        id: 1,
+        DepartureAirport: { id: 1 },
+        ArrivalAirport: { id: 3 },
+      };
+      prismaMock.route.findUnique.mockResolvedValue(route); // Mock the route lookup to return the route
+
+      const flights = [
+        {
+          id: 1,
+          class: "economy",
+          duration: 120,
+          price: "100",
+          departureTime: "2023-12-12T08:00:00Z",
+          arrivalTime: "2023-12-12T10:00:00Z",
+          Route: {
+            DepartureAirport: { id: 1 }, // Correct mock for the first flight
+            ArrivalAirport: { id: 2 },
+          },
+        },
+        {
+          id: 2,
+          class: "economy",
+          duration: 90,
+          price: "150",
+          departureTime: "2023-12-12T09:00:00Z", // This is out of order
+          arrivalTime: "2023-12-12T10:30:00Z",
+          Route: {
+            DepartureAirport: { id: 2 }, // Mock the Route for the second flight as well
+            ArrivalAirport: { id: 3 },
+          },
+        },
+      ];
+
+      prismaMock.flight.findMany.mockResolvedValue(flights);
+
+      const payload = { routeId: 1, flightIds: [1, 2] };
+
+      await expect(ticketService.store(payload)).rejects.toThrow(
+        new AppError("Flights are not in sequential order by time", 400)
+      );
+    });
+
+    it("should throw error if discount not found", async () => {
       const route = {
         id: 1,
         DepartureAirport: { id: 1 },
         ArrivalAirport: { id: 2 },
       };
-      prismaMock.route.findUnique.mockResolvedValue(route); // Mock route
+      prismaMock.route.findUnique.mockResolvedValue(route);
 
-      prismaMock.flight.findMany.mockResolvedValue([]); // No flights found
+      const flights = [
+        {
+          id: 1,
+          class: "economy",
+          duration: 120,
+          price: "100",
+          departureTime: "2023-12-12T08:00:00Z",
+          arrivalTime: "2023-12-12T10:00:00Z",
+          Route: {
+            DepartureAirport: { id: 1 }, // Matches the route's DepartureAirport
+            ArrivalAirport: { id: 2 }, // Matches the route's ArrivalAirport
+          },
+        },
+      ];
 
-      const payload = { routeId: 1, flightIds: [1] };
+      prismaMock.flight.findMany.mockResolvedValue(flights);
+      prismaMock.discount.findUnique.mockResolvedValue(null); // No discount found
+
+      const payload = { routeId: 1, flightIds: [1], discountId: 1 };
 
       await expect(ticketService.store(payload)).rejects.toThrow(
-        new AppError("Some flights could not be found", 400)
+        new AppError("Discount not found", 404)
+      );
+    });
+  });
+
+  describe("destroy", () => {
+    it("should delete a ticket and its associated flight if it's the only ticket for that flight", async () => {
+      const ticket = { id: 1, Flights: [{ id: 100 }] }; // Ticket linked to one flight
+  
+      // Mock the findUnique call to return the ticket
+      prismaMock.ticket.findUnique.mockResolvedValue(ticket);
+  
+      // Mock the ticket deletion
+      prismaMock.ticket.delete.mockResolvedValue(ticket);
+  
+      // Mock the flight deletion
+      prismaMock.flight.delete.mockResolvedValue({ id: 100 });
+  
+      const result = await ticketService.destroy(1);
+  
+      // Check result message
+      expect(result).toEqual({
+        message: "Ticket deleted successfully",
+      });
+  
+      // Verify findUnique call
+      expect(prismaMock.ticket.findUnique).toHaveBeenCalledWith({
+        where: { id: 1 },
+      });
+  
+      // Verify ticket deletion
+      expect(prismaMock.ticket.delete).toHaveBeenCalledWith({
+        where: { id: 1 },
+      });
+  
+      // Verify flight deletion
+      expect(prismaMock.flight.delete).toHaveBeenCalledWith({
+        where: { id: 100 },
+      });
+    });
+  
+    it("should delete a ticket but not delete the flight if there are multiple tickets for that flight", async () => {
+      const ticket = { id: 1, Flights: [{ id: 100 }, { id: 101 }] }; // Linked to multiple flights
+  
+      // Mock the findUnique call to return the ticket
+      prismaMock.ticket.findUnique.mockResolvedValue(ticket);
+  
+      // Mock the ticket deletion
+      prismaMock.ticket.delete.mockResolvedValue(ticket);
+  
+      const result = await ticketService.destroy(1);
+  
+      // Check result message
+      expect(result).toEqual({
+        message: "Ticket deleted successfully",
+      });
+  
+      // Verify findUnique call
+      expect(prismaMock.ticket.findUnique).toHaveBeenCalledWith({
+        where: { id: 1 },
+      });
+  
+      // Verify ticket deletion
+      expect(prismaMock.ticket.delete).toHaveBeenCalledWith({
+        where: { id: 1 },
+      });
+  
+      // Ensure flight.delete is NOT called
+      expect(prismaMock.flight.delete).not.toHaveBeenCalled();
+    });
+  
+    it("should throw an error if the ticket does not exist", async () => {
+      // Mock the findUnique call to return null
+      prismaMock.ticket.findUnique.mockResolvedValue(null);
+  
+      await expect(ticketService.destroy(999)).rejects.toThrow(AppError);
+  
+      // Ensure proper error logging
+      expect(console.error).toHaveBeenCalledWith(
+        "Error deleting ticket:",
+        expect.any(AppError)
+      );
+    });
+  
+    it("should throw an error if the ticket ID is invalid", async () => {
+      await expect(ticketService.destroy("invalid-id")).rejects.toThrow(AppError);
+  
+      expect(console.error).toHaveBeenCalledWith(
+        "Error deleting ticket:",
+        expect.any(AppError)
+      );
+    });
+  
+    it("should handle errors during deletion gracefully", async () => {
+      const ticket = { id: 1, Flights: [{ id: 100 }] };
+  
+      // Mock the findUnique call to return a valid ticket
+      prismaMock.ticket.findUnique.mockResolvedValue(ticket);
+  
+      // Simulate an error during ticket deletion
+      prismaMock.ticket.delete.mockRejectedValue(new Error("Database error"));
+  
+      await expect(ticketService.destroy(1)).rejects.toThrow("Database error");
+  
+      expect(console.error).toHaveBeenCalledWith(
+        "Error deleting ticket:",
+        expect.any(Error)
       );
     });
   });

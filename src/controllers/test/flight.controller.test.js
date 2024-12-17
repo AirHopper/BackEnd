@@ -3,10 +3,10 @@ import {
   getById,
   store,
   destroy,
-} from "../controllers/flight.controller.js";
-import * as flightService from "../services/flight.service.js";
+} from "../flight.controller.js";
+import * as flightService from "../../services/flight.service.js";
 
-jest.mock("../services/flight.service.js");
+jest.mock("../../services/flight.service.js");
 
 describe("Flight Controller", () => {
   let req, res, next;
