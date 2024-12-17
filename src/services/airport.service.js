@@ -28,7 +28,12 @@ export const createAirport = async (data) => {
 export const getAllAirports = async () => {
   try {
     const airports = await prisma.airport.findMany({
-      include: { City: true },
+      include: {
+        City: true,
+        _count: {
+          select: { departureRoutes: true, arrivalRoutes: true },
+        },
+      },
     });
     return airports;
   } catch (error) {
@@ -53,7 +58,6 @@ export const getAirportByIataCode = async (iataCode) => {
     if (!airport) {
       throw new AppError("Airport not found", 404);
     }
-
 
     const totalDeparture = airport.departureRoutes.length;
     const totalArrival = airport.arrivalRoutes.length;
