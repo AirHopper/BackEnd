@@ -4,36 +4,34 @@ import { createQrCodeUrlByOrderId } from '../utils/qrCode.js';
 
 export const getAllUserOwnedOrders = async ({userId, search}) => {
     try {
-        const { orderId, startFlightDate, endFlightDate } = search || {};
+        const { orderId, startBookingDate, endBookingDate } = search || {};
 
         const isValidDate = (date) => {
             const parsedDate = new Date(date);
             return !isNaN(parsedDate);
         };
 
-        // Validate startFlightDate and endFlightDate
-        if (startFlightDate && !isValidDate(startFlightDate)) {
-            throw new AppError('Invalid startFlightDate', 400);
+        // Validate startBookingDate and endBookingDate
+        if (startBookingDate && !isValidDate(startBookingDate)) {
+            throw new AppError('Invalid startBookingDate', 400);
         }
-        if (endFlightDate && !isValidDate(endFlightDate)) {
-            throw new AppError('Invalid endFlightDate', 400);
+        if (endBookingDate && !isValidDate(endBookingDate)) {
+            throw new AppError('Invalid endBookingDate', 400);
         }
-        if (startFlightDate && endFlightDate && new Date(startFlightDate) > new Date(endFlightDate)) {
-            throw new AppError('startFlightDate must be before endFlightDate', 400);
+        if (startBookingDate && endBookingDate && new Date(startBookingDate) > new Date(endBookingDate)) {
+            throw new AppError('startBookingDate must be before endBookingDate', 400);
         }
 
-        // seatch filter for order id, start flight date, and end flight date
+        // seatch filter for order id, start booking date, and end booking date
         const searchFilters = {
             AND: [
                 ...(orderId ? [{ id: { contains: orderId, mode: "insensitive" } }] : []),
-                ...(startFlightDate || endFlightDate
+                ...(startBookingDate || endBookingDate
                     ?   [
                             {
-                                OutboundTicket: {
-                                    departureTime: {
-                                        ...(startFlightDate ? { gte: new Date(startFlightDate).toISOString() } : {}),
-                                        ...(endFlightDate ? { lte: new Date(endFlightDate).toISOString() } : {})
-                                    }
+                                bookingDate: {
+                                    ...(startBookingDate ? { gte: new Date(startBookingDate).toISOString() } : {}),
+                                    ...(endBookingDate ? { lte: new Date(new Date(endBookingDate).setDate(new Date(endBookingDate).getDate() + 1)).toISOString() } : {})
                                 }
                             }
                     ]
@@ -158,29 +156,11 @@ export const getAllUserOwnedOrders = async ({userId, search}) => {
                 }
             },
             orderBy: {
-                OutboundTicket: {
-                    departureTime: 'asc' // berdasarkan waktu keberangkatan tiket terawal
-                }
+                bookingDate: 'asc'
             }
         });
 
-        // Separate past and upcoming orders, prioritize upcoming orders while passed orders keep in the end
-        const currentTime = new Date();
-        const upcomingOrders = [];
-        const pastOrders = [];
-
-        orders.forEach(order => {
-            const departureTime = new Date(order.OutboundTicket.departureTime);
-            if (departureTime >= currentTime) {
-                upcomingOrders.push(order);
-            } else {
-                pastOrders.push(order);
-            }
-        });
-
-        const sortedOrders = [...upcomingOrders, ...pastOrders];
-
-        const formattedOrders = sortedOrders.map((order) => {
+        const formattedOrders = orders.map((order) => {
             const passengersMap = new Map();
 
             order.Passengers.forEach((passenger) => {
@@ -217,6 +197,7 @@ export const getAllUserOwnedOrders = async ({userId, search}) => {
             isRoundTrip: order.isRoundTrip,
             bookingDate: order.bookingDate,
             qrCodeUrl: order.qrCodeUrl,
+            pdfUrl: order.pdfUrl,
             detailPrice: order.detailPrice,
             payment: {
                 id: order.Payment.id,
@@ -500,7 +481,8 @@ export const getUserOwnedOrderById = async (id, userId) => {
                                     }
                                 },
                                 DepartureTerminal: true,
-                                ArrivalTerminal: true
+                                ArrivalTerminal: true,
+                                Seat: true
                             }
                         },
                         Route: {
@@ -544,7 +526,8 @@ export const getUserOwnedOrderById = async (id, userId) => {
                                     }
                                 },
                                 DepartureTerminal: true,
-                                ArrivalTerminal: true
+                                ArrivalTerminal: true,
+                                Seat: true
                             }
                         },
                         Route: {
@@ -600,6 +583,11 @@ export const getUserOwnedOrderById = async (id, userId) => {
                 });
             }
         });
+
+        // Sort seats by seat.id
+        passengersMap.forEach((passenger) => {
+            passenger.seat.sort((a, b) => a.id - b.id);
+        });
         
         const formattedOrder = {
             id: order.id,
@@ -607,6 +595,7 @@ export const getUserOwnedOrderById = async (id, userId) => {
             isRoundTrip: order.isRoundTrip,
             bookingDate: order.bookingDate,
             qrCodeUrl: order.qrCodeUrl,
+            pdfUrl: order.pdfUrl,
             detailPrice: order.detailPrice,
             payment: {
                 id: order.Payment.id,
@@ -719,6 +708,7 @@ export const getUserOwnedOrderById = async (id, userId) => {
                                 }
                                 : null,
                         },
+                        seat: flight.Seat
                     };
                 })
             },
@@ -823,6 +813,7 @@ export const getUserOwnedOrderById = async (id, userId) => {
                                 }
                                 : null,
                         },
+                        seat: flight.Seat
                     };
                 })
             } : null,
@@ -1035,9 +1026,7 @@ export const getAllOrders = async () => {
                     }
                 },
                 orderBy: {
-                    OutboundTicket: {
-                        departureTime: 'asc' // berdasarkan waktu keberangkatan tiket terawal
-                    }
+                    bookingDate: 'asc'
                 }
             });
 
@@ -1094,6 +1083,7 @@ export const getAllOrders = async () => {
                 isRoundTrip: order.isRoundTrip,
                 bookingDate: order.bookingDate,
                 qrCodeUrl: order.qrCodeUrl,
+                pdfUrl: order.pdfUrl,
                 detailPrice: order.detailPrice,
                 payment: {
                     id: order.Payment.id,
@@ -1333,7 +1323,7 @@ export const getAllOrders = async () => {
 export const addQrCodeAndPdfUrlOrderById = async (id) => {
     try {
         const qrCodeUrl = await createQrCodeUrlByOrderId(id);
-        const pdfUrl = 'test'
+        const pdfUrl = 'test';
         return prisma.order.update({
             where: {
                 id
