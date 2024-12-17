@@ -1,7 +1,7 @@
 import prisma from '../utils/prisma.js';
 import { coreApi, snap } from '../utils/midtrans.js';
-import AppError from '../utils/AppError.js';
 import { nanoid } from 'nanoid';
+import AppError from '../utils/AppError.js';
 
 export const createPayment = async (request, account) => {
     try {

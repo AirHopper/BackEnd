@@ -189,10 +189,6 @@ export const getAll = async ({
     // Count total flights
     const totalFlights = await prisma.flight.count({ where: searchFilters });
 
-    if (!flights.length) {
-      throw new AppError("No flights found", 404);
-    }
-
     // Format response
     const formattedFlights = flights.map((flight) => {
       const totalSeats = flight.Seat.length;
@@ -303,6 +299,7 @@ export const getById = async (id) => {
         DepartureTerminal: true,
         ArrivalTerminal: true,
         Seat: true,
+        Ticket: true,
       },
     });
 
@@ -312,6 +309,7 @@ export const getById = async (id) => {
 
     // Format response
     const totalSeats = flight.Seat.length;
+    const totalTickets = flight.Ticket.length;
     const occupiedSeats = flight.Seat.filter((seat) => seat.isOccupied).length;
     const availableSeats = totalSeats - occupiedSeats;
 
@@ -370,6 +368,7 @@ export const getById = async (id) => {
       price: flight.price,
       totalPrice: flight.price,
       totalSeats,
+      totalTickets,
       occupiedSeats,
       availableSeats,
     };
@@ -386,7 +385,7 @@ export const store = async (payload) => {
   try {
     const {
       routeId,
-      class: classType,
+      class: classTypes, // Now an array of strings
       isActive = true,
       airplaneId,
       departureTime,
@@ -449,199 +448,87 @@ export const store = async (payload) => {
       throw new AppError("Arrival terminal not found", 404);
     }
 
-    // Calculate price
-    const price = await calculatePrice(
-      route.distance,
-      airplane.pricePerKm,
-      classType
-    );
+    // Array to hold the created flights
+    const flights = [];
 
-    let discountPrice = null;
+    for (const classType of classTypes) {
+      // Calculate price
+      const price = await calculatePrice(
+        route.distance,
+        airplane.pricePerKm,
+        classType
+      );
 
-    if (discountId) {
-      const discount = await prisma.discount.findUnique({
-        where: {
-          id: discountId,
+      let ticketPrice = price;
+
+      if (discountId) {
+        const discount = await prisma.discount.findUnique({
+          where: {
+            id: discountId,
+          },
+        });
+
+        if (!discount) {
+          throw new AppError("Discount not found", 404);
+        }
+
+        ticketPrice -= price * (discount.percentage / 100);
+      }
+
+      // Calculate capacity based on class type
+      const capacity = flightCapacity(classType);
+
+      // Calculate duration in minutes
+      const duration = flightDuration(departureDate, arrivalDate);
+
+      // Create flight data
+      const flight = await prisma.flight.create({
+        data: {
+          routeId,
+          class: classType,
+          isActive,
+          airplaneId,
+          departureTime: new Date(departureTime),
+          arrivalTime: new Date(arrivalTime),
+          duration,
+          price,
+          capacity,
+          baggage,
+          cabinBaggage,
+          entertainment,
+          departureTerminalId,
+          arrivalTerminalId,
+          Seat: {
+            create: Array.from({ length: capacity }, (_, index) => ({
+              seatNumber: index + 1,
+              isOccupied: false,
+            })),
+          },
+          Ticket: {
+            create: {
+              routeId,
+              class: classType,
+              isTransits: false,
+              departureTime: new Date(departureTime),
+              arrivalTime: new Date(arrivalTime),
+              totalPrice: ticketPrice,
+              totalDuration: duration,
+              discountId,
+            },
+          },
+        },
+        include: {
+          Ticket: true,
         },
       });
 
-      if (!discount) {
-        throw new AppError("Discount not found", 404);
-      }
-
-      discountPrice = price - price * (discount.percentage / 100);
+      // Add to flights array
+      flights.push(flight);
     }
 
-    // Calculate capacity based on class type
-    const capacity = flightCapacity(classType);
-
-    // Calculate duration in minutes
-    const duration = flightDuration(departureDate, arrivalDate);
-
-    // Membuat data flight
-    const flight = await prisma.flight.create({
-      data: {
-        routeId,
-        class: classType,
-        isActive,
-        airplaneId,
-        departureTime: new Date(departureTime),
-        arrivalTime: new Date(arrivalTime),
-        duration,
-        price,
-        capacity,
-        baggage,
-        cabinBaggage,
-        entertainment,
-        departureTerminalId,
-        arrivalTerminalId,
-        Seat: {
-          create: Array.from({ length: capacity }, (_, index) => ({
-            seatNumber: index + 1,
-            isOccupied: false,
-          })),
-        },
-        Ticket: {
-          create: {
-            routeId,
-            class: classType,
-            isTransits: false,
-            departureTime: new Date(departureTime),
-            arrivalTime: new Date(arrivalTime),
-            totalPrice: price,
-            discountPrice,
-            totalDuration: duration,
-            discountId,
-          },
-        },
-      },
-      include: {
-        Ticket: true,
-      },
-    });
-
-    return flight;
+    return flights;
   } catch (error) {
-    console.error("Error creating flight:", error);
-    throw error;
-  }
-};
-
-// TODO Update flight
-export const update = async (payload, id) => {
-  try {
-    const {
-      routeId,
-      class: classType,
-      isActive,
-      airplaneId,
-      departureTime,
-      arrivalTime,
-      duration,
-      baggage,
-      cabinBaggage,
-      entertainment,
-      departureTerminalId,
-      arrivalTerminalId,
-      discountId = null,
-    } = payload;
-
-    const flightExists = await prisma.flight.findUnique({
-      where: {
-        id,
-      },
-    });
-
-    if (!flightExists) {
-      throw new AppError("Flight not found", 404);
-    }
-
-    const updatedRouteId = routeId ?? flightExists.routeId;
-    const updatedClass = classType ?? flightExists.class;
-    const updatedIsActive = isActive ?? flightExists.isActive;
-    const updatedAirplaneId = airplaneId ?? flightExists.airplaneId;
-    const updatedDepartureTime = departureTime
-      ? new Date(departureTime)
-      : flightExists.departureTime;
-    const updatedArrivalTime = arrivalTime
-      ? new Date(arrivalTime)
-      : flightExists.arrivalTime;
-    const updatedDuration = duration ?? flightExists.duration;
-    const updatedBaggage = baggage ?? flightExists.baggage;
-    const updatedCabinBaggage = cabinBaggage ?? flightExists.cabinBaggage;
-    const updatedEntertainment = entertainment ?? flightExists.entertainment;
-    const updatedDepartureTerminalId =
-      departureTerminalId ?? flightExists.departureTerminalId;
-    const updatedArrivalTerminalId =
-      arrivalTerminalId ?? flightExists.arrivalTerminalId;
-
-    if (updatedDepartureTime >= updatedArrivalTime) {
-      throw new AppError(
-        "Departure time must be earlier than arrival time",
-        400
-      );
-    }
-
-    const routeExists = await prisma.route.findUnique({
-      where: {
-        id: updatedRouteId,
-      },
-    });
-    if (!routeExists) {
-      throw new AppError("Route not found", 404);
-    }
-
-    const airplaneExists = await prisma.airplane.findUnique({
-      where: {
-        id: updatedAirplaneId,
-      },
-    });
-    if (!airplaneExists) {
-      throw new AppError("Airplane not found", 404);
-    }
-
-    const departureTerminalExists = await prisma.terminal.findUnique({
-      where: {
-        id: updatedDepartureTerminalId,
-      },
-    });
-    if (!departureTerminalExists) {
-      throw new AppError("Departure terminal not found", 404);
-    }
-
-    const arrivalTerminalExists = await prisma.terminal.findUnique({
-      where: {
-        id: updatedArrivalTerminalId,
-      },
-    });
-    if (!arrivalTerminalExists) {
-      throw new AppError("Arrival terminal not found", 404);
-    }
-
-    const updatedFlight = await prisma.flight.update({
-      where: {
-        id,
-      },
-      data: {
-        routeId: updatedRouteId,
-        class: updatedClass,
-        isActive: updatedIsActive,
-        airplaneId: updatedAirplaneId,
-        departureTime: updatedDepartureTime,
-        arrivalTime: updatedArrivalTime,
-        duration: updatedDuration,
-        baggage: updatedBaggage,
-        cabinBaggage: updatedCabinBaggage,
-        entertainment: updatedEntertainment,
-        departureTerminalId: updatedDepartureTerminalId,
-        arrivalTerminalId: updatedArrivalTerminalId,
-        discountId,
-      },
-    });
-
-    return updatedFlight;
-  } catch (error) {
-    console.error("Error updating flight:", error);
+    console.error("Error creating flights:", error);
     throw error;
   }
 };
@@ -652,6 +539,9 @@ export const destroy = async (id) => {
     const flightExists = await prisma.flight.findUnique({
       where: {
         id,
+      },
+      include: {
+        Ticket: true,
       },
     });
 
@@ -665,8 +555,18 @@ export const destroy = async (id) => {
       },
     });
 
+    const ticketIds = flightExists.Ticket.map((ticket) => ticket.id);
+
+    await prisma.ticket.deleteMany({
+      where: {
+        id: {
+          in: ticketIds,
+        },
+      },
+    });
+
     return {
-      message: "Flight deleted successfully",
+      message: "Flight and connected Tickets deleted successfully",
     };
   } catch (error) {
     console.error("Error deleting flight:", error);

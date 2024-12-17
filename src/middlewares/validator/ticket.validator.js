@@ -7,13 +7,6 @@ const createTicketSchema = z.object({
   discountId: z.number().int().nullable().optional(),
 });
 
-// Schema for updating a ticket (optional fields)
-const updateTicketSchema = z.object({
-  routeId: z.number().int().positive().optional(),
-  flightIds: z.array(z.number().int().positive()).optional(),
-  discountId: z.number().int().nullable().optional(),
-});
-
 // Middleware validator
 const validate = (schema) => (req, res, next) => {
   try {
@@ -41,4 +34,3 @@ const validate = (schema) => (req, res, next) => {
 };
 
 export const validateCreateTicket = validate(createTicketSchema);
-export const validateUpdateTicket = validate(updateTicketSchema);

@@ -54,22 +54,6 @@ export const store = async (req, res, next) => {
   }
 };
 
-// TODO Update flight
-export const update = async (req, res, next) => {
-  try {
-    const id = parseInt(req.params.id, 10);
-    const updatedFlight = await flightService.update(req.body, id);
-
-    res.status(200).json({
-      success: true,
-      message: "Flight updated successfully",
-      data: updatedFlight,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
 // TODO Destroy flight
 export const destroy = async (req, res, next) => {
   try {

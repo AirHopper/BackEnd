@@ -54,6 +54,13 @@ export const getAirportByIataCode = async (iataCode) => {
       throw new AppError("Airport not found", 404);
     }
 
+
+    const totalDeparture = airport.departureRoutes.length;
+    const totalArrival = airport.arrivalRoutes.length;
+
+    airport.totalDepartureRoutes = totalDeparture;
+    airport.totalArrivalRoutes = totalArrival;
+
     return airport;
   } catch (error) {
     console.error("Error fetching airport:", error);

@@ -1,5 +1,6 @@
 import prisma from '../utils/prisma.js';
 import AppError from '../utils/AppError.js';
+import { createQrCodeUrlByOrderId } from '../utils/qrCode.js';
 
 export const getAllUserOwnedOrders = async ({userId, search}) => {
     try {
@@ -847,7 +848,6 @@ export const createOrder = async (request, paymentId, orderId, userId) => {
                 paymentId,
                 isRoundTrip,
                 detailPrice: request.detailPrice,
-                qrCodeUrl: 'test',
                 outboundTicketId: request.outboundTicketId,
                 returnTicketId
             }
@@ -898,11 +898,11 @@ export const updateOrderStatusByPaymentId = async (paymentId, paymentStatus) => 
     }
 }
 
-export const cancelOrderById = async (orderId) => {
+export const cancelOrderById = async (id) => {
     try {
         return prisma.order.update({
             where: {
-                id: orderId
+                id
             },
             data: {
                 orderStatus: 'Cancelled'
@@ -1326,6 +1326,25 @@ export const getAllOrders = async () => {
 
     } catch (error) {
         console.error('Error fetching orders:', error);
+        throw error;
+    }
+}
+
+export const addQrCodeAndPdfUrlOrderById = async (id) => {
+    try {
+        const qrCodeUrl = await createQrCodeUrlByOrderId(id);
+        const pdfUrl = 'test'
+        return prisma.order.update({
+            where: {
+                id
+            },
+            data: {
+                qrCodeUrl,
+                pdfUrl
+            }
+        });
+    } catch (error) {
+        console.error('Error adding QR code and PDF URL:', error);
         throw error;
     }
 }

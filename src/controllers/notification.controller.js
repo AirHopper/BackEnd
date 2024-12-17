@@ -23,10 +23,25 @@ export const createPromotionNotif = async (req, res, next) => {
 
 export const getUserNotification = async (req, res, next) => {
   try {
-    const data = await notificationService.getUserNotification(req.user.id);
+    const data = await notificationService.getUserNotification(req.user.id, req.query);
     res.status(200).json({
       success: true,
       message: "All notifications has been read successfully!",
+      data: data,
+      error: null,
+    })
+  } catch(error) {
+    console.log(error);
+    next(error);
+  }
+}
+
+export const clearAllUserNotification = async (req, res, next) => {
+  try {
+    const data = await notificationService.clearAllUserNotification(req.user.id);
+    res.status(200).json({
+      success: true,
+      message: "All notifications cleared successfully!",
       data: data,
       error: null,
     })

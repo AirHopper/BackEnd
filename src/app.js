@@ -21,6 +21,9 @@ const server = createServer(app);
 // Set the port
 const PORT = process.env.PORT || 3000;
 
+app.use(express.static('public'));
+app.use('/', express.static('public'));
+
 // View Engine
 app.set("views", path.join(path.resolve(), "/src/views"));
 app.set("view engine", "ejs");

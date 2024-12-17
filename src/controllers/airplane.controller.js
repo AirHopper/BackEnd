@@ -18,7 +18,7 @@ export const createAirplane = async (req, res, next) => {
 // Get all airplanes
 export const getAllAirplanes = async (req, res, next) => {
   try {
-    const airplanes = await airplaneService.getAllAirplanes();
+    const airplanes = await airplaneService.getAllAirplanes(req.query.airlineId);
     res
       .status(200)
       .json({
