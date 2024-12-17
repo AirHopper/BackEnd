@@ -1,9 +1,11 @@
 import { z } from "zod";
 
-// Schema untuk create flight
+// Schema for create flight
 const createFlightSchema = z.object({
   routeId: z.number().int().positive(),
-  class: z.enum(["Economy", "Premium_Economy", "Business", "First_Class"]),
+  class: z
+    .array(z.enum(["Economy", "Premium_Economy", "Business", "First_Class"]))
+    .nonempty("Class array must contain at least one class"), // Ensures the array is not empty
   isActive: z.boolean(),
   airplaneId: z.number().int().positive(),
   departureTime: z.string().datetime(),
@@ -13,22 +15,6 @@ const createFlightSchema = z.object({
   entertainment: z.boolean(),
   departureTerminalId: z.number().int().positive(),
   arrivalTerminalId: z.number().int().positive(),
-  discountId: z.number().int().nullable().optional(),
-});
-
-// Schema untuk update flight
-const updateFlightSchema = z.object({
-  routeId: z.number().int().positive().optional(),
-  class: z.enum(["Economy", "Premium_Economy", "Business", "First_Class"]).optional(),
-  isActive: z.boolean().optional(),
-  airplaneId: z.number().int().positive().optional(),
-  departureTime: z.string().datetime().optional(),
-  arrivalTime: z.string().datetime().optional(),
-  baggage: z.number().int().nonnegative().optional(),
-  cabinBaggage: z.number().int().nonnegative().optional(),
-  entertainment: z.boolean().optional(),
-  departureTerminalId: z.number().int().positive().optional(),
-  arrivalTerminalId: z.number().int().positive().optional(),
   discountId: z.number().int().nullable().optional(),
 });
 
@@ -59,4 +45,3 @@ const validate = (schema) => (req, res, next) => {
 };
 
 export const validateCreateFlight = validate(createFlightSchema);
-export const validateUpdateFlight = validate(updateFlightSchema);

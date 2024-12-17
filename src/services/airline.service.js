@@ -28,7 +28,16 @@ export const createAirline = async (data, file) => {
 
 export const getAllAirlines = async () => {
   try {
-    const airlines = await prisma.airline.findMany();
+    const airlines = await prisma.airline.findMany({
+      include: {
+        _count: {
+          select: {
+            Airplanes: true,
+          },
+        },
+      },
+    });
+
     return airlines;
   } catch (error) {
     console.error("Error fetching airlines:", error);
@@ -46,6 +55,10 @@ export const getAirlineById = async (iataCode) => {
     if (!airline) {
       throw new AppError("Airline not found", 404);
     }
+
+    const airplaneCount = airline.Airplanes.length;
+
+    airline.airplaneCount = airplaneCount;
 
     return airline;
   } catch (error) {

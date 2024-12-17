@@ -23,11 +23,19 @@ export const createAirplane = async (data) => {
 };
 
 // Get all airplanes
-export const getAllAirplanes = async () => {
+export const getAllAirplanes = async (airlineId) => {
   try {
+    let filter = {};
+
+    if (airlineId) {
+      filter = { where: { airlineId } };
+    }
+
     const airplanes = await prisma.airplane.findMany({
-      include: { Airline: true },
+      ...filter,
+      include: { Airline: true, _count: { select: { Flights: true } } },
     });
+
     return airplanes;
   } catch (error) {
     console.error("Error fetching airplanes:", error);
@@ -46,6 +54,10 @@ export const getAirplaneById = async (id) => {
     if (!airplane) {
       throw new AppError("Airplane not found", 404);
     }
+
+    const flightCount = airplane.Flights.length;
+
+    airplane.flightCount = flightCount;
 
     return airplane;
   } catch (error) {

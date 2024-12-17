@@ -6,6 +6,11 @@ const createPromotionSchema = z.object({
   description: z.string().min(8, "Description is required"),
 });
 
+const getUserNotificationSchema = z.object({
+  type: z.enum(["promosi", "notifikasi"]).optional(),
+  q: z.string().optional()
+})
+
 const validate = (schema) => (req, res, next) => {
   try {
     schema.parse(req.body);
@@ -16,4 +21,15 @@ const validate = (schema) => (req, res, next) => {
   }
 };
 
+const validateParams = (schema) => (req, res, next) => {
+  try {
+    schema.parse(req.query);
+    next();
+  } catch (error) {
+    const errorMessage = error.errors?.[0]?.message || "Invalid input data";
+    next(new customError(errorMessage, 400));
+  }
+};
+
 export const validateCreatePromotion = validate(createPromotionSchema);
+export const validategetUserNotification = validateParams(getUserNotificationSchema);

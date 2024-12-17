@@ -39,8 +39,6 @@ jobs:
       - name: Lint code
         run: npm run lint
 
-      # Step 5: Run tests
-      # - name: Run tests
-      #   env:
-      #     NODE_ENV: test
-      # run: npm run test
+      #Step 5: Run tests
+      - name: Run tests
+        run: npm run test

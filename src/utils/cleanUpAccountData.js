@@ -3,11 +3,11 @@ const cleanUpAccountData = (account) => {
   [
     "createdAt",
     "updatedAt",
-    "role",
+    // "role",
     "password",
     "otpCode",
     "otpExpiration",
-    "notificationSubscription"
+    "notificationSubscription",
   ].forEach((key) => delete account[key]);
 };
 

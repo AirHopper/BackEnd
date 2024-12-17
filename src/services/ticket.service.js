@@ -43,8 +43,14 @@ async function validateFlights({ routeId, flightIds }) {
   }
 
   // Validate first and last flights match the route's airports
-  if (firstFlight.Route.DepartureAirport.id !== route.DepartureAirport.id || lastFlight.Route.ArrivalAirport.id !== route.ArrivalAirport.id) {
-    throw new AppError("First flight's departure or last flight's arrival does not match the route", 400);
+  if (
+    firstFlight.Route.DepartureAirport.id !== route.DepartureAirport.id ||
+    lastFlight.Route.ArrivalAirport.id !== route.ArrivalAirport.id
+  ) {
+    throw new AppError(
+      "First flight's departure or last flight's arrival does not match the route",
+      400
+    );
   }
 
   // Validate connecting airports and sequence
@@ -52,7 +58,10 @@ async function validateFlights({ routeId, flightIds }) {
     const currentFlight = flights[i];
     const nextFlight = flights[i + 1];
 
-    if (currentFlight.Route.ArrivalAirport.id !== nextFlight.Route.DepartureAirport.id) {
+    if (
+      currentFlight.Route.ArrivalAirport.id !==
+      nextFlight.Route.DepartureAirport.id
+    ) {
       throw new AppError("Connecting flights do not match", 400);
     }
 
@@ -78,7 +87,10 @@ function calculateDuration(flights) {
 
     // Add transit time between current flight and the previous flight
     const previousFlight = flights[index - 1];
-    const transitTime = calculateTransitTime(previousFlight.arrivalTime, flight.departureTime);
+    const transitTime = calculateTransitTime(
+      previousFlight.arrivalTime,
+      flight.departureTime
+    );
 
     return total + parseInt(flight.duration) + transitTime;
   }, 0);
@@ -92,11 +104,28 @@ function calculateTransitTime(arrivalTime, departureTime) {
 }
 
 // TODO Get all tickets
-export const getAll = async ({ page = 1, limit = 10, search, orderBy = "price_asc" }) => {
+export const getAll = async ({
+  page = 1,
+  limit = 10,
+  search,
+  orderBy = "price_asc",
+}) => {
   try {
     const offset = (page - 1) * limit;
 
-    let { departureCity, arrivalCity, flightDate, classType, continent, isTransit, airline } = search || {};
+    let {
+      departureCity,
+      arrivalCity,
+      flightDate,
+      classType,
+      continent,
+      isTransit,
+      airline,
+    } = search || {};
+
+    // Parse departureCity and arrivalCity to replace '+' with ' ' (space)
+    departureCity = departureCity ? departureCity.replace(/\+/g, " ") : "";
+    arrivalCity = arrivalCity ? arrivalCity.replace(/\+/g, " ") : "";
 
     const searchFilters = {
       AND: [
@@ -152,7 +181,11 @@ export const getAll = async ({ page = 1, limit = 10, search, orderBy = "price_as
               {
                 departureTime: {
                   gte: new Date(flightDate),
-                  lt: new Date(new Date(flightDate).setDate(new Date(flightDate).getDate() + 1)),
+                  lt: new Date(
+                    new Date(flightDate).setDate(
+                      new Date(flightDate).getDate() + 1
+                    )
+                  ),
                 },
               },
             ]
@@ -273,6 +306,7 @@ export const getAll = async ({ page = 1, limit = 10, search, orderBy = "price_as
       isTransits: ticket.isTransits,
       price: ticket.price,
       totalPrice: ticket.totalPrice,
+      totalDuration: ticket.totalDuration,
       isActive: ticket.isActive,
       departure: {
         time: ticket.departureTime,
@@ -311,7 +345,9 @@ export const getAll = async ({ page = 1, limit = 10, search, orderBy = "price_as
       },
       flights: ticket.Flights.map((flight) => {
         const totalSeats = flight.Seat.length;
-        const occupiedSeats = flight.Seat.filter((seat) => seat.isOccupied).length;
+        const occupiedSeats = flight.Seat.filter(
+          (seat) => seat.isOccupied
+        ).length;
         const availableSeats = totalSeats - occupiedSeats;
 
         return {
@@ -381,10 +417,6 @@ export const getAll = async ({ page = 1, limit = 10, search, orderBy = "price_as
 
     const totalTickets = await prisma.ticket.count({ where: searchFilters });
 
-    if (!tickets.length) {
-      throw new AppError("No tickets found", 404);
-    }
-
     const pagination = {
       totalItems: totalTickets,
       currentPage: parseInt(page),
@@ -433,7 +465,11 @@ export const getById = async (id) => {
             },
             DepartureTerminal: true,
             ArrivalTerminal: true,
-            Seat: true,
+            Seat: {
+              orderBy: {
+                seatNumber: "asc",
+              },
+            },
           },
         },
         Route: {
@@ -464,6 +500,7 @@ export const getById = async (id) => {
       isTransits: ticket.isTransits,
       price: ticket.price,
       totalPrice: ticket.totalPrice,
+      totalDuration: ticket.totalDuration,
       discount: ticket.Discount,
       isActive: ticket.isActive,
       departure: {
@@ -503,7 +540,9 @@ export const getById = async (id) => {
       },
       flights: ticket.Flights.map((flight) => {
         const totalSeats = flight.Seat.length;
-        const occupiedSeats = flight.Seat.filter((seat) => seat.isOccupied).length;
+        const occupiedSeats = flight.Seat.filter(
+          (seat) => seat.isOccupied
+        ).length;
         const availableSeats = totalSeats - occupiedSeats;
 
         return {
@@ -630,71 +669,6 @@ export const store = async (payload) => {
   }
 };
 
-// TODO Update tiket
-export const update = async (id, payload) => {
-  try {
-    if (isNaN(id)) {
-      throw new AppError("Invalid ticket ID", 400);
-    }
-
-    const { isActive } = payload;
-
-    // 1. Validate ticket existence
-    const ticket = await prisma.ticket.findUnique({
-      where: { id },
-      include: { Flights: true }, // Include flights to find related tickets
-    });
-
-    if (!ticket) {
-      throw new AppError("Ticket not found", 404);
-    }
-
-    if (ticket.isTransits) {
-      // 2. Update only this ticket if `isTransits` is true
-      await prisma.ticket.update({
-        where: { id },
-        data: { isActive },
-      });
-
-      return { message: "Ticket updated successfully (isTransits=true)" };
-    } else {
-      // 3. Find all related tickets for the same flight IDs
-      const flightIds = ticket.Flights.map((flight) => flight.id);
-
-      const relatedTickets = await prisma.ticket.findMany({
-        where: {
-          OR: [
-            { id }, // Include the original ticket
-            {
-              isTransits: true, // Transit tickets
-              Flights: {
-                some: { id: { in: flightIds } }, // Match any of the flight IDs
-              },
-            },
-          ],
-        },
-      });
-
-      // 4. Update all related tickets
-      const updatePromises = relatedTickets.map((relatedTicket) =>
-        prisma.ticket.update({
-          where: { id: relatedTicket.id },
-          data: { isActive },
-        })
-      );
-
-      await Promise.all(updatePromises);
-
-      return {
-        message: "All related tickets updated successfully (isTransits=false)",
-      };
-    }
-  } catch (error) {
-    console.error("Error updating ticket:", error);
-    throw error;
-  }
-};
-
 // TODO Delete ticket
 export const destroy = async (id) => {
   try {
@@ -712,11 +686,21 @@ export const destroy = async (id) => {
       throw new AppError("Ticket not found", 404);
     }
 
+    const flightIds = ticketExists.Flights.map((flight) => flight.id);
+
     await prisma.ticket.delete({
       where: {
         id,
       },
     });
+
+    if (flightIds.length === 1) {
+      await prisma.flight.delete({
+        where: {
+          id: flightIds[0],
+        },
+      });
+    }
 
     return {
       message: "Ticket deleted successfully",

@@ -1,6 +1,5 @@
 import prisma from "../utils/prisma.js";
 // import customError from "../utils/AppError.js"
-import cleanUpAccountData from "../utils/cleanUpAccountData.js";
 import { sendNotification } from "../utils/webpush.js";
 
 export const createPromotionNotif = async (userData) => {
@@ -25,18 +24,34 @@ export const createPromotionNotif = async (userData) => {
   }
 };
 
-export const getUserNotification = async (userId) => {
+export const getUserNotification = async (userId, params) => {
   try {
-    const account = await prisma.account.findUnique({
-      where: { id: userId },
-      include: { Notification: true },
-    });
-    await prisma.notification.updateMany({
-      where: { accountId: userId },
-      data: { isRead: true },
-    });
-    cleanUpAccountData(account);
-    return account;
+    let { type, q } = params
+    if (type)
+      type = params.type.charAt(0).toUpperCase() + params.type.slice(1);
+
+    const notifications = await prisma.notification.findMany({
+      where: { 
+        accountId: userId, 
+        ...(type && { type }),
+        ...(q && {
+          OR: [
+            { title: { contains: q, mode: 'insensitive' } },
+            { description: { contains: q, mode: 'insensitive' } },
+          ],
+        }),
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    })
+    notifications.forEach(async notif => {
+      await prisma.notification.update({
+        where: { id: notif.id },
+        data: { isRead: true },
+      });
+    })
+    return notifications;
   } catch (error) {
     console.log("Error read all user notification");
     throw error;
@@ -57,7 +72,9 @@ export const createOrderNotification = async (userId, title, description) => {
     });
 
     // Push notification
-    await sendNotification(JSON.parse(notification.Account.notificationSubscription), notification.title, notification.description);
+    if (notification.Account.notificationSubscription) {
+      await sendNotification(JSON.parse(notification.Account.notificationSubscription), notification.title, notification.description);
+    }
     return notification;
   } catch (error) {
     console.log("Error create notification of order!");
@@ -65,4 +82,20 @@ export const createOrderNotification = async (userId, title, description) => {
   }
 };
 
-// createOrderNotification(3, "Order", "OrderSuksesBang!");
+export const clearAllUserNotification = async (userId) => {
+  try {
+    const notification = await prisma.notification.deleteMany({
+      where: { accountId: userId }
+    })
+    return `Success to delete ${notification.count} notifications!`
+  } catch (error) {
+    console.log("Error delete all user notifications");
+    throw error;
+  }
+}
+
+// try {
+//   await createOrderNotification(1, "Order", "OrderSuksesBang!");
+// } catch(error) {
+//   console.log(error);
+// }

@@ -106,5 +106,5 @@ https://documenter.getpostman.com/view/33280373/2sAYBbf9a7
 2 **Swagger :**
 
 ```bash
-https://airhopper-304285428031.asia-southeast1.run.app/api-docs
+https://https://air-hopper-api.padek.tech/api-docs
 ```
