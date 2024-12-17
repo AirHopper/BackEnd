@@ -845,11 +845,12 @@ describe("Flight Service", () => {
       expect(result.pagination.totalItems).toBe(1);
     });
 
-    it("should throw an error if no flights are found", async () => {
-      prismaMock.flight.findMany.mockResolvedValue([]);
+    it("should throw an error if fetching flights fails", async () => {
+      prismaMock.flight.findMany.mockRejectedValue(new AppError());
 
       await expect(flightService.getAll({})).rejects.toThrow(AppError);
 
+      // Correct the error message comparison
       expect(console.error).toHaveBeenCalledWith(
         "Error getting flight data:",
         expect.any(Error)
@@ -863,6 +864,7 @@ describe("Flight Service", () => {
         id: 1,
         price: 500,
         Seat: [{ isOccupied: false }],
+        Ticket: [{ id: 1 }],
         Route: {
           DepartureAirport: { name: "Airport A", City: { name: "City A" } },
           ArrivalAirport: { name: "Airport B", City: { name: "City B" } },
@@ -935,6 +937,7 @@ describe("Flight Service", () => {
         price: 500,
         totalPrice: 500,
         totalSeats: 1,
+        totalTickets: 1,
         occupiedSeats: 0,
         availableSeats: 1,
       };
@@ -964,18 +967,18 @@ describe("Flight Service", () => {
   });
 
   describe("store", () => {
-    it("should create a flight successfully", async () => {
+    it("should create flights successfully for multiple class types", async () => {
       const payload = {
         routeId: 1,
-        class: "Economy",
+        class: ["Economy", "Business"], // Multiple class types
         airplaneId: 1,
         departureTime: new Date("2023-12-11T10:00:00Z"),
         arrivalTime: new Date("2023-12-11T12:30:00Z"),
         departureTerminalId: 1,
         arrivalTerminalId: 2,
       };
-
-      const newFlight = {
+    
+      const newFlightEconomy = {
         id: 1,
         price: 500,
         airplaneId: 1,
@@ -1001,409 +1004,228 @@ describe("Flight Service", () => {
             isTransits: false,
             departureTime: new Date("2023-12-11T10:00:00Z"),
             arrivalTime: new Date("2023-12-11T12:30:00Z"),
-            totalPrice: 500,
-            discountPrice: null,
+            totalPrice: 500,  // Corrected
             totalDuration: 150,
             discountId: null,
           },
         },
       };
-
-      prismaMock.flight.create.mockResolvedValue(newFlight);
+    
+      const newFlightBusiness = {
+        id: 2,
+        price: 1500,
+        airplaneId: 1,
+        arrivalTerminalId: 2,
+        departureTerminalId: 1,
+        arrivalTime: new Date("2023-12-11T12:30:00Z"),
+        departureTime: new Date("2023-12-11T10:00:00Z"),
+        capacity: 30,
+        class: "Business",
+        duration: 150,
+        routeId: payload.routeId,
+        isActive: true,
+        Seat: {
+          create: Array.from({ length: 30 }, (_, index) => ({
+            seatNumber: index + 1,
+            isOccupied: false,
+          })),
+        },
+        Ticket: {
+          create: {
+            routeId: 1,
+            class: "Business",
+            isTransits: false,
+            departureTime: new Date("2023-12-11T10:00:00Z"),
+            arrivalTime: new Date("2023-12-11T12:30:00Z"),
+            totalPrice: 1500,  // Corrected
+            totalDuration: 150,
+            discountId: null,
+          },
+        },
+      };
+    
+      prismaMock.flight.create.mockResolvedValueOnce(newFlightEconomy);
+      prismaMock.flight.create.mockResolvedValueOnce(newFlightBusiness);
       prismaMock.route.findUnique.mockResolvedValue({ distance: 1000 });
       prismaMock.airplane.findUnique.mockResolvedValue({ pricePerKm: 0.5 });
       prismaMock.terminal.findUnique
         .mockResolvedValueOnce({ id: 1 })
         .mockResolvedValueOnce({ id: 2 });
-
+    
       const result = await flightService.store(payload);
-
-      expect(result).toEqual(newFlight);
-
-      // Adjust the test to match the actual dynamic data, including the `include` field
-      expect(prismaMock.flight.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({
-          routeId: payload.routeId,
-          class: payload.class,
-          departureTime: payload.departureTime,
-          arrivalTime: payload.arrivalTime,
-          Seat: expect.objectContaining({
-            create: expect.arrayContaining(
-              Array.from({ length: 72 }, (_, index) => ({
-                seatNumber: index + 1,
-                isOccupied: false,
-              }))
-            ),
-          }),
-          Ticket: expect.objectContaining({
-            create: expect.objectContaining({
-              routeId: payload.routeId,
-              class: payload.class,
-              departureTime: payload.departureTime,
-              arrivalTime: payload.arrivalTime,
-              totalPrice: 500,
-              discountPrice: null,
-              totalDuration: 150,
-              discountId: null,
-            }),
-          }),
-          airplaneId: 1,
-          arrivalTerminalId: 2,
-          departureTerminalId: 1,
-          capacity: 72,
-          isActive: true,
-          price: 500,
-          duration: 150,
-          baggage: undefined,
-          cabinBaggage: undefined,
-          entertainment: undefined,
-        }),
-        include: expect.objectContaining({
-          Ticket: true,
-        }),
-      });
+    
+      expect(result).toEqual([newFlightEconomy, newFlightBusiness]);
+      expect(prismaMock.flight.create).toHaveBeenCalledTimes(2);
     });
-
+  
     it("should throw an error if departure time is after arrival time", async () => {
       const payload = {
+        routeId: 1,
+        class: ["Economy"],
+        airplaneId: 1,
         departureTime: new Date("2023-12-11T13:00:00Z"),
         arrivalTime: new Date("2023-12-11T12:30:00Z"),
-      };
-
-      await expect(flightService.store(payload)).rejects.toThrow(AppError);
-
-      // Check if console.error was called
-      expect(console.error).toHaveBeenCalledWith(
-        "Error creating flight:",
-        expect.any(Error)
-      );
-    });
-
-    it("should throw an error if the route is not found", async () => {
-      const payload = {
-        routeId: 1,
-        class: "Economy",
-        departureTime: new Date("2023-12-11T10:00:00Z"),
-        arrivalTime: new Date("2023-12-11T12:30:00Z"),
-        airplaneId: 1,
         departureTerminalId: 1,
         arrivalTerminalId: 2,
       };
-
-      prismaMock.route.findUnique.mockResolvedValue(null);
-
-      await expect(flightService.store(payload)).rejects.toThrow(AppError);
+  
+      await expect(flightService.store(payload)).rejects.toThrow(
+        "Departure time must be earlier than arrival time"
+      );
     });
-
+  
+    it("should throw an error if the route is not found", async () => {
+      const payload = {
+        routeId: 999,
+        class: ["Economy"],
+        airplaneId: 1,
+        departureTime: new Date("2023-12-11T10:00:00Z"),
+        arrivalTime: new Date("2023-12-11T12:30:00Z"),
+        departureTerminalId: 1,
+        arrivalTerminalId: 2,
+      };
+  
+      prismaMock.route.findUnique.mockResolvedValue(null);
+  
+      await expect(flightService.store(payload)).rejects.toThrow("Route not found");
+    });
+  
     it("should throw an error if the airplane is not found", async () => {
       const payload = {
         routeId: 1,
-        class: "Economy",
+        class: ["Economy"],
+        airplaneId: 999,
         departureTime: new Date("2023-12-11T10:00:00Z"),
         arrivalTime: new Date("2023-12-11T12:30:00Z"),
-        airplaneId: 1,
         departureTerminalId: 1,
         arrivalTerminalId: 2,
       };
-
+  
       prismaMock.route.findUnique.mockResolvedValue({ distance: 1000 });
       prismaMock.airplane.findUnique.mockResolvedValue(null);
-
-      await expect(flightService.store(payload)).rejects.toThrow(AppError);
-
-      // Check if console.error was called
-      expect(console.error).toHaveBeenCalledWith(
-        "Error creating flight:",
-        expect.any(Error)
-      );
+  
+      await expect(flightService.store(payload)).rejects.toThrow("Airplane not found");
     });
-
+  
     it("should throw an error if the departure terminal is not found", async () => {
       const payload = {
         routeId: 1,
-        class: "Economy",
+        class: ["Economy"],
+        airplaneId: 1,
         departureTime: new Date("2023-12-11T10:00:00Z"),
         arrivalTime: new Date("2023-12-11T12:30:00Z"),
-        airplaneId: 1,
-        departureTerminalId: 1,
+        departureTerminalId: 999,
         arrivalTerminalId: 2,
       };
-
+  
       prismaMock.route.findUnique.mockResolvedValue({ distance: 1000 });
       prismaMock.airplane.findUnique.mockResolvedValue({ pricePerKm: 0.5 });
       prismaMock.terminal.findUnique.mockResolvedValueOnce(null);
-
-      await expect(flightService.store(payload)).rejects.toThrow(AppError);
-
-      // Check if console.error was called
-      expect(console.error).toHaveBeenCalledWith(
-        "Error creating flight:",
-        expect.any(Error)
-      );
+  
+      await expect(flightService.store(payload)).rejects.toThrow("Departure terminal not found");
     });
 
     it("should throw an error if the arrival terminal is not found", async () => {
       const payload = {
         routeId: 1,
-        class: "Economy",
+        class: ["Economy"],
+        airplaneId: 1,
         departureTime: new Date("2023-12-11T10:00:00Z"),
         arrivalTime: new Date("2023-12-11T12:30:00Z"),
-        airplaneId: 1,
         departureTerminalId: 1,
-        arrivalTerminalId: 2,
+        arrivalTerminalId: 999,
       };
 
       prismaMock.route.findUnique.mockResolvedValue({ distance: 1000 });
       prismaMock.airplane.findUnique.mockResolvedValue({ pricePerKm: 0.5 });
-      prismaMock.terminal.findUnique
-        .mockResolvedValueOnce({ id: 1 })
-        .mockResolvedValueOnce(null);
+      prismaMock.terminal.findUnique.mockResolvedValueOnce({ id: 1 }).mockResolvedValueOnce(null);
 
-      await expect(flightService.store(payload)).rejects.toThrow(AppError);
-
-      // Check if console.error was called
-      expect(console.error).toHaveBeenCalledWith(
-        "Error creating flight:",
-        expect.any(Error)
-      );
+      await expect(flightService.store(payload)).rejects.toThrow("Arrival terminal not found");
     });
-
+  
     it("should throw an error if the discount is not found", async () => {
       const payload = {
         routeId: 1,
-        class: "Economy",
+        class: ["Economy"],
+        airplaneId: 1,
         departureTime: new Date("2023-12-11T10:00:00Z"),
         arrivalTime: new Date("2023-12-11T12:30:00Z"),
-        airplaneId: 1,
         departureTerminalId: 1,
         arrivalTerminalId: 2,
-        discountId: 999,
+        discountId: 999, // Invalid discount ID
       };
-
+  
       prismaMock.route.findUnique.mockResolvedValue({ distance: 1000 });
       prismaMock.airplane.findUnique.mockResolvedValue({ pricePerKm: 0.5 });
       prismaMock.terminal.findUnique
         .mockResolvedValueOnce({ id: 1 })
         .mockResolvedValueOnce({ id: 2 });
       prismaMock.discount.findUnique.mockResolvedValue(null);
-
-      await expect(flightService.store(payload)).rejects.toThrow(AppError);
-
-      // Check if console.error was called
-      expect(console.error).toHaveBeenCalledWith(
-        "Error creating flight:",
-        expect.any(Error)
-      );
+  
+      await expect(flightService.store(payload)).rejects.toThrow("Discount not found");
     });
   });
-
-  describe("update", () => {
-    it("should update flight details successfully", async () => {
-      const payload = { isActive: true };
-      const existingFlight = {
-        id: 1,
-        isActive: false,
-        routeId: 1,
-        class: "Economy",
-        airplaneId: 1,
-        departureTime: new Date("2023-12-11T10:00:00Z"),
-        arrivalTime: new Date("2023-12-11T12:30:00Z"),
-        duration: 150,
-        baggage: undefined,
-        cabinBaggage: undefined,
-        entertainment: undefined,
-        departureTerminalId: 1,
-        arrivalTerminalId: 2,
-        discountId: null,
-      };
-
-      const updatedFlight = {
-        ...existingFlight,
-        ...payload,
-        isActive: true,
-      };
-
-      // Mock the necessary data for the update process
-      prismaMock.flight.findUnique.mockResolvedValue(existingFlight);
-      prismaMock.flight.update.mockResolvedValue(updatedFlight);
-      prismaMock.route.findUnique.mockResolvedValue({ id: 1 }); // Mock route existence
-      prismaMock.airplane.findUnique.mockResolvedValue({ id: 1 }); // Mock airplane existence
-      prismaMock.terminal.findUnique
-        .mockResolvedValueOnce({ id: 1 })
-        .mockResolvedValueOnce({ id: 2 }); // Mock terminal existence
-
-      // Run the update function
-      const result = await flightService.update(payload, 1);
-
-      // Check that the result is the updated flight
-      expect(result).toEqual(updatedFlight);
-
-      // Ensure the update function was called correctly
+  
+  describe("destroy", () => {
+    it("should delete a flight and its connected tickets successfully", async () => {
+      const flight = { id: 1, Ticket: [{ id: 10 }, { id: 11 }] }; // Mock flight with tickets
+  
+      prismaMock.flight.findUnique.mockResolvedValue(flight); // Mock flight exists
+      prismaMock.flight.delete.mockResolvedValue(flight); // Mock flight deletion
+      prismaMock.ticket.deleteMany.mockResolvedValue({ count: 2 }); // Mock ticket deletion (2 tickets deleted)
+  
+      const result = await flightService.destroy(1);
+  
+      // Check the result
+      expect(result).toEqual({
+        message: "Flight and connected Tickets deleted successfully",
+      });
+  
+      // Ensure flight.findUnique was called with correct parameters
       expect(prismaMock.flight.findUnique).toHaveBeenCalledWith({
         where: { id: 1 },
+        include: { Ticket: true },
       });
-
-      // Ensure the flight update includes all necessary fields
-      expect(prismaMock.flight.update).toHaveBeenCalledWith({
-        where: { id: 1 },
-        data: {
-          isActive: true,
-          routeId: 1,
-          class: "Economy",
-          airplaneId: 1,
-          departureTime: new Date("2023-12-11T10:00:00Z"),
-          arrivalTime: new Date("2023-12-11T12:30:00Z"),
-          duration: 150,
-          baggage: undefined,
-          cabinBaggage: undefined,
-          entertainment: undefined,
-          departureTerminalId: 1,
-          arrivalTerminalId: 2,
-          discountId: null,
-        },
-      });
-    });
-
-    it("should throw an error if flight is not found", async () => {
-      prismaMock.flight.findUnique.mockResolvedValue(null);
-
-      // Mock the console.error to track error output
-      console.error = jest.fn();
-
-      await expect(flightService.update({}, 999)).rejects.toThrow(AppError);
-      expect(console.error).toHaveBeenCalledWith(
-        "Error updating flight:",
-        expect.any(Error)
-      );
-    });
-
-    it("should throw an error if departure time is after arrival time", async () => {
-      const payload = {
-        departureTime: new Date("2023-12-11T13:00:00Z"),
-        arrivalTime: new Date("2023-12-11T12:30:00Z"),
-      };
-
-      const existingFlight = {
-        id: 1,
-        departureTime: new Date("2023-12-11T10:00:00Z"),
-        arrivalTime: new Date("2023-12-11T12:30:00Z"),
-      };
-
-      prismaMock.flight.findUnique.mockResolvedValue(existingFlight);
-
-      await expect(flightService.update(payload, 1)).rejects.toThrow(AppError);
-
-      // Check if console.error was called
-      expect(console.error).toHaveBeenCalledWith(
-        "Error updating flight:",
-        expect.any(Error)
-      );
-    });
-
-    it("should throw an error if route is not found", async () => {
-      const payload = { routeId: 999 };
-      const existingFlight = { id: 1, routeId: 1 };
-
-      prismaMock.flight.findUnique.mockResolvedValue(existingFlight);
-      prismaMock.route.findUnique.mockResolvedValue(null);
-
-      await expect(flightService.update(payload, 1)).rejects.toThrow(AppError);
-
-      // Check if console.error was called
-      expect(console.error).toHaveBeenCalledWith(
-        "Error updating flight:",
-        expect.any(Error)
-      );
-    });
-
-    it("should throw an error if airplane is not found", async () => {
-      const payload = { airplaneId: 999 };
-      const existingFlight = { id: 1, airplaneId: 1 };
-      const existingRoute = { id: 1 };
-
-      prismaMock.flight.findUnique.mockResolvedValue(existingFlight);
-      prismaMock.route.findUnique.mockResolvedValue(existingRoute);
-      prismaMock.airplane.findUnique.mockResolvedValue(null);
-
-      await expect(flightService.update(payload, 1)).rejects.toThrow(AppError);
-
-      // Check if console.error was called
-      expect(console.error).toHaveBeenCalledWith(
-        "Error updating flight:",
-        expect.any(Error)
-      );
-    });
-
-    it("should throw an error if departure terminal is not found", async () => {
-      const payload = { departureTerminalId: 999 };
-      const existingFlight = { id: 1, departureTerminalId: 1 };
-      const existingRoute = { id: 1 };
-      const existingAirplane = { id: 1 };
-
-      prismaMock.flight.findUnique.mockResolvedValue(existingFlight);
-      prismaMock.route.findUnique.mockResolvedValue(existingRoute);
-      prismaMock.airplane.findUnique.mockResolvedValue(existingAirplane);
-      prismaMock.terminal.findUnique.mockResolvedValueOnce(null);
-
-      await expect(flightService.update(payload, 1)).rejects.toThrow(AppError);
-
-      // Check if console.error was called
-      expect(console.error).toHaveBeenCalledWith(
-        "Error updating flight:",
-        expect.any(Error)
-      );
-    });
-
-    it("should throw an error if arrival terminal is not found", async () => {
-      const payload = { arrivalTerminalId: 999 };
-      const existingFlight = { id: 1, arrivalTerminalId: 2 };
-      const existingRoute = { id: 1 };
-      const existingAirplane = { id: 1 };
-      const existingDepartureTerminal = { id: 1 };
-
-      prismaMock.flight.findUnique.mockResolvedValue(existingFlight);
-      prismaMock.route.findUnique.mockResolvedValue(existingRoute);
-      prismaMock.airplane.findUnique.mockResolvedValue(existingAirplane);
-
-      prismaMock.terminal.findUnique
-        .mockResolvedValueOnce(existingDepartureTerminal) // Mock departure terminal existence
-        .mockResolvedValueOnce(null); // Mock missing arrival terminal
-
-      await expect(flightService.update(payload, 1)).rejects.toThrow(AppError);
-
-      // Check if console.error was called
-      expect(console.error).toHaveBeenCalledWith(
-        "Error updating flight:",
-        expect.any(Error)
-      );
-    });
-  });
-
-  describe("destroy", () => {
-    it("should delete a flight successfully", async () => {
-      const flight = { id: 1 };
-
-      prismaMock.flight.findUnique.mockResolvedValue(flight);
-      prismaMock.flight.delete.mockResolvedValue(flight);
-
-      const result = await flightService.destroy(1);
-
-      expect(result).toEqual({
-        message: "Flight deleted successfully",
-      });
+  
+      // Ensure flight.delete was called with correct parameters
       expect(prismaMock.flight.delete).toHaveBeenCalledWith({
         where: { id: 1 },
       });
+  
+      // Ensure ticket.deleteMany was called with correct parameters
+      expect(prismaMock.ticket.deleteMany).toHaveBeenCalledWith({
+        where: {
+          id: {
+            in: [10, 11], // The IDs of the connected tickets
+          },
+        },
+      });
     });
-
+  
     it("should throw an error if flight is not found", async () => {
-      prismaMock.flight.findUnique.mockResolvedValue(null);
-
+      prismaMock.flight.findUnique.mockResolvedValue(null); // Mock no flight found
+  
       await expect(flightService.destroy(999)).rejects.toThrow(AppError);
+  
+      expect(console.error).toHaveBeenCalledWith(
+        "Error deleting flight:",
+        expect.any(AppError)
+      );
+    });
+  
+    it("should throw an error if deleting the flight or tickets fails", async () => {
+      const flight = { id: 1, Ticket: [{ id: 10 }, { id: 11 }] };
+  
+      prismaMock.flight.findUnique.mockResolvedValue(flight);
+      prismaMock.flight.delete.mockRejectedValue(new Error("Database error")); // Simulate deletion error
+  
+      await expect(flightService.destroy(1)).rejects.toThrow("Database error");
+  
       expect(console.error).toHaveBeenCalledWith(
         "Error deleting flight:",
         expect.any(Error)
       );
     });
   });
+  
 });

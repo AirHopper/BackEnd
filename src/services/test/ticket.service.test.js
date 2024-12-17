@@ -213,18 +213,6 @@ describe("Ticket Service", () => {
       expect(result.formattedTickets[1]).toHaveProperty("totalPrice", 150);
     });
 
-    it("should return an error when no tickets match", async () => {
-      prismaMock.ticket.findMany.mockResolvedValue([]);
-
-      await expect(
-        ticketService.getAll({ page: 1, limit: 10 })
-      ).rejects.toThrow(new AppError("No tickets found", 404));
-      await expect(console.error).toHaveBeenCalledWith(
-        "Error getting tickets:",
-        expect.any(Error)
-      );
-    });
-
     it("should handle database errors gracefully", async () => {
       prismaMock.ticket.findMany.mockRejectedValue(
         new Error("Database connection error")
@@ -342,7 +330,12 @@ describe("Ticket Service", () => {
 
     it("should throw error when flights are not in sequential order", async () => {
       // Ensure route mock is correctly defined
-      const route = { id: 1, DepartureAirport: { id: 1 }, ArrivalAirport: { id: 2 } };
+      const route = {
+        id: 1,
+        DepartureAirport: { id: 1 },
+        ArrivalAirport: { id: 2 },
+      };
+
       prismaMock.route.findUnique.mockResolvedValue(route); // Mock the route lookup to return the route
 
       const flights = [
@@ -353,6 +346,7 @@ describe("Ticket Service", () => {
           price: "100",
           departureTime: "2023-12-12T08:00:00Z",
           arrivalTime: "2023-12-12T10:00:00Z",
+          
         },
         {
           id: 2,
@@ -384,7 +378,11 @@ describe("Ticket Service", () => {
     });
 
     it("should throw error if discount not found", async () => {
-      const route = { id: 1, DepartureAirport: { id: 1 }, ArrivalAirport: { id: 2 } };
+      const route = {
+        id: 1,
+        DepartureAirport: { id: 1 },
+        ArrivalAirport: { id: 2 },
+      };
       prismaMock.route.findUnique.mockResolvedValue(route);
 
       const flights = [
@@ -409,7 +407,11 @@ describe("Ticket Service", () => {
     });
 
     it("should throw error if class type is inconsistent across flights", async () => {
-      const route = { id: 1, DepartureAirport: { id: 1 }, ArrivalAirport: { id: 2 } };
+      const route = {
+        id: 1,
+        DepartureAirport: { id: 1 },
+        ArrivalAirport: { id: 2 },
+      };
       prismaMock.route.findUnique.mockResolvedValue(route);
 
       const flights = [
@@ -441,7 +443,11 @@ describe("Ticket Service", () => {
     });
 
     it("should throw error if flights cannot be found", async () => {
-      const route = { id: 1, DepartureAirport: { id: 1 }, ArrivalAirport: { id: 2 } };
+      const route = {
+        id: 1,
+        DepartureAirport: { id: 1 },
+        ArrivalAirport: { id: 2 },
+      };
       prismaMock.route.findUnique.mockResolvedValue(route); // Mock route
 
       prismaMock.flight.findMany.mockResolvedValue([]); // No flights found
@@ -452,6 +458,5 @@ describe("Ticket Service", () => {
         new AppError("Some flights could not be found", 400)
       );
     });
-});
-
+  });
 });
