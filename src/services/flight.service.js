@@ -180,6 +180,11 @@ export const getAll = async ({
             isOccupied: true,
           },
         },
+        _count: {
+          select: {
+            Ticket: true,
+          },
+        },
       },
       skip: offset,
       take: parseInt(limit, 10),
@@ -252,6 +257,7 @@ export const getAll = async ({
         entertainment: flight.entertainment,
         price: flight.price,
         totalPrice: flight.price,
+        totalTickets: flight._count.Ticket,
         totalSeats,
         occupiedSeats,
         availableSeats,
