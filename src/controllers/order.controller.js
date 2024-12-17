@@ -11,11 +11,12 @@ import AppError from "../utils/AppError.js";
 export const getAll = async (req, res, next) => {
     try {
         if (req.user.role !== 'Admin') throw new AppError('Unauthorized', 401);
-        const orders = await getAllOrders();
+        const {formattedOrders, totalOrders} = await getAllOrders();
         res.status(200).json({
             success: true,
             message: 'Orders fetched successfully',
-            data: orders
+            totalItems: totalOrders,
+            data: formattedOrders
         });
     } catch (error) {
         console.error(error);
@@ -29,7 +30,7 @@ export const getAllUserOwned = async (req, res, next) => {
         const userId = account.user.id;
         const { search } = req.query;
 
-        const orders = await getAllUserOwnedOrders({
+        const {formattedOrders, totalOrders} = await getAllUserOwnedOrders({
             userId, 
             search
         });
@@ -37,7 +38,8 @@ export const getAllUserOwned = async (req, res, next) => {
         res.status(200).json({
             success: true,
             message: 'Orders fetched successfully',
-            data: orders
+            totalItems: totalOrders,
+            data: formattedOrders
         });
     } catch (error) {
         console.error(error);
