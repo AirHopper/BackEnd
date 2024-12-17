@@ -463,7 +463,7 @@ export const getById = async (id) => {
             ArrivalTerminal: true,
             Seat: {
               orderBy: {
-                seatNumber: 'asc', // Order by seatNumber in descending order
+                seatNumber: 'asc',
               },
             },
           },
