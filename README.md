@@ -1,4 +1,4 @@
-# ✈️ AirHopper Backend API
+# ✈️ AirHopper Backend API 🎉
 
 AirHopper adalah API pemesanan tiket pesawat online yang dirancang untuk memberikan pengalaman perjalanan yang mudah dan nyaman. Dengan dukungan teknologi modern seperti Express, Prisma, dan Swagger, kami menyediakan layanan backend yang cepat, aman, dan dapat diandalkan.
 
