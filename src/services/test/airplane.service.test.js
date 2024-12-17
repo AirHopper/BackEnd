@@ -61,25 +61,63 @@ describe("Airplane Service", () => {
   });
 
   describe("getAllAirplanes", () => {
-    it("should fetch all airplanes", async () => {
+    it("should fetch all airplanes with airline and flight count included", async () => {
       const airplanes = [
-        { id: 1, name: "Boeing 747", type: "Passenger", pricePerKm: 50, Airline: { iataCode: "AA" } },
-        { id: 2, name: "Airbus A380", type: "Passenger", pricePerKm: 60, Airline: { iataCode: "BA" } },
+        {
+          id: 1,
+          name: "Boeing 747",
+          type: "Passenger",
+          pricePerKm: 50,
+          Airline: { iataCode: "AA" },
+          _count: { Flights: 10 },
+        },
+        {
+          id: 2,
+          name: "Airbus A380",
+          type: "Passenger",
+          pricePerKm: 60,
+          Airline: { iataCode: "BA" },
+          _count: { Flights: 5 },
+        },
       ];
-
+  
       prismaMock.airplane.findMany.mockResolvedValue(airplanes);
-
+  
       const result = await airplaneService.getAllAirplanes();
-
+  
       expect(result).toEqual(airplanes);
       expect(prismaMock.airplane.findMany).toHaveBeenCalledWith({
-        include: { Airline: true },
+        include: { Airline: true, _count: { select: { Flights: true } } },
       });
     });
-
+  
+    it("should fetch airplanes filtered by airlineId", async () => {
+      const airlineId = 1;
+      const airplanes = [
+        {
+          id: 1,
+          name: "Boeing 747",
+          type: "Passenger",
+          pricePerKm: 50,
+          Airline: { iataCode: "AA" },
+          _count: { Flights: 10 },
+        },
+      ];
+  
+      prismaMock.airplane.findMany.mockResolvedValue(airplanes);
+  
+      const result = await airplaneService.getAllAirplanes(airlineId);
+  
+      expect(result).toEqual(airplanes);
+      expect(prismaMock.airplane.findMany).toHaveBeenCalledWith({
+        where: { airlineId },
+        include: { Airline: true, _count: { select: { Flights: true } } },
+      });
+    });
+  
     it("should throw an error if fetching airplanes fails", async () => {
       prismaMock.airplane.findMany.mockRejectedValue(new Error("Database error"));
-
+  
       await expect(airplaneService.getAllAirplanes()).rejects.toThrow(Error);
       expect(console.error).toHaveBeenCalledWith(
         "Error fetching airplanes:",

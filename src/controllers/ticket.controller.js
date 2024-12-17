@@ -54,22 +54,6 @@ export const store = async (req, res, next) => {
   }
 };
 
-// TODO Update ticket
-export const update = async (req, res, next) => {
-  try {
-    const id = parseInt(req.params.id, 10);
-    const updatedTicket = await ticketService.update(req.body, id);
-
-    res.status(200).json({
-      success: true,
-      message: "Ticket updated successfully",
-      data: updatedTicket,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
 // TODO Destroy ticket
 export const destroy = async (req, res, next) => {
   try {

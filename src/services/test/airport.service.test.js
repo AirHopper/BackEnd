@@ -68,7 +68,7 @@ describe("Airport Service", () => {
   });
 
   describe("getAllAirports", () => {
-    it("should fetch all airports", async () => {
+    it("should fetch all airports with city details and route counts", async () => {
       const airports = [
         {
           id: 1,
@@ -78,6 +78,10 @@ describe("Airport Service", () => {
           longitude: -73.7781,
           type: "International",
           City: { code: "NYC" },
+          _count: {
+            departureRoutes: 5,
+            arrivalRoutes: 7,
+          },
         },
         {
           id: 2,
@@ -87,16 +91,28 @@ describe("Airport Service", () => {
           longitude: -118.4085,
           type: "International",
           City: { code: "LAX" },
+          _count: {
+            departureRoutes: 8,
+            arrivalRoutes: 6,
+          },
         },
       ];
-
+    
+      // Mock the Prisma call
       prismaMock.airport.findMany.mockResolvedValue(airports);
-
+    
+      // Call the function
       const result = await airportService.getAllAirports();
-
+    
+      // Expectations
       expect(result).toEqual(airports);
       expect(prismaMock.airport.findMany).toHaveBeenCalledWith({
-        include: { City: true },
+        include: {
+          City: true,
+          _count: {
+            select: { departureRoutes: true, arrivalRoutes: true },
+          },
+        },
       });
     });
 
