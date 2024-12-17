@@ -24,13 +24,13 @@ export const notifications = async (req, res, next) => {
         // Check Payment Status
         if (updatedOrder.orderStatus === 'Expired') {
             await updateSeatOccupied(seatIds, false);
-            await createOrderNotification(account.user.id, 'Pemesanan kadaluwarsa', `Pemesanan dengan id ${updatedOrder.id} telah kadaluwarsa`);
+            await createOrderNotification(account.id, 'Pemesanan kadaluwarsa', `Pemesanan dengan id ${updatedOrder.id} telah kadaluwarsa`);
         }
         // Cancelled already handle in order service
         if (updatedOrder.orderStatus === 'Issued') {
             sendEmail(account.email, 'Invoice Payment', `Invoice for order ${updatedOrder.id} in airHopper`);
             await addQrCodeAndPdfUrlOrderById(updatedOrder.id);
-            await createOrderNotification(account.user.id, 'Pembayaran berhasil', `Pemesanan dengan id ${updatedOrder.id} berhasil dibayar`);
+            await createOrderNotification(account.id, 'Pembayaran berhasil', `Pemesanan dengan id ${updatedOrder.id} berhasil dibayar`);
         }
         res.status(200).json({
             success: true,
