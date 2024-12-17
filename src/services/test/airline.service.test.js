@@ -62,10 +62,10 @@ describe("Airline Service", () => {
   });
 
   describe("getAllAirlines", () => {
-    it("should fetch all airlines", async () => {
+    it("should fetch all airlines including airplane count", async () => {
       const airlines = [
-        { iataCode: "AA", name: "American Airlines" },
-        { iataCode: "BA", name: "British Airways" },
+        { iataCode: "AA", name: "American Airlines", _count: { Airplanes: 5 } },
+        { iataCode: "BA", name: "British Airways", _count: { Airplanes: 3 } },
       ];
 
       prismaMock.airline.findMany.mockResolvedValue(airlines);
@@ -73,7 +73,15 @@ describe("Airline Service", () => {
       const result = await airlineService.getAllAirlines();
 
       expect(result).toEqual(airlines);
-      expect(prismaMock.airline.findMany).toHaveBeenCalled();
+      expect(prismaMock.airline.findMany).toHaveBeenCalledWith({
+        include: {
+          _count: {
+            select: {
+              Airplanes: true,
+            },
+          },
+        },
+      });
     });
 
     it("should handle errors when fetching airlines", async () => {
@@ -88,14 +96,18 @@ describe("Airline Service", () => {
   });
 
   describe("getAirlineById", () => {
-    it("should fetch an airline by IATA code", async () => {
-      const airline = { iataCode: "AA", name: "American Airlines" };
+    it("should fetch an airline by IATA code including airplane count", async () => {
+      const airline = {
+        iataCode: "AA",
+        name: "American Airlines",
+        Airplanes: [{ id: 1 }, { id: 2 }],
+      };
 
       prismaMock.airline.findUnique.mockResolvedValue(airline);
 
       const result = await airlineService.getAirlineById("AA");
 
-      expect(result).toEqual(airline);
+      expect(result).toEqual({ ...airline, airplaneCount: 2 });
       expect(prismaMock.airline.findUnique).toHaveBeenCalledWith({
         where: { iataCode: "AA" },
         include: { Airplanes: true },
@@ -205,7 +217,7 @@ describe("Airline Service", () => {
 
   describe("deleteAirline", () => {
     it("should delete an airline by IATA code", async () => {
-      const airline = { iataCode: "AA"};
+      const airline = { iataCode: "AA" };
 
       prismaMock.airline.findUnique.mockResolvedValue(airline);
       prismaMock.airline.delete.mockResolvedValue(airline);
