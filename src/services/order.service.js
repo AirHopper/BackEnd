@@ -482,7 +482,11 @@ export const getUserOwnedOrderById = async (id, userId) => {
                                 },
                                 DepartureTerminal: true,
                                 ArrivalTerminal: true,
-                                Seat: true
+                                Seat: {
+                                    orderBy: {
+                                        seatNumber: 'asc'
+                                    }
+                                }
                             }
                         },
                         Route: {
@@ -527,7 +531,11 @@ export const getUserOwnedOrderById = async (id, userId) => {
                                 },
                                 DepartureTerminal: true,
                                 ArrivalTerminal: true,
-                                Seat: true
+                                Seat: {
+                                    orderBy: {
+                                        seatNumber: 'asc'
+                                    }
+                                }
                             }
                         },
                         Route: {
@@ -582,11 +590,6 @@ export const getUserOwnedOrderById = async (id, userId) => {
                     seat: [seatInfo]
                 });
             }
-        });
-
-        // Sort seats by seat.id
-        passengersMap.forEach((passenger) => {
-            passenger.seat.sort((a, b) => a.id - b.id);
         });
         
         const formattedOrder = {
