@@ -123,6 +123,10 @@ export const getAll = async ({
       airline,
     } = search || {};
 
+    // Parse departureCity and arrivalCity to replace '+' with ' ' (space)
+    departureCity = departureCity ? departureCity.replace(/\+/g, " ") : "";
+    arrivalCity = arrivalCity ? arrivalCity.replace(/\+/g, " ") : "";
+
     const searchFilters = {
       AND: [
         ...(departureCity
@@ -463,7 +467,7 @@ export const getById = async (id) => {
             ArrivalTerminal: true,
             Seat: {
               orderBy: {
-                seatNumber: 'asc',
+                seatNumber: "asc",
               },
             },
           },
@@ -485,7 +489,6 @@ export const getById = async (id) => {
         Discount: true,
       },
     });
-    
 
     if (!ticket) {
       throw new AppError("Tiket not found", 404);
