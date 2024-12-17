@@ -45,7 +45,7 @@ export const getAllUserOwned = async (req, res, next) => {
         console.error(error);
         next(error);
     }
-}
+} 
 
 export const getUserOwnedById = async (req, res, next) => {
     try {
