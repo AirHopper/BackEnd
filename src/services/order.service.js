@@ -156,7 +156,7 @@ export const getAllUserOwnedOrders = async ({userId, search}) => {
                 }
             },
             orderBy: {
-                bookingDate: 'asc'
+                bookingDate: 'desc'
             }
         });
 
@@ -420,7 +420,12 @@ export const getAllUserOwnedOrders = async ({userId, search}) => {
         };
     });
 
-    return formattedOrders;
+    const totalOrders = formattedOrders.length;
+
+    return {
+        formattedOrders,
+        totalOrders
+    };
 
     } catch (error) {
         console.error('Error fetching orders:', error);
@@ -1029,27 +1034,11 @@ export const getAllOrders = async () => {
                     }
                 },
                 orderBy: {
-                    bookingDate: 'asc'
+                    bookingDate: 'desc'
                 }
             });
 
-            // Separate past and upcoming orders, prioritize upcoming orders while passed orders keep in the end
-            const currentTime = new Date();
-            const upcomingOrders = [];
-            const pastOrders = [];
-
-            orders.forEach(order => {
-                const departureTime = new Date(order.OutboundTicket.departureTime);
-                if (departureTime >= currentTime) {
-                    upcomingOrders.push(order);
-                } else {
-                    pastOrders.push(order);
-                }
-            });
-
-            const sortedOrders = [...upcomingOrders, ...pastOrders];
-
-            const formattedOrders = sortedOrders.map((order) => {
+            const formattedOrders = orders.map((order) => {
                 const passengersMap = new Map();
 
                 order.Passengers.forEach((passenger) => {
@@ -1315,7 +1304,9 @@ export const getAllOrders = async () => {
             };
         });
 
-        return formattedOrders;
+        const totalOrders = formattedOrders.length;
+
+        return {formattedOrders, totalOrders};
 
     } catch (error) {
         console.error('Error fetching orders:', error);

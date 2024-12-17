@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export const createQrCodeUrlByOrderId = async (orderId) =>  {
-    const qrCodeData = await QRCode.toDataURL(`${process.env.APP_URL}/history`);
+    const qrCodeData = await QRCode.toDataURL(`${process.env.FE_URL}/history`);
     const base64Data = qrCodeData.split(',')[1];
     const qrCodeBuffer = Buffer.from(base64Data, 'base64');
     const uploadedQris = await imagekit.upload({
