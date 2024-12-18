@@ -24,7 +24,7 @@ const authHandler = (req, res, next) => {
 // Middleware to check admin role
 const adminHandler = (req, res, next) => {
   // Ensure user info exists on the request object
-  if (!req.user || req.user.role !== "admin") {
+  if (!req.user || req.user.role !== "Admin") {
     return next(new customError("Access denied: Admins only", 403));
   }
   next();
