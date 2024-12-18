@@ -110,6 +110,7 @@ export const cancelUserOwnedById = async (req, res, next) => {
         const order = await getUserOwnedOrderById(orderId, userId);
         if (!order) throw new AppError('Order not found', 404);
         if (order.orderStatus !== 'Unpaid') throw new AppError('Order cannot be cancelled', 400);
+        if (!order.payment.method) throw new AppError('Select payment method first before cancel order', 404);
         const seatIds = order.passengers.flatMap(passenger => passenger.seat.map(seat => seat.id))
         await cancelPaymentByOrderId(orderId);
         await updateSeatOccupied(seatIds, false);
