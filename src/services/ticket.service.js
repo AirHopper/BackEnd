@@ -120,7 +120,7 @@ export const getAll = async ({
       classType,
       continent,
       isTransit,
-      airline,
+      airline, // Now expects an array of airline names
     } = search || {};
 
     // Parse departureCity and arrivalCity to replace '+' with ' ' (space)
@@ -145,7 +145,7 @@ export const getAll = async ({
               },
             ]
           : []),
-        ...(airline
+        ...(airline && Array.isArray(airline) && airline.length > 0
           ? [
               {
                 Flights: {
@@ -153,7 +153,7 @@ export const getAll = async ({
                     Airplane: {
                       Airline: {
                         name: {
-                          contains: airline,
+                          in: airline, // Use 'in' operator for array matching
                           mode: "insensitive",
                         },
                       },
