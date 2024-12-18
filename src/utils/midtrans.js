@@ -4,13 +4,13 @@ import crypto from 'crypto';
 dotenv.config()
 
 export const coreApi = new MidtransClient.CoreApi({
-    isProduction : (process.env.NODE_ENV === 'development') ? false : true,
+    isProduction : false,
     serverKey : process.env.MIDTRANS_SERVER_KEY,
     clientKey : process.env.MIDTRANS_CLIENT_KEY
 });
 
 export const snap = new MidtransClient.Snap({
-    isProduction : (process.env.NODE_ENV === 'development') ? false : true,
+    isProduction : false,
     serverKey : process.env.MIDTRANS_SERVER_KEY,
     clientKey : process.env.MIDTRANS_CLIENT_KEY
 });
