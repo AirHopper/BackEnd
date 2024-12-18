@@ -9,7 +9,7 @@ import auth from "./auth.routes.js";
 import flightRoutes from "./flight.routes.js";
 import payments from "./payment.routes.js";
 import orders from "./order.routes.js";
-import authHandler from "../middlewares/authHandler.js";
+import { authHandler } from "../middlewares/authHandler.js";
 import tickets from "./ticket.routes.js";
 import users from "./user.routes.js";
 import notifications from "./notification.routes.js";

@@ -1,8 +1,9 @@
 import customError from "../utils/AppError.js";
 import { verifyToken } from "../utils/jwt.js";
 
+// Middleware to authenticate user
 const authHandler = (req, res, next) => {
-  // Get token
+  // Get token from headers
   const { authorization } = req.headers;
   const token = authorization && authorization.split(" ")[1];
   if (!token) {
@@ -11,7 +12,7 @@ const authHandler = (req, res, next) => {
   }
 
   try {
-    // Put id and email user on req.user
+    // Decode and verify the token, and attach user info to req.user
     req.user = verifyToken(token);
     next();
   } catch (error) {
@@ -20,4 +21,13 @@ const authHandler = (req, res, next) => {
   }
 };
 
-export default authHandler;
+// Middleware to check admin role
+const adminHandler = (req, res, next) => {
+  // Ensure user info exists on the request object
+  if (!req.user || req.user.role !== "admin") {
+    return next(new customError("Access denied: Admins only", 403));
+  }
+  next();
+};
+
+export { authHandler, adminHandler };

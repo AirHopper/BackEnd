@@ -1,5 +1,6 @@
 import express from "express";
 import { upload, checkMultipart } from "../middlewares/upload.js";
+import { authHandler, adminHandler } from "../middlewares/authHandler.js";
 import * as airlineController from "../controllers/airline.controller.js";
 import {
   validateCreateAirline,
@@ -11,6 +12,8 @@ const router = express.Router();
 // Create a new airline
 router.post(
   "/",
+  authHandler,
+  adminHandler,
   checkMultipart,
   upload.single("image"),
   validateCreateAirline,
@@ -26,6 +29,8 @@ router.get("/:iataCode", airlineController.getAirlineById);
 // Update airline details
 router.put(
   "/:iataCode",
+  authHandler,
+  adminHandler,
   validateUpdateAirline,
   airlineController.updateAirlineDetails
 );
@@ -33,12 +38,19 @@ router.put(
 // Update airline photo
 router.put(
   "/:iataCode/photo",
+  authHandler,
+  adminHandler,
   checkMultipart,
   upload.single("image"),
   airlineController.updateAirlinePhoto
 );
 
 // Delete an airline
-router.delete("/:iataCode", airlineController.deleteAirline);
+router.delete(
+  "/:iataCode",
+  authHandler,
+  adminHandler,
+  airlineController.deleteAirline
+);
 
 export default router;
