@@ -12,7 +12,7 @@ const router = express.Router();
 router.post("/", authHandler, adminHandler, validateCreateDiscount, discountController.createDiscount);
 
 // Get all discounts
-router.get("/", authHandler, adminHandler, discountController.getAllDiscounts);
+router.get("/", discountController.getAllDiscounts);
 
 // Get a discount by ID
 router.get("/:id", authHandler, adminHandler, discountController.getDiscountById);
