@@ -1,6 +1,7 @@
 import {
     createAirline,
     getAllAirlines,
+    getSevenRandomAirlines,
     getAirlineById,
     updateAirlineDetails,
     updateAirlinePhoto,
@@ -100,6 +101,43 @@ import {
         expect(next).toHaveBeenCalledWith(expect.objectContaining({ message: errorMessage }));
       });
     });
+
+    describe("getSevenRandomAirlines", () => {
+      test("should return seven random airlines logo with 200 status", async () => {
+        const randomAirlines = [
+          { id: 1, name: "Airline 1", logo: "logo1.jpg" },
+          { id: 2, name: "Airline 2", logo: "logo2.jpg" },
+          { id: 3, name: "Airline 3", logo: "logo3.jpg" },
+          { id: 4, name: "Airline 4", logo: "logo4.jpg" },
+          { id: 5, name: "Airline 5", logo: "logo5.jpg" },
+          { id: 6, name: "Airline 6", logo: "logo6.jpg" },
+          { id: 7, name: "Airline 7", logo: "logo7.jpg" },
+        ];
+    
+        airlineService.getSevenRandomAirlines.mockResolvedValue(randomAirlines);
+    
+        await getSevenRandomAirlines(req, res, next);
+    
+        expect(res.status).toHaveBeenCalledWith(200);
+        expect(res.json).toHaveBeenCalledWith({
+          success: true,
+          message: "Airlines logo fetched successfully",
+          data: randomAirlines,
+          error: null,
+        });
+      });
+    
+      test("should handle error when fetching seven random airlines logo", async () => {
+        const errorMessage = "Failed to fetch airlines logo";
+        airlineService.getSevenRandomAirlines.mockRejectedValue(new Error(errorMessage));
+    
+        await getSevenRandomAirlines(req, res, next);
+    
+        expect(next).toHaveBeenCalledWith(expect.any(Error));
+        expect(next).toHaveBeenCalledWith(expect.objectContaining({ message: errorMessage }));
+      });
+    });
+    
   
     describe("getAirlineById", () => {
       test("should return an airline by IATA code with 200 status", async () => {

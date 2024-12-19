@@ -215,6 +215,56 @@ describe("Route Service", () => {
     });
   });
 
+  describe("getRouteByAirports", () => {
+    it("should fetch a route by departure and arrival airports", async () => {
+      const route = {
+        id: 1,
+        departureAirportId: "JFK",
+        arrivalAirportId: "LAX",
+        distance: 100,
+      };
+  
+      prismaMock.route.findUnique.mockResolvedValue(route);
+  
+      const result = await routeService.getRouteByAirports("JFK", "LAX");
+  
+      expect(result).toEqual(route);
+      expect(prismaMock.route.findUnique).toHaveBeenCalledWith({
+        where: {
+          departureAirportId_arrivalAirportId: {
+            departureAirportId: "JFK",
+            arrivalAirportId: "LAX",
+          },
+        },
+      });
+    });
+  
+    it("should throw an error if the route is not found", async () => {
+      prismaMock.route.findUnique.mockResolvedValue(null);
+  
+      await expect(
+        routeService.getRouteByAirports("JFK", "INVALID")
+      ).rejects.toThrow(AppError);
+      expect(console.error).toHaveBeenCalledWith(
+        "Error getting route: ",
+        expect.any(Error)
+      );
+    });
+  
+    it("should throw an error if the database operation fails", async () => {
+      prismaMock.route.findUnique.mockRejectedValue(new Error("Database error"));
+  
+      await expect(
+        routeService.getRouteByAirports("JFK", "LAX")
+      ).rejects.toThrow(Error);
+      expect(console.error).toHaveBeenCalledWith(
+        "Error getting route: ",
+        expect.any(Error)
+      );
+    });
+  });
+  
+
   describe("getRoute", () => {
     it("should fetch a route by ID", async () => {
       const route = {
