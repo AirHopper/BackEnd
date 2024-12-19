@@ -123,7 +123,7 @@ export const getAll = async ({
       airline,
     } = search || {};
 
-    // Parse departureCity and arrivalCity to replace '+' with ' ' (space)
+    // Parse departureCity and arrivalCity to replace '+' with ' '
     departureCity = departureCity ? departureCity.replace(/\+/g, " ") : "";
     arrivalCity = arrivalCity ? arrivalCity.replace(/\+/g, " ") : "";
 
