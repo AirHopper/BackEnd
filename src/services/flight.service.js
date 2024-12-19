@@ -234,7 +234,11 @@ export const getAll = async ({
       return {
         id: flight.id,
         class: flight.class,
-        airline: flight.Airplane.Airline.name,
+        airline: {
+          iataCode: flight.Airplane.Airline.iataCode,
+          name: flight.Airplane.Airline.name,
+          imageUrl: flight.Airplane.Airline.imageUrl,
+        },
         airplane: flight.Airplane.name,
         duration: flight.duration,
         departure: {
@@ -351,7 +355,11 @@ export const getById = async (id) => {
     const formattedFlight = {
       id: flight.id,
       class: flight.class,
-      airline: flight.Airplane.Airline.name,
+      airline: {
+        iataCode: flight.Airplane.Airline.iataCode,
+        name: flight.Airplane.Airline.name,
+        imageUrl: flight.Airplane.Airline.imageUrl,
+      },
       airplane: flight.Airplane.name,
       departure: {
         time: flight.departureTime,
