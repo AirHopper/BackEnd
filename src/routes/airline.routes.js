@@ -23,6 +23,9 @@ router.post(
 // Get all airlines
 router.get("/", airlineController.getAllAirlines);
 
+// Get 7 random airlines logo for home page
+router.get("/randomLogo", airlineController.getSevenRandomAirlines);
+
 // Get a single airline by IATA code
 router.get("/:iataCode", airlineController.getAirlineById);
 

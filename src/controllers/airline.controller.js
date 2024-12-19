@@ -50,6 +50,21 @@ export const getAirlineById = async (req, res, next) => {
   }
 };
 
+// Get 7 random airlines logo for home page
+export const getSevenRandomAirlines = async (req, res, next) => {
+  try {
+    const airlines = await airlineService.getSevenRandomAirlines();
+    res.status(200).json({
+      success: true,
+      message: "Airlines logo fetched successfully",
+      data: airlines,
+      error: null,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 // Update airline details
 export const updateAirlineDetails = async (req, res, next) => {
   try {
