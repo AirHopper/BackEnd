@@ -2,6 +2,7 @@ import {
     createRouteController,
     getRoutesController,
     getRouteController,
+    getRouteByAirportsController,
     updateRouteController,
     deleteRouteController,
   } from "../route.controller.js";
@@ -115,6 +116,40 @@ import {
         expect(next).toHaveBeenCalledWith(expect.objectContaining({ message: errorMessage }));
       });
     });
+
+    describe("getRouteByAirportsController", () => {
+      test("should return a route by departure and arrival airports with 200 status", async () => {
+        const route = { id: 1, departureAirportId: "JFK", arrivalAirportId: "LAX", distance: 3983.2 };
+        req.params.departureAirportId = "JFK";
+        req.params.arrivalAirportId = "LAX";
+    
+        routeService.getRouteByAirports.mockResolvedValue(route);
+    
+        await getRouteByAirportsController(req, res, next);
+    
+        expect(res.status).toHaveBeenCalledWith(200);
+        expect(res.json).toHaveBeenCalledWith({
+          success: true,
+          message: "Route fetched successfully",
+          data: route,
+          error: null,
+        });
+      });
+    
+      test("should handle error when fetching route by departure and arrival airports", async () => {
+        const errorMessage = "Route not found";
+        req.params.departureAirportId = "JFK";
+        req.params.arrivalAirportId = "LAX";
+    
+        routeService.getRouteByAirports.mockRejectedValue(new Error(errorMessage));
+    
+        await getRouteByAirportsController(req, res, next);
+    
+        expect(next).toHaveBeenCalledWith(expect.any(Error));
+        expect(next).toHaveBeenCalledWith(expect.objectContaining({ message: errorMessage }));
+      });
+    });
+    
   
     describe("updateRouteController", () => {
       test("should update a route and return 200 status", async () => {
