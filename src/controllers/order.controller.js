@@ -117,7 +117,7 @@ export const cancelUserOwnedById = async (req, res, next) => {
         return res.status(200).json({
             success: true,
             message: 'Order cancelled successfully',
-            data: {}
+            data: {} 
         });
     } catch (error) {
         await createOrderNotification(req.user.id, `Pemesanan Gagal Dibatalkan`, `Pemesanan dengan id ${req.params.id} gagal dibatalkan`);
