@@ -127,7 +127,7 @@ export const getAll = async ({
     departureCity = departureCity ? departureCity.replace(/\+/g, " ") : "";
     arrivalCity = arrivalCity ? arrivalCity.replace(/\+/g, " ") : "";
 
-    // Parse classType to replace ' ' or '+' with '_' (underscore)
+    // Parse classType to replace ' ' or '+' with '_' 
     classType = classType ? classType.replace(/[\s+]/g, "_") : "";
 
     const searchFilters = {
