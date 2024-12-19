@@ -574,6 +574,7 @@ export const getUserOwnedOrderById = async (id, userId) => {
             const seatInfo = {
                 id: passenger.Seat.id,
                 number: passenger.Seat.seatNumber,
+                flightId: passenger.Seat.flightId,
                 class: passenger.Seat.Flight.seatClass,
                 airplane: passenger.Seat.Flight.Airplane.name,
                 airline: passenger.Seat.Flight.Airplane.Airline.name
