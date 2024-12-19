@@ -59,8 +59,15 @@ export const getAll = async ({
   try {
     const offset = (page - 1) * limit;
 
-    const { departureCity, arrivalCity, flightDate, classType, continent } =
-      search || {};
+    const {
+      departureCity,
+      arrivalCity,
+      flightDate,
+      classType,
+      continent,
+      departureAirport,
+      arrivalAirport,
+    } = search || {};
 
     // Build search filters
     const searchFilters = {
@@ -133,6 +140,28 @@ export const getAll = async ({
             isActive: true,
           },
         ],
+        ...(departureAirport
+          ? [
+              {
+                Route: {
+                  DepartureAirport: {
+                    iataCode: departureAirport,
+                  },
+                },
+              },
+            ]
+          : []),
+        ...(arrivalAirport
+          ? [
+              {
+                Route: {
+                  ArrivalAirport: {
+                    iataCode: arrivalAirport,
+                  },
+                },
+              },
+            ]
+          : []),
       ],
     };
 
