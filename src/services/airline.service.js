@@ -67,15 +67,14 @@ export const getAirlineById = async (iataCode) => {
   }
 };
 
-export const getSevenRandomAirlines = async () => {
+export const getRandomLogo = async (amount=7) => {
   try {
-    const airlines = await prisma.airline.findMany({
-      take: 7,
-      select: {
-        iataCode: true,
-        imageUrl: true,
-      },
-    });
+    const airlines = await prisma.$queryRaw`
+      SELECT "iata_code", "imageUrl"
+      FROM "airlines"
+      ORDER BY RANDOM()
+      LIMIT ${parseInt(amount)};
+    `;
 
     return airlines;
   } catch (error) {

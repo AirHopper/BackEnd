@@ -50,10 +50,10 @@ export const getAirlineById = async (req, res, next) => {
   }
 };
 
-// Get 7 random airlines logo for home page
-export const getSevenRandomAirlines = async (req, res, next) => {
+// Get random airlines logo for home page
+export const getRandomLogo = async (req, res, next) => {
   try {
-    const airlines = await airlineService.getSevenRandomAirlines();
+    const airlines = await airlineService.getRandomLogo(req.query.amount);
     res.status(200).json({
       success: true,
       message: "Airlines logo fetched successfully",
