@@ -67,6 +67,22 @@ export const getAirlineById = async (iataCode) => {
   }
 };
 
+export const getRandomLogo = async (amount=7) => {
+  try {
+    const airlines = await prisma.$queryRaw`
+      SELECT "iata_code", "imageUrl"
+      FROM "airlines"
+      ORDER BY RANDOM()
+      LIMIT ${parseInt(amount)};
+    `;
+
+    return airlines;
+  } catch (error) {
+    console.error("Error fetching airlines:", error);
+    throw error;
+  }
+};
+
 export const updateAirlineDetails = async (iataCode, data) => {
   try {
     const airline = await prisma.airline.findUnique({ where: { iataCode } });

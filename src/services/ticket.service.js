@@ -127,6 +127,9 @@ export const getAll = async ({
     departureCity = departureCity ? departureCity.replace(/\+/g, " ") : "";
     arrivalCity = arrivalCity ? arrivalCity.replace(/\+/g, " ") : "";
 
+    // Parse classType to replace ' ' or '+' with '_' (underscore)
+    classType = classType ? classType.replace(/[\s+]/g, "_") : "";
+
     const searchFilters = {
       AND: [
         ...(departureCity
@@ -145,7 +148,7 @@ export const getAll = async ({
               },
             ]
           : []),
-        ...(airline
+        ...(airline && Array.isArray(airline) && airline.length > 0
           ? [
               {
                 Flights: {
@@ -153,7 +156,7 @@ export const getAll = async ({
                     Airplane: {
                       Airline: {
                         name: {
-                          contains: airline,
+                          in: airline, // Use 'in' operator for array matching
                           mode: "insensitive",
                         },
                       },

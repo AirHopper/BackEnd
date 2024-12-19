@@ -95,6 +95,46 @@ describe("Airline Service", () => {
     });
   });
 
+  describe("getSevenRandomAirlines", () => {
+    it("should fetch seven random airlines with IATA codes and image URLs", async () => {
+      const randomAirlines = [
+        { iataCode: "AA", imageUrl: "url1" },
+        { iataCode: "BA", imageUrl: "url2" },
+        { iataCode: "CA", imageUrl: "url3" },
+        { iataCode: "DA", imageUrl: "url4" },
+        { iataCode: "EA", imageUrl: "url5" },
+        { iataCode: "FA", imageUrl: "url6" },
+        { iataCode: "GA", imageUrl: "url7" },
+      ];
+  
+      prismaMock.airline.findMany.mockResolvedValue(randomAirlines);
+  
+      const result = await airlineService.getSevenRandomAirlines();
+  
+      expect(result).toEqual(randomAirlines);
+      expect(prismaMock.airline.findMany).toHaveBeenCalledWith({
+        take: 7,
+        select: {
+          iataCode: true,
+          imageUrl: true,
+        },
+      });
+    });
+  
+    it("should handle errors when fetching random airlines", async () => {
+      prismaMock.airline.findMany.mockRejectedValue(new Error("Fetch error"));
+  
+      await expect(airlineService.getSevenRandomAirlines()).rejects.toThrow(
+        Error
+      );
+      expect(console.error).toHaveBeenCalledWith(
+        "Error fetching airlines:",
+        expect.any(Error)
+      );
+    });
+  });
+  
+
   describe("getAirlineById", () => {
     it("should fetch an airline by IATA code including airplane count", async () => {
       const airline = {

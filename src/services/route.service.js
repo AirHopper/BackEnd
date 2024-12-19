@@ -7,8 +7,11 @@ export const createRoute = async (payload) => {
   try {
     const { departureAirportId, arrivalAirportId } = payload;
 
-    if(departureAirportId === arrivalAirportId) {
-      throw new AppError("Departure and arrival airports cannot be the same", 400);
+    if (departureAirportId === arrivalAirportId) {
+      throw new AppError(
+        "Departure and arrival airports cannot be the same",
+        400
+      );
     }
 
     const departureAirport = await prisma.airport.findUnique({
@@ -114,10 +117,94 @@ export const getRoutes = async () => {
 // Get a route by ID
 export const getRoute = async (id) => {
   try {
-    const route = await prisma.route.findUnique({ where: { id } });
+    const route = await prisma.route.findUnique({
+      where: { id },
+      include: {
+        DepartureAirport: {
+          select: {
+            name: true,
+            City: {
+              select: {
+                code: true,
+                name: true,
+                country: true,
+                countryCode: true,
+              },
+            },
+          },
+        },
+        ArrivalAirport: {
+          select: {
+            name: true,
+            City: {
+              select: {
+                code: true,
+                name: true,
+                country: true,
+                countryCode: true,
+              },
+            },
+          },
+        },
+      },
+    });
 
     if (!route) {
       throw new AppError(`Route with id ${id} not found`, 404);
+    }
+
+    return route;
+  } catch (error) {
+    console.error("Error getting route: ", error);
+    throw error;
+  }
+};
+
+// Get a route by departure and arrival airports
+export const getRouteByAirports = async (
+  departureAirportId,
+  arrivalAirportId
+) => {
+  try {
+    const route = await prisma.route.findUnique({
+      where: {
+        departureAirportId_arrivalAirportId: {
+          departureAirportId,
+          arrivalAirportId,
+        },
+      },
+      include: {
+        DepartureAirport: {
+          select: {
+            name: true,
+            City: {
+              select: {
+                code: true,
+                name: true,
+                country: true,
+                countryCode: true,
+              },
+            },
+          },
+        },
+        ArrivalAirport: {
+          select: {
+            name: true,
+            City: {
+              select: {
+                code: true,
+                name: true,
+                country: true,
+                countryCode: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!route) {
+      throw new AppError(`Route not found`, 404);
     }
 
     return route;
@@ -157,7 +244,7 @@ export const updateRoute = async (id, payload) => {
           404
         );
       }
-      
+
       if (!arrivalAirport) {
         throw new AppError(
           `Arrival airport ${arrivalAirportId} not found`,

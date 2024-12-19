@@ -5,12 +5,15 @@ import {
   validateCreateCity,
   validateUpdateCity,
 } from "../middlewares/validator/city.validator.js";
+import { authHandler, adminHandler } from "../middlewares/authHandler.js";
 
 const router = express.Router();
 
 // Create a new city
 router.post(
   "/",
+  authHandler,
+  adminHandler,
   checkMultipart,
   upload.single("image"),
   validateCreateCity,
@@ -24,17 +27,25 @@ router.get("/", cityController.getAllCities);
 router.get("/:code", cityController.getCityByCode);
 
 // Update a city by code
-router.put("/:code", validateUpdateCity, cityController.updateCity);
+router.put(
+  "/:code",
+  authHandler,
+  adminHandler,
+  validateUpdateCity,
+  cityController.updateCity
+);
 
 // Update a city photo by code
 router.put(
   "/:code/photo",
+  authHandler,
+  adminHandler,
   checkMultipart,
   upload.single("image"),
   cityController.updateCityPhoto
 );
 
 // Delete a city by code
-router.delete("/:code", cityController.deleteCity);
+router.delete("/:code", authHandler, adminHandler, cityController.deleteCity);
 
 export default router;
