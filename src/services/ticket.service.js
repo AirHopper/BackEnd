@@ -120,8 +120,15 @@ export const getAll = async ({
       classType,
       continent,
       isTransit,
-      airline,
+      airline, // Now expects an array of airline names
     } = search || {};
+
+    // Parse departureCity and arrivalCity to replace '+' with ' ' (space)
+    departureCity = departureCity ? departureCity.replace(/\+/g, " ") : "";
+    arrivalCity = arrivalCity ? arrivalCity.replace(/\+/g, " ") : "";
+
+    // Parse classType to replace ' ' or '+' with '_' (underscore)
+    classType = classType ? classType.replace(/[\s+]/g, "_") : "";
 
     const searchFilters = {
       AND: [
@@ -141,7 +148,7 @@ export const getAll = async ({
               },
             ]
           : []),
-        ...(airline
+        ...(airline && Array.isArray(airline) && airline.length > 0
           ? [
               {
                 Flights: {
@@ -149,7 +156,7 @@ export const getAll = async ({
                     Airplane: {
                       Airline: {
                         name: {
-                          contains: airline,
+                          in: airline, // Use 'in' operator for array matching
                           mode: "insensitive",
                         },
                       },
@@ -463,7 +470,7 @@ export const getById = async (id) => {
             ArrivalTerminal: true,
             Seat: {
               orderBy: {
-                seatNumber: 'asc',
+                seatNumber: "asc",
               },
             },
           },
@@ -485,7 +492,6 @@ export const getById = async (id) => {
         Discount: true,
       },
     });
-    
 
     if (!ticket) {
       throw new AppError("Tiket not found", 404);
@@ -662,71 +668,6 @@ export const store = async (payload) => {
     return ticket;
   } catch (error) {
     console.error("Error creating ticket:", error);
-    throw error;
-  }
-};
-
-// TODO Update tiket
-export const update = async (id, payload) => {
-  try {
-    if (isNaN(id)) {
-      throw new AppError("Invalid ticket ID", 400);
-    }
-
-    const { isActive } = payload;
-
-    // 1. Validate ticket existence
-    const ticket = await prisma.ticket.findUnique({
-      where: { id },
-      include: { Flights: true }, // Include flights to find related tickets
-    });
-
-    if (!ticket) {
-      throw new AppError("Ticket not found", 404);
-    }
-
-    if (ticket.isTransits) {
-      // 2. Update only this ticket if `isTransits` is true
-      await prisma.ticket.update({
-        where: { id },
-        data: { isActive },
-      });
-
-      return { message: "Ticket updated successfully (isTransits=true)" };
-    } else {
-      // 3. Find all related tickets for the same flight IDs
-      const flightIds = ticket.Flights.map((flight) => flight.id);
-
-      const relatedTickets = await prisma.ticket.findMany({
-        where: {
-          OR: [
-            { id }, // Include the original ticket
-            {
-              isTransits: true, // Transit tickets
-              Flights: {
-                some: { id: { in: flightIds } }, // Match any of the flight IDs
-              },
-            },
-          ],
-        },
-      });
-
-      // 4. Update all related tickets
-      const updatePromises = relatedTickets.map((relatedTicket) =>
-        prisma.ticket.update({
-          where: { id: relatedTicket.id },
-          data: { isActive },
-        })
-      );
-
-      await Promise.all(updatePromises);
-
-      return {
-        message: "All related tickets updated successfully (isTransits=false)",
-      };
-    }
-  } catch (error) {
-    console.error("Error updating ticket:", error);
     throw error;
   }
 };

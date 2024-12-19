@@ -59,8 +59,15 @@ export const getAll = async ({
   try {
     const offset = (page - 1) * limit;
 
-    const { departureCity, arrivalCity, flightDate, classType, continent } =
-      search || {};
+    const {
+      departureCity,
+      arrivalCity,
+      flightDate,
+      classType,
+      continent,
+      departureAirport,
+      arrivalAirport,
+    } = search || {};
 
     // Build search filters
     const searchFilters = {
@@ -133,6 +140,28 @@ export const getAll = async ({
             isActive: true,
           },
         ],
+        ...(departureAirport
+          ? [
+              {
+                Route: {
+                  DepartureAirport: {
+                    iataCode: departureAirport,
+                  },
+                },
+              },
+            ]
+          : []),
+        ...(arrivalAirport
+          ? [
+              {
+                Route: {
+                  ArrivalAirport: {
+                    iataCode: arrivalAirport,
+                  },
+                },
+              },
+            ]
+          : []),
       ],
     };
 
@@ -180,6 +209,11 @@ export const getAll = async ({
             isOccupied: true,
           },
         },
+        _count: {
+          select: {
+            Ticket: true,
+          },
+        },
       },
       skip: offset,
       take: parseInt(limit, 10),
@@ -200,7 +234,11 @@ export const getAll = async ({
       return {
         id: flight.id,
         class: flight.class,
-        airline: flight.Airplane.Airline.name,
+        airline: {
+          iataCode: flight.Airplane.Airline.iataCode,
+          name: flight.Airplane.Airline.name,
+          imageUrl: flight.Airplane.Airline.imageUrl,
+        },
         airplane: flight.Airplane.name,
         duration: flight.duration,
         departure: {
@@ -252,6 +290,7 @@ export const getAll = async ({
         entertainment: flight.entertainment,
         price: flight.price,
         totalPrice: flight.price,
+        totalTickets: flight._count.Ticket,
         totalSeats,
         occupiedSeats,
         availableSeats,
@@ -316,7 +355,11 @@ export const getById = async (id) => {
     const formattedFlight = {
       id: flight.id,
       class: flight.class,
-      airline: flight.Airplane.Airline.name,
+      airline: {
+        iataCode: flight.Airplane.Airline.iataCode,
+        name: flight.Airplane.Airline.name,
+        imageUrl: flight.Airplane.Airline.imageUrl,
+      },
       airplane: flight.Airplane.name,
       departure: {
         time: flight.departureTime,

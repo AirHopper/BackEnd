@@ -46,6 +46,24 @@ export const getRouteController = async (req, res, next) => {
   }
 };
 
+// Controller to get a route by Aiports
+export const getRouteByAirportsController = async (req, res, next) => {
+  try {
+    const { departureAirportId, arrivalAirportId } = req.params;
+    console.log(departureAirportId, arrivalAirportId);
+
+    const route = await routeService.getRouteByAirports(departureAirportId, arrivalAirportId);
+    res.status(200).json({
+      success: true,
+      message: "Route fetched successfully",
+      data: route,
+      error: null,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Controller to update a route by ID
 export const updateRouteController = async (req, res, next) => {
   try {
