@@ -117,7 +117,37 @@ export const getRoutes = async () => {
 // Get a route by ID
 export const getRoute = async (id) => {
   try {
-    const route = await prisma.route.findUnique({ where: { id } });
+    const route = await prisma.route.findUnique({
+      where: { id },
+      include: {
+        DepartureAirport: {
+          select: {
+            name: true,
+            City: {
+              select: {
+                code: true,
+                name: true,
+                country: true,
+                countryCode: true,
+              },
+            },
+          },
+        },
+        ArrivalAirport: {
+          select: {
+            name: true,
+            City: {
+              select: {
+                code: true,
+                name: true,
+                country: true,
+                countryCode: true,
+              },
+            },
+          },
+        },
+      },
+    });
 
     if (!route) {
       throw new AppError(`Route with id ${id} not found`, 404);
@@ -130,6 +160,7 @@ export const getRoute = async (id) => {
   }
 };
 
+// Get a route by departure and arrival airports
 export const getRouteByAirports = async (
   departureAirportId,
   arrivalAirportId
@@ -140,6 +171,34 @@ export const getRouteByAirports = async (
         departureAirportId_arrivalAirportId: {
           departureAirportId,
           arrivalAirportId,
+        },
+      },
+      include: {
+        DepartureAirport: {
+          select: {
+            name: true,
+            City: {
+              select: {
+                code: true,
+                name: true,
+                country: true,
+                countryCode: true,
+              },
+            },
+          },
+        },
+        ArrivalAirport: {
+          select: {
+            name: true,
+            City: {
+              select: {
+                code: true,
+                name: true,
+                country: true,
+                countryCode: true,
+              },
+            },
+          },
         },
       },
     });
