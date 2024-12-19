@@ -7,8 +7,11 @@ export const createRoute = async (payload) => {
   try {
     const { departureAirportId, arrivalAirportId } = payload;
 
-    if(departureAirportId === arrivalAirportId) {
-      throw new AppError("Departure and arrival airports cannot be the same", 400);
+    if (departureAirportId === arrivalAirportId) {
+      throw new AppError(
+        "Departure and arrival airports cannot be the same",
+        400
+      );
     }
 
     const departureAirport = await prisma.airport.findUnique({
@@ -127,6 +130,31 @@ export const getRoute = async (id) => {
   }
 };
 
+export const getRouteByAirports = async (
+  departureAirportId,
+  arrivalAirportId
+) => {
+  try {
+    const route = await prisma.route.findUnique({
+      where: {
+        departureAirportId_arrivalAirportId: {
+          departureAirportId,
+          arrivalAirportId,
+        },
+      },
+    });
+
+    if (!route) {
+      throw new AppError(`Route not found`, 404);
+    }
+
+    return route;
+  } catch (error) {
+    console.error("Error getting route: ", error);
+    throw error;
+  }
+};
+
 // Update a route
 export const updateRoute = async (id, payload) => {
   try {
@@ -157,7 +185,7 @@ export const updateRoute = async (id, payload) => {
           404
         );
       }
-      
+
       if (!arrivalAirport) {
         throw new AppError(
           `Arrival airport ${arrivalAirportId} not found`,
