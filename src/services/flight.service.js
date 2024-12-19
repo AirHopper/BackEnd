@@ -31,7 +31,7 @@ function flightCapacity(classType) {
   let capacity =
     classType === "Economy"
       ? 72
-      : classType === "Premium_economy"
+      : classType === "Premium_Economy"
       ? 24
       : classType === "Business"
       ? 18
