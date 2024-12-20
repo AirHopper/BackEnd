@@ -1,7 +1,7 @@
 import { PrismaClient, RegionType, Continent, Role } from "@prisma/client";
-import bcrypt from "bcrypt";
 import haversine from "haversine";
 import { nanoid } from "nanoid";
+import { hashPassword } from "../src/utils/bcrypt";
 
 const prisma = new PrismaClient();
 
@@ -179,7 +179,7 @@ async function storeTicket(payload) {
 }
 
 async function seedAccounts() {
-  const hashedPassword = await bcrypt.hash("12345678", 10);
+  const hashedPassword = await hashPassword('12345678');
 
   await prisma.account.createMany({
     data: [
