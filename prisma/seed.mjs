@@ -9,7 +9,7 @@ async function flightCapacity(classType) {
   // Define capacity based on classType
   return classType === "Economy"
     ? 72
-    : classType === "Premium_economy"
+    : classType === "Premium_Economy"
     ? 24
     : classType === "Business"
     ? 18
