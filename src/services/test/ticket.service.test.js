@@ -1028,13 +1028,13 @@ describe("Ticket Service", () => {
             routeId: 1,
             totalPrice: 250, // Updated to reflect the correct total price (100 + 150)
             totalDuration: 330, // Updated to reflect the correct total duration (120 + 90 + some connection time)
-            Discount: null,
+            discountId: null,
             Flights: {
               connect: [{ id: 1 }, { id: 2 }],
             },
             arrivalTime: "2023-12-12T13:30:00Z", // Assuming the arrival time is for the second flight
             departureTime: "2023-12-12T08:00:00Z", // Assuming the departure time is for the first flight
-            isTransits: true, // Assuming the second flight is considered a transit
+            isTransits: true, 
           }),
         })
       );
