@@ -1,6 +1,6 @@
 import { PrismaClient, RegionType, Continent, Role } from "@prisma/client";
 import haversine from "haversine";
-import { hashPassword } from "../src/utils/bcrypt";
+import { hashPassword } from "../src/utils/bcrypt.js";
 
 const prisma = new PrismaClient();
 
