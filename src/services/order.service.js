@@ -1,6 +1,7 @@
 import prisma from '../utils/prisma.js';
 import { createQrCodeUrlByOrderId } from '../utils/qrCode.js';
 import { add } from "date-fns";
+import { createPdfUrlByOrderId } from '../utils/pdfKit.js';
 import AppError from '../utils/AppError.js';
 
 export const getAllUserOwnedOrders = async ({userId, search}) => {
@@ -1332,13 +1333,13 @@ export const getAllOrders = async () => {
     }
 }
 
-export const addQrCodeAndPdfUrlOrderById = async (id) => {
+export const addQrCodeAndPdfUrlOrder = async (order) => {
     try {
-        const qrCodeUrl = await createQrCodeUrlByOrderId(id);
-        const pdfUrl = 'test';
+        const qrCodeUrl = await createQrCodeUrlByOrderId(order.id);
+        const pdfUrl = await createPdfUrlByOrderId(order);
         return prisma.order.update({
             where: {
-                id
+                id: order.id
             },
             data: {
                 qrCodeUrl,

@@ -1,5 +1,5 @@
 import { getPaymentByOrderId, updatePaymentStatusById } from "../services/payment.service.js";
-import { updateOrderStatusByPaymentId, addQrCodeAndPdfUrlOrderById } from "../services/order.service.js";
+import { updateOrderStatusByPaymentId, addQrCodeAndPdfUrlOrder } from "../services/order.service.js";
 import { isValidSignatureMidtrans } from "../utils/midtrans.js";
 import { updateSeatOccupied } from "../services/seat.service.js";
 import { getPassegersByOrderId } from "../services/passenger.service.js";
@@ -29,7 +29,7 @@ export const notifications = async (req, res, next) => {
         // Cancelled already handle in order service
         if (updatedOrder.orderStatus === 'Issued') {
             sendEmail(account.email, 'Invoice Payment', `Invoice for order ${updatedOrder.id} in airHopper`);
-            await addQrCodeAndPdfUrlOrderById(updatedOrder.id);
+            await addQrCodeAndPdfUrlOrder(updatedOrder);
             await createOrderNotification(account.id, 'Pembayaran berhasil', `Pemesanan dengan id ${updatedOrder.id} berhasil dibayar`);
         }
         res.status(200).json({
