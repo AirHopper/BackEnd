@@ -113,7 +113,7 @@ export const cancelUserOwnedById = async (req, res, next) => {
         const seatIds = order.passengers.flatMap(passenger => passenger.seat.map(seat => seat.id))
         if (order.payment.method) await cancelPaymentByOrderId(orderId);
         await updateSeatOccupied(seatIds, false);
-        await cancelOrderById(orderId);
+        await cancelOrderById(orderId); 
         await createOrderNotification(req.user.id, `Pemesanan Dibatalkan`, `Pemesanan dengan id ${order.id} berhasil dibatalkan`);
         return res.status(200).json({
             success: true,
