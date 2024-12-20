@@ -18,6 +18,22 @@ async function validateFlights({ routeId, flightIds }) {
   const flights = await prisma.flight.findMany({
     where: { id: { in: flightIds } },
     orderBy: { departureTime: "asc" }, // Ensure sequential order
+    include: {
+      Route: {
+        include: {
+          DepartureAirport: {
+            include: {
+              City: true,
+            },
+          },
+          ArrivalAirport: {
+            include: {
+              City: true,
+            },
+          },
+        },
+      },
+    },
   });
 
   // Validate all flights exist
@@ -654,14 +670,13 @@ export const store = async (payload) => {
         arrivalTime: flights[flights.length - 1].arrivalTime,
         totalPrice,
         totalDuration,
-        Discount: discountId ? { connect: { id: discountId } } : null,
+        discountId,
         Flights: {
           connect: flightIds.map((id) => ({ id })),
         },
       },
       include: {
         Flights: true,
-        Discount: true,
       },
     });
 
