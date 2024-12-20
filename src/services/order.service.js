@@ -1,6 +1,7 @@
 import prisma from '../utils/prisma.js';
-import AppError from '../utils/AppError.js';
 import { createQrCodeUrlByOrderId } from '../utils/qrCode.js';
+import { add } from "date-fns";
+import AppError from '../utils/AppError.js';
 
 export const getAllUserOwnedOrders = async ({userId, search}) => {
     try {
@@ -840,6 +841,9 @@ export const createOrder = async (request, paymentId, orderId, userId) => {
     try {
         const returnTicketId = (request.returnTicketId) ? request.returnTicketId : null;
         const isRoundTrip = (request.returnTicketId) ? true : false;
+        const nowUTC = new Date(Date.now()); // Get the current date and time in UTC
+        const nowUTCPlus7 = add(nowUTC, { hours: 7 }); // Add 7 hours to the current UTC time
+        const bookingDate = nowUTCPlus7.toISOString();
 
         return prisma.order.create({
             data: {
@@ -847,6 +851,7 @@ export const createOrder = async (request, paymentId, orderId, userId) => {
                 userId,
                 paymentId,
                 isRoundTrip,
+                bookingDate,
                 detailPrice: request.detailPrice,
                 outboundTicketId: request.outboundTicketId,
                 returnTicketId
