@@ -46,7 +46,7 @@ export const deleteUserById = async (req, res, next) => {
     const data = await userService.deleteUserById(req.params);
     res.status(200).json({
       success: true,
-      message: "Delete user by id failed",
+      message: "Delete user by id successfully",
       data: data,
       error: null,
     })
