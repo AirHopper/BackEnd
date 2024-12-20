@@ -29,7 +29,7 @@ export const notifications = async (req, res, next) => {
         }
         // Cancelled already handle in order service
         if (updatedOrder.orderStatus === 'Issued') {
-            const order = await getUserOwnedById(updatedOrder.id);
+            const order = await getUserOwnedById(updatedOrder.id, account.user.id);
             await addQrCodeAndPdfUrlOrder(order);
             sendEmail(account.email, 'Invoice Payment', `Invoice for order ${updatedOrder.id} in airHopper`);
             await createOrderNotification(account.id, 'Pembayaran berhasil', `Pemesanan dengan id ${updatedOrder.id} berhasil dibayar`);
