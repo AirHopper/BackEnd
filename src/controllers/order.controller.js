@@ -1,4 +1,4 @@
-import { getAllUserOwnedOrders, createOrder, getUserOwnedOrderById, getAllOrders } from "../services/order.service.js";
+import { getAllUserOwnedOrders, createOrder, getUserOwnedOrderById, getAllOrders, cancelOrderById } from "../services/order.service.js";
 import { cancelPaymentByOrderId, createPayment } from "../services/payment.service.js";
 import { createPassengers } from "../services/passenger.service.js";
 import { checkSeatAvailability, updateSeatOccupied } from "../services/seat.service.js";
@@ -113,6 +113,7 @@ export const cancelUserOwnedById = async (req, res, next) => {
         const seatIds = order.passengers.flatMap(passenger => passenger.seat.map(seat => seat.id))
         if (order.payment.method) await cancelPaymentByOrderId(orderId);
         await updateSeatOccupied(seatIds, false);
+        await cancelOrderById(orderId); 
         await createOrderNotification(req.user.id, `Pemesanan Dibatalkan`, `Pemesanan dengan id ${order.id} berhasil dibatalkan`);
         return res.status(200).json({
             success: true,
