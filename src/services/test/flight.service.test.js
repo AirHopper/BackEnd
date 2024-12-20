@@ -60,7 +60,7 @@ describe("Flight Service", () => {
         {
           id: 1,
           class: undefined,
-          airline: "Airline A",
+          airline: { iataCode: undefined, imageUrl: undefined, name: "Airline A" },
           airplane: "Airplane A",
           duration: 150,
           departure: {
@@ -191,7 +191,7 @@ describe("Flight Service", () => {
         {
           id: 1,
           class: undefined,
-          airline: "Airline A",
+          airline: { iataCode: undefined, imageUrl: undefined, name: "Airline A" },
           airplane: "Airplane A",
           duration: 150,
           departure: {
@@ -322,7 +322,7 @@ describe("Flight Service", () => {
         {
           id: 1,
           class: undefined,
-          airline: "Airline A",
+          airline: { iataCode: undefined, imageUrl: undefined, name: "Airline A" },
           airplane: "Airplane A",
           duration: 150,
           departure: {
@@ -453,7 +453,7 @@ describe("Flight Service", () => {
         {
           id: 1,
           class: undefined,
-          airline: "Airline A",
+          airline: { iataCode: undefined, imageUrl: undefined, name: "Airline A" },
           airplane: "Airplane A",
           duration: 150,
           departure: {
@@ -584,7 +584,7 @@ describe("Flight Service", () => {
         {
           id: 1,
           class: undefined,
-          airline: "Airline A",
+          airline: { iataCode: undefined, imageUrl: undefined, name: "Airline A" },
           airplane: "Airplane A",
           duration: 150,
           departure: {
@@ -715,7 +715,7 @@ describe("Flight Service", () => {
         {
           id: 1,
           class: undefined,
-          airline: "Airline A",
+          airline: { iataCode: undefined, imageUrl: undefined, name: "Airline A" },
           airplane: "Airplane A",
           duration: 150,
           departure: {
@@ -908,7 +908,7 @@ describe("Flight Service", () => {
       const expectedResponse = {
         id: 1,
         class: undefined,
-        airline: "Airline A",
+        airline: { iataCode: undefined, imageUrl: undefined, name: "Airline A" },
         airplane: "Airplane A",
         departure: {
           time: "2023-12-11T10:00:00.000Z",

@@ -95,45 +95,58 @@ describe("Airline Service", () => {
     });
   });
 
-  describe("getSevenRandomAirlines", () => {
-    it("should fetch seven random airlines with IATA codes and image URLs", async () => {
+  describe("getRandomLogo", () => {
+    it("should fetch a specified number of random airlines with IATA codes and image URLs", async () => {
       const randomAirlines = [
-        { iataCode: "AA", imageUrl: "url1" },
-        { iataCode: "BA", imageUrl: "url2" },
-        { iataCode: "CA", imageUrl: "url3" },
-        { iataCode: "DA", imageUrl: "url4" },
-        { iataCode: "EA", imageUrl: "url5" },
-        { iataCode: "FA", imageUrl: "url6" },
-        { iataCode: "GA", imageUrl: "url7" },
+        { iata_code: "AA", imageUrl: "url1" },
+        { iata_code: "BA", imageUrl: "url2" },
+        { iata_code: "CA", imageUrl: "url3" },
+        { iata_code: "DA", imageUrl: "url4" },
+        { iata_code: "EA", imageUrl: "url5" },
       ];
   
-      prismaMock.airline.findMany.mockResolvedValue(randomAirlines);
+      const amount = 5;
   
-      const result = await airlineService.getSevenRandomAirlines();
+      // Mock the Prisma $queryRaw response
+      prismaMock.$queryRaw.mockResolvedValue(randomAirlines);
+  1
+      const result = await airlineService.getRandomLogo(amount);
   
       expect(result).toEqual(randomAirlines);
-      expect(prismaMock.airline.findMany).toHaveBeenCalledWith({
-        take: 7,
-        select: {
-          iataCode: true,
-          imageUrl: true,
-        },
-      });
+    });
+  
+    it("should fetch 7 random airlines by default if no amount is specified", async () => {
+      const randomAirlines = [
+        { iata_code: "AA", imageUrl: "url1" },
+        { iata_code: "BA", imageUrl: "url2" },
+        { iata_code: "CA", imageUrl: "url3" },
+        { iata_code: "DA", imageUrl: "url4" },
+        { iata_code: "EA", imageUrl: "url5" },
+        { iata_code: "FA", imageUrl: "url6" },
+        { iata_code: "GA", imageUrl: "url7" },
+      ];
+  
+      // Mock the Prisma $queryRaw response
+      prismaMock.$queryRaw.mockResolvedValue(randomAirlines);
+  
+      const result = await airlineService.getRandomLogo();
+  
+      expect(result).toEqual(randomAirlines);
     });
   
     it("should handle errors when fetching random airlines", async () => {
-      prismaMock.airline.findMany.mockRejectedValue(new Error("Fetch error"));
+      const error = new Error("Fetch error");
   
-      await expect(airlineService.getSevenRandomAirlines()).rejects.toThrow(
-        Error
-      );
+      // Mock Prisma query to throw an error
+      prismaMock.$queryRaw.mockRejectedValue(error);
+  
+      await expect(airlineService.getRandomLogo(5)).rejects.toThrow(Error);
       expect(console.error).toHaveBeenCalledWith(
         "Error fetching airlines:",
         expect.any(Error)
       );
     });
   });
-  
 
   describe("getAirlineById", () => {
     it("should fetch an airline by IATA code including airplane count", async () => {

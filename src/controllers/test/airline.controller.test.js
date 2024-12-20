@@ -1,7 +1,7 @@
 import {
     createAirline,
     getAllAirlines,
-    getSevenRandomAirlines,
+    getRandomLogo,
     getAirlineById,
     updateAirlineDetails,
     updateAirlinePhoto,
@@ -102,22 +102,29 @@ import {
       });
     });
 
-    describe("getSevenRandomAirlines", () => {
-      test("should return seven random airlines logo with 200 status", async () => {
+    describe("getRandomLogo", () => {
+      test("should return a specified number of random airlines logo with 200 status", async () => {
         const randomAirlines = [
           { id: 1, name: "Airline 1", logo: "logo1.jpg" },
           { id: 2, name: "Airline 2", logo: "logo2.jpg" },
           { id: 3, name: "Airline 3", logo: "logo3.jpg" },
           { id: 4, name: "Airline 4", logo: "logo4.jpg" },
           { id: 5, name: "Airline 5", logo: "logo5.jpg" },
-          { id: 6, name: "Airline 6", logo: "logo6.jpg" },
-          { id: 7, name: "Airline 7", logo: "logo7.jpg" },
         ];
+        
+        const req = { query: { amount: 5 } }; // Mock request with query parameter
+        const res = {
+          status: jest.fn().mockReturnThis(),
+          json: jest.fn(),
+        };
+        const next = jest.fn();
     
-        airlineService.getSevenRandomAirlines.mockResolvedValue(randomAirlines);
+        // Mock the service function to return randomAirlines
+        airlineService.getRandomLogo.mockResolvedValue(randomAirlines);
     
-        await getSevenRandomAirlines(req, res, next);
+        await getRandomLogo(req, res, next);
     
+        expect(airlineService.getRandomLogo).toHaveBeenCalledWith(5); // Ensure the query parameter is passed
         expect(res.status).toHaveBeenCalledWith(200);
         expect(res.json).toHaveBeenCalledWith({
           success: true,
@@ -127,18 +134,24 @@ import {
         });
       });
     
-      test("should handle error when fetching seven random airlines logo", async () => {
-        const errorMessage = "Failed to fetch airlines logo";
-        airlineService.getSevenRandomAirlines.mockRejectedValue(new Error(errorMessage));
+      test("should call next with an error when the service throws an exception", async () => {
+        const req = { query: { amount: 5 } };
+        const res = {
+          status: jest.fn().mockReturnThis(),
+          json: jest.fn(),
+        };
+        const next = jest.fn();
+        const error = new Error("Service error");
     
-        await getSevenRandomAirlines(req, res, next);
+        // Mock the service function to throw an error
+        airlineService.getRandomLogo.mockRejectedValue(error);
     
-        expect(next).toHaveBeenCalledWith(expect.any(Error));
-        expect(next).toHaveBeenCalledWith(expect.objectContaining({ message: errorMessage }));
+        await getRandomLogo(req, res, next);
+    
+        expect(next).toHaveBeenCalledWith(error);
       });
     });
     
-  
     describe("getAirlineById", () => {
       test("should return an airline by IATA code with 200 status", async () => {
         const airline = { id: 1, name: "Airline 1", iataCode: "A1" };
