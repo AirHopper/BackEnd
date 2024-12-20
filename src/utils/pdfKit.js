@@ -252,16 +252,26 @@ export const createPdfUrlByOrderId = async (order) => {
         doc.end();
 
         // End
-		doc.on('end', async () => {
-			const pdfData = Buffer.concat(buffers);			
-			const uploadedPdf = await imagekit.upload({
-				file: pdfData,
-				fileName: `order_${order.id}.pdf`,
-				folder: "/order_pdfs",
-                useUniqueFileName: false
-			});
-            return uploadedPdf.url;
-		});
+        return new Promise((resolve, reject) => {
+            doc.on('end', async () => {
+                try {
+                    const pdfData = Buffer.concat(buffers);
+                    const uploadedPdf = await imagekit.upload({
+                        file: pdfData,
+                        fileName: `order_${order.id}.pdf`,
+                        folder: "/order_pdfs",
+                        useUniqueFileName: false,
+                    });
+                    resolve(uploadedPdf.url);
+                } catch (uploadError) {
+                    reject(uploadError);
+                }
+            });
+
+            doc.on('error', (err) => {
+                reject(err);
+            });
+        });
 
     } catch (error) {
         console.error(error);
