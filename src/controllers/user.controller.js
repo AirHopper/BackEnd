@@ -35,6 +35,26 @@ export const getUserProfile = async (req, res, next) => {
     next(error);
   }
 }
+ 
+export const deleteUserById = async (req, res, next) => {
+  try {
+    // Only admins are allowed to delete user by id
+    if (req.user.role !== 'Admin') {
+      throw new customError('You do not have permission to perform this action', 403);
+    }
+
+    const data = await userService.deleteUserById(req.params);
+    res.status(200).json({
+      success: true,
+      message: "Delete user by id failed",
+      data: data,
+      error: null,
+    })
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+}
 
 export const updateUserProfile = async (req, res, next) => {
   try {

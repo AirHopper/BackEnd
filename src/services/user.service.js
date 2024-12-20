@@ -31,6 +31,22 @@ export const getUserProfile = async (userId) => {
   }
 };
 
+// DELETE user by id (Admin)
+export const deleteUserById = async (userData) => {
+  const id = parseInt(userData.id);
+  try {
+    const account = await prisma.account.delete({ where: { id: id } });
+    cleanUpAccountData(account);
+    return account;
+  } catch (error) {
+    if (error.code === "P2025") {
+      throw new customError("User not found", 404);
+    }
+    console.log('Failed to delete user');
+    throw error
+  }
+}
+
 // Update user profile by id
 export const updateUserProfile = async (userId, userData) => {
   try {
