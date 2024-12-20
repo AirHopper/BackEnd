@@ -10,7 +10,8 @@ import Views from "./views/index.js";
 import errorHandler from "./middlewares/errorHandler.js";
 import listEndpoints from "express-list-endpoints";
 import swaggerUi from "swagger-ui-express";
-import swaggerDocument from "./docs/swagger.json" with { type: "json" };
+// import swaggerDocument from "./docs/swagger.json" with { type: "json" };
+import swaggerDocument from "./docs/swagger2.json" with { type: "json" };
 
 dotenv.config();
 
