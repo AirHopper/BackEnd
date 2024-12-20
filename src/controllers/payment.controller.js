@@ -7,6 +7,7 @@ import { getUser } from "../services/auth.service.js";
 import { sendEmail } from "../utils/nodemailer.js";
 import { createOrderNotification } from "../services/notification.service.js";
 import AppError from '../utils/AppError.js';
+import { getById } from "../services/ticket.service.js";
 
 export const notifications = async (req, res, next) => {
     try {
@@ -28,8 +29,9 @@ export const notifications = async (req, res, next) => {
         }
         // Cancelled already handle in order service
         if (updatedOrder.orderStatus === 'Issued') {
+            const order = await getById(updatedOrder.id);
+            await addQrCodeAndPdfUrlOrder(order);
             sendEmail(account.email, 'Invoice Payment', `Invoice for order ${updatedOrder.id} in airHopper`);
-            await addQrCodeAndPdfUrlOrder(updatedOrder);
             await createOrderNotification(account.id, 'Pembayaran berhasil', `Pemesanan dengan id ${updatedOrder.id} berhasil dibayar`);
         }
         res.status(200).json({
