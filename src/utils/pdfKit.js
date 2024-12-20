@@ -213,9 +213,9 @@ const returnTicket = (doc, order) => {
 	});
 }
 
-const header = async (doc, order, x, y, imageLogoUrl) => {
+const header = async (doc, order, x, y, qrCodeUrl, imageLogoUrl) => {
 	await drawImage(doc, x, y, 68, imageLogoUrl); // imageLogoUrl
-	await drawImage(doc, 485, y-3, 74, order.qrCodeUrl); // imageQrUrl
+	await drawImage(doc, 485, y-3, 74, qrCodeUrl); // imageQrUrl
 
 	doc.font("Helvetica-Bold").fontSize(20).text("AirHopper", x+205, y+25);
 	y+=100;
@@ -236,7 +236,7 @@ const payment = (doc, order) => {
 	y = paymentTable(doc, order, x, y);
 }
 
-export const createPdfUrlByOrderId = async (order) => {
+export const createPdfUrlByOrderId = async (order, qrCodeUrl) => {
     try {
         const doc = new PDFDocument({ margin: 50 });
         const buffers = [];
@@ -245,7 +245,7 @@ export const createPdfUrlByOrderId = async (order) => {
         // Initialize
 	    let x = 50;
 	    let y = 50;
-	    y = await header(doc, order, x, y, process.env.IMAGE_LOGO_URL);
+	    y = await header(doc, order, x, y, qrCodeUrl, process.env.IMAGE_LOGO_URL);
 	    outboundTicket(doc, order, x, y);
 	    if (order.returnTicket) returnTicket(doc, order); // Next page (if return ticket not null)
 	    payment(doc, order); // Next page

@@ -1336,7 +1336,7 @@ export const getAllOrders = async () => {
 export const addQrCodeAndPdfUrlOrder = async (order) => {
     try {
         const qrCodeUrl = await createQrCodeUrlByOrderId(order.id);
-        const pdfUrl = await createPdfUrlByOrderId(order);
+        const pdfUrl = await createPdfUrlByOrderId(order, qrCodeUrl);
         return prisma.order.update({
             where: {
                 id: order.id
