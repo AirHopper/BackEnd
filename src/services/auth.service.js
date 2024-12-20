@@ -143,6 +143,10 @@ export const login = async (userData) => {
       throw new customError("Invalid email or password", 400);
     }
 
+    if (!account.isVerified) {
+      throw new customError("Please verify your account to proceed", 403)
+    }      
+
     const token = getToken({ id: account.id, email: account.email, role: account.role });
     cleanUpAccountData(account);
     return { ...account, token };
