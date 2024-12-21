@@ -1,10 +1,24 @@
 import prisma from "../utils/prisma.js";
 import AppError from "../utils/AppError.js";
 
+// Helper function to convert date to string with UTC+7 timezone
 function toDateStringMinus7Hours(dateInput) {
   const date = new Date(dateInput); // Ensure it's a Date object
   date.setHours(date.getHours() - 7); // Subtract 7 hours
   return date.toDateString(); // Convert to a string
+}
+
+// Helper function to get the current date in UTC+7 with time set to 00:00
+function getUTC7DateStart() {
+  const now = new Date();
+  const utc7Offset = 7 * 60 * 60 * 1000; // UTC+7 in milliseconds
+  const utcMidnight = new Date(now.getTime() + utc7Offset).setUTCHours(
+    0,
+    0,
+    0,
+    0
+  );
+  return new Date(utcMidnight);
 }
 
 // Validate flights sequence and credibility
@@ -67,8 +81,14 @@ async function validateFlights({ routeId, flightIds }) {
   }
 
   // Validate first and last flights match the route's airports
-  if (firstFlight.Route.DepartureAirport.id !== route.DepartureAirport.id || lastFlight.Route.ArrivalAirport.id !== route.ArrivalAirport.id) {
-    throw new AppError("First flight's departure or last flight's arrival does not match the route", 400);
+  if (
+    firstFlight.Route.DepartureAirport.id !== route.DepartureAirport.id ||
+    lastFlight.Route.ArrivalAirport.id !== route.ArrivalAirport.id
+  ) {
+    throw new AppError(
+      "First flight's departure or last flight's arrival does not match the route",
+      400
+    );
   }
 
   // Validate connecting airports and sequence
@@ -76,7 +96,10 @@ async function validateFlights({ routeId, flightIds }) {
     const currentFlight = flights[i];
     const nextFlight = flights[i + 1];
 
-    if (currentFlight.Route.ArrivalAirport.id !== nextFlight.Route.DepartureAirport.id) {
+    if (
+      currentFlight.Route.ArrivalAirport.id !==
+      nextFlight.Route.DepartureAirport.id
+    ) {
       throw new AppError("Connecting flights do not match", 400);
     }
 
@@ -102,7 +125,10 @@ function calculateDuration(flights) {
 
     // Add transit time between current flight and the previous flight
     const previousFlight = flights[index - 1];
-    const transitTime = calculateTransitTime(previousFlight.arrivalTime, flight.departureTime);
+    const transitTime = calculateTransitTime(
+      previousFlight.arrivalTime,
+      flight.departureTime
+    );
 
     return total + parseInt(flight.duration) + transitTime;
   }, 0);
@@ -116,11 +142,30 @@ function calculateTransitTime(arrivalTime, departureTime) {
 }
 
 // TODO Get all tickets
-export const getAll = async ({ page = 1, limit = 10, search, orderBy = "price_asc" }) => {
+export const getAll = async ({
+  page = 1,
+  limit = 10,
+  search,
+  orderBy = "price_asc",
+}) => {
   try {
     const offset = (page - 1) * limit;
 
-    let { departureCity, arrivalCity, flightDate, classType, continent, isTransit, airline } = search || {};
+    let {
+      departureCity,
+      arrivalCity,
+      flightDate,
+      classType,
+      continent,
+      isTransit,
+      airline,
+    } = search || {};
+
+    console.log(new Date(flightDate), getUTC7DateStart());
+    // Throw error if flightDate is before today in UTC+7
+    if (flightDate && new Date(flightDate) < getUTC7DateStart()) {
+      throw new AppError("Flight date must be today or later in UTC+7", 400);
+    }
 
     // Parse departureCity and arrivalCity to replace '+'
     departureCity = departureCity ? departureCity.replace(/\+/g, " ") : "";
@@ -183,7 +228,11 @@ export const getAll = async ({ page = 1, limit = 10, search, orderBy = "price_as
               {
                 departureTime: {
                   gte: new Date(flightDate),
-                  lt: new Date(new Date(flightDate).setDate(new Date(flightDate).getDate() + 1)),
+                  lt: new Date(
+                    new Date(flightDate).setDate(
+                      new Date(flightDate).getDate() + 1
+                    )
+                  ),
                 },
               },
             ]
@@ -343,7 +392,9 @@ export const getAll = async ({ page = 1, limit = 10, search, orderBy = "price_as
       },
       flights: ticket.Flights.map((flight) => {
         const totalSeats = flight.Seat.length;
-        const occupiedSeats = flight.Seat.filter((seat) => seat.isOccupied).length;
+        const occupiedSeats = flight.Seat.filter(
+          (seat) => seat.isOccupied
+        ).length;
         const availableSeats = totalSeats - occupiedSeats;
 
         return {
@@ -536,7 +587,9 @@ export const getById = async (id) => {
       },
       flights: ticket.Flights.map((flight) => {
         const totalSeats = flight.Seat.length;
-        const occupiedSeats = flight.Seat.filter((seat) => seat.isOccupied).length;
+        const occupiedSeats = flight.Seat.filter(
+          (seat) => seat.isOccupied
+        ).length;
         const availableSeats = totalSeats - occupiedSeats;
 
         return {
