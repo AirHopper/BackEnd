@@ -1,6 +1,12 @@
 import prisma from "../utils/prisma.js";
 import AppError from "../utils/AppError.js";
 
+function toDateStringMinus7Hours(dateInput) {
+  const date = new Date(dateInput); // Ensure it's a Date object
+  date.setHours(date.getHours() - 7); // Subtract 7 hours
+  return date.toDateString(); // Convert to a string
+}
+
 // Validate flights sequence and credibility
 async function validateFlights({ routeId, flightIds }) {
   const route = await prisma.route.findUnique({
@@ -45,11 +51,13 @@ async function validateFlights({ routeId, flightIds }) {
   const lastFlight = flights[flights.length - 1];
 
   // Ensure all flights are on the same day and class type
-  const firstFlightDate = new Date(firstFlight.departureTime).toDateString();
+  const firstFlightDate = toDateStringMinus7Hours(flights[0].departureTime);
   const classType = firstFlight.class;
 
   for (const flight of flights) {
-    if (new Date(flight.departureTime).toDateString() !== firstFlightDate) {
+    const flightDate = toDateStringMinus7Hours(flight.departureTime);
+
+    if (flightDate !== firstFlightDate) {
       throw new AppError("All flights must be on the same day", 400);
     }
 

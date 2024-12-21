@@ -7,6 +7,7 @@ const router = express.Router();
 
 router.get("/", authHandler, userController.getAllUsers);
 router.get("/profile", authHandler, userController.getUserProfile);
+router.delete("/:id", authHandler, userController.deleteUserById);
 router.put(
   "/profile",
   validator.validateUpdateUserProfile,

@@ -1,6 +1,7 @@
 import prisma from '../utils/prisma.js';
 import { createQrCodeUrlByOrderId } from '../utils/qrCode.js';
 import { add } from "date-fns";
+import { createPdfUrlByOrderId } from '../utils/pdfKit.js';
 import AppError from '../utils/AppError.js';
 
 export const getAllUserOwnedOrders = async ({userId, search}) => {
@@ -216,6 +217,8 @@ export const getAllUserOwnedOrders = async ({userId, search}) => {
                 isTransits: order.OutboundTicket.isTransits,
                 price: order.OutboundTicket.price,
                 totalPrice: order.OutboundTicket.totalPrice,
+                totalDuration: order.OutboundTicket.totalDuration,
+                discount: order.OutboundTicket.Discount,
                 isActive: order.OutboundTicket.isActive,
                 departure: {
                     time: order.OutboundTicket.departureTime,
@@ -320,6 +323,8 @@ export const getAllUserOwnedOrders = async ({userId, search}) => {
                 isTransits: order.ReturnTicket.isTransits,
                 price: order.ReturnTicket.price,
                 totalPrice: order.ReturnTicket.totalPrice,
+                totalDuration: order.ReturnTicket.totalDuration,
+                discount: order.ReturnTicket.Discount,
                 isActive: order.ReturnTicket.isActive,
                 departure: {
                     time: order.ReturnTicket.departureTime,
@@ -623,6 +628,8 @@ export const getUserOwnedOrderById = async (id, userId) => {
                 isTransits: order.OutboundTicket.isTransits,
                 price: order.OutboundTicket.price,
                 totalPrice: order.OutboundTicket.totalPrice,
+                totalDuration: order.OutboundTicket.totalDuration,
+                discount: order.OutboundTicket.Discount,
                 isActive: order.OutboundTicket.isActive,
                 departure: {
                     time: order.OutboundTicket.departureTime,
@@ -728,6 +735,8 @@ export const getUserOwnedOrderById = async (id, userId) => {
                 isTransits: order.ReturnTicket.isTransits,
                 price: order.ReturnTicket.price,
                 totalPrice: order.ReturnTicket.totalPrice,
+                totalDuration: order.ReturnTicket.totalDuration,
+                discount: order.ReturnTicket.Discount,
                 isActive: order.ReturnTicket.isActive,
                 departure: {
                     time: order.ReturnTicket.departureTime,
@@ -1099,6 +1108,8 @@ export const getAllOrders = async () => {
                     isTransits: order.OutboundTicket.isTransits,
                     price: order.OutboundTicket.price,
                     totalPrice: order.OutboundTicket.totalPrice,
+                    totalDuration: order.OutboundTicket.totalDuration,
+                    discount: order.OutboundTicket.Discount,
                     isActive: order.OutboundTicket.isActive,
                     departure: {
                         time: order.OutboundTicket.departureTime,
@@ -1203,6 +1214,8 @@ export const getAllOrders = async () => {
                     isTransits: order.ReturnTicket.isTransits,
                     price: order.ReturnTicket.price,
                     totalPrice: order.ReturnTicket.totalPrice,
+                    totalDuration: order.ReturnTicket.totalDuration,
+                    discount: order.ReturnTicket.Discount,
                     isActive: order.ReturnTicket.isActive,
                     departure: {
                         time: order.ReturnTicket.departureTime,
@@ -1320,13 +1333,13 @@ export const getAllOrders = async () => {
     }
 }
 
-export const addQrCodeAndPdfUrlOrderById = async (id) => {
+export const addQrCodeAndPdfUrlOrder = async (order) => {
     try {
-        const qrCodeUrl = await createQrCodeUrlByOrderId(id);
-        const pdfUrl = 'test';
+        const qrCodeUrl = await createQrCodeUrlByOrderId(order.id);
+        const pdfUrl = await createPdfUrlByOrderId(order, qrCodeUrl);
         return prisma.order.update({
             where: {
-                id
+                id: order.id
             },
             data: {
                 qrCodeUrl,

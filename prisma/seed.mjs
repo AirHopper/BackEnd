@@ -1,7 +1,6 @@
 import { PrismaClient, RegionType, Continent, Role } from "@prisma/client";
 import haversine from "haversine";
-import { nanoid } from "nanoid";
-import { hashPassword } from "../src/utils/bcrypt";
+import { hashPassword } from "../src/utils/bcrypt.js";
 
 const prisma = new PrismaClient();
 
@@ -179,7 +178,7 @@ async function storeTicket(payload) {
 }
 
 async function seedAccounts() {
-  const hashedPassword = await hashPassword('12345678');
+  const hashedPassword = await hashPassword("12345678");
 
   await prisma.account.createMany({
     data: [
@@ -209,65 +208,6 @@ async function seedAccounts() {
         phoneNumber: "1234567890",
       },
     });
-  }
-}
-
-async function seedNotifications() {
-  try {
-    // Find the buyer account
-    const buyerAccount = await prisma.account.findUnique({
-      where: { email: "buyer@example.com" },
-    });
-
-    if (!buyerAccount) {
-      console.error("Buyer account not found. Notifications cannot be seeded.");
-      return;
-    }
-
-    // Seed notifications for the buyer account
-    const notifications = [
-      {
-        accountId: buyerAccount.id,
-        type: "Promosi",
-        title: "Special Discount Offer!",
-        description:
-          "Get 20% off on your next booking. Offer valid until December 31st.",
-        isRead: false,
-      },
-      {
-        accountId: buyerAccount.id,
-        type: "Notifikasi",
-        title: "Payment Successful",
-        description:
-          "Your payment for order #12345 has been successfully processed.",
-        isRead: false,
-      },
-      {
-        accountId: buyerAccount.id,
-        type: "Promosi",
-        title: "Refer & Earn",
-        description:
-          "Refer a friend and earn reward points on their first purchase.",
-        isRead: false,
-      },
-      {
-        accountId: buyerAccount.id,
-        type: "Notifikasi",
-        title: "Booking Confirmation",
-        description:
-          "Your booking for flight #ABC123 has been confirmed. Check your email for details.",
-        isRead: false,
-      },
-    ];
-
-    // Create the notifications in the database
-    await prisma.notification.createMany({
-      data: notifications,
-    });
-
-    console.log("4 notifications seeded successfully for the buyer account.");
-  } catch (error) {
-    console.error("Error seeding notifications:", error);
   }
 }
 
@@ -695,7 +635,7 @@ async function seedFlights() {
         arrivalTerminalId: 15, // DPS Terminal 2
       },
       {
-        routeId: 4, 
+        routeId: 4,
         class: "Economy",
         airplaneId: 4,
         departureTime: "2024-12-17T08:00:00.000Z",
@@ -707,7 +647,7 @@ async function seedFlights() {
         arrivalTerminalId: 12,
       },
       {
-        routeId: 6, 
+        routeId: 6,
         class: "Economy",
         airplaneId: 4,
         departureTime: "2024-12-16T08:00:00.000Z",
@@ -902,158 +842,9 @@ async function seedTickets() {
   }
 }
 
-async function seedOrders() {
-  try {
-    const user = await prisma.user.findFirst({
-      where: { fullName: "buyerUser" },
-    });
-
-    const tickets = await prisma.ticket.findMany({
-      include: {
-        Flights: {
-          include: {
-            Seat: true, // Fetch seats for each flight
-          },
-        },
-      },
-      take: 10, // Fetch more tickets to create multiple orders
-    });
-
-    if (!user || tickets.length < 6) {
-      console.error(
-        "Required data (user or at least 6 tickets) not found for seeding orders."
-      );
-      return;
-    }
-
-    const orders = [];
-
-    for (let i = 0; i < 3; i++) {
-      // Create 3 distinct orders
-      // Create a payment for the order
-      const payment = await prisma.payment.create({
-        data: {
-          method: i % 2 === 0 ? "credit_card" : "e_wallet",
-          status: i % 2 === 0 ? "settlement" : "pending",
-          amount: 500 + i * 100, // Dynamic amount
-          token: `example-payment-token-${i}`,
-          transactionId: `txn_12345_${i}`,
-          orderId: `order_12345_${i}`,
-          validUntil: new Date(Date.now() + 1000 * 60 * 60 * 24), // 24 hours from now
-        },
-      });
-
-      // Calculate detailPrice for the order
-      const detailPrice = [
-        {
-          amount: 2, // Two adults
-          type: "Dewasa",
-          totalPrice: 500 + i * 100, // Example price calculation
-        },
-        {
-          amount: 1, // One child
-          type: "Anak",
-          totalPrice: 250 + i * 50,
-        },
-        {
-          amount: 1, // One infant (not assigned a seat)
-          type: "Bayi",
-          totalPrice: 100,
-        },
-      ];
-
-      // Extract all flights and seats for the outbound ticket
-      const outboundFlights = tickets[i * 2]?.Flights || [];
-      const outboundSeats = outboundFlights.flatMap((flight) => flight.Seat);
-
-      // Extract all flights and seats for the return ticket
-      const returnFlights = tickets[i * 2 + 1]?.Flights || [];
-      const returnSeats = returnFlights.flatMap((flight) => flight.Seat);
-
-      // Ensure there are enough seats for passengers (excluding the infant)
-      if (outboundSeats.length < 2 || returnSeats.length < 1) {
-        // 2 seats needed for adults, 1 seat for the child (ignoring the infant who doesn't need a seat)
-        console.error(`Not enough seats for order ${i}.`);
-        continue;
-      }
-
-      // Generate a random string for order ID using nanoid
-
-      // Create the order
-      const order = await prisma.order.create({
-        data: {
-          id: nanoid(8),
-          userId: user.id,
-          paymentId: payment.id,
-          qrCodeUrl: `https://example.com/qrcode_${i}`,
-          isRoundTrip: i % 2 === 0, // Alternate between round trip and one-way
-          outboundTicketId: tickets[i * 2]?.id || null,
-          returnTicketId: i % 2 === 0 ? tickets[i * 2 + 1]?.id || null : null, // Add return ticket for round trips
-          detailPrice, // Attach detailPrice to the order
-        },
-      });
-
-      // Create passengers associated with the order (excluding the infant)
-      const passengers = [
-        {
-          orderId: order.id,
-          seatId: outboundSeats[0].id, // Assign seat from outbound flight
-          type: "Dewasa",
-          title: "Mr",
-          name: `John_${i}_1`,
-          familyName: `Doe_${i}_1`,
-          dateOfBirth: new Date("1990-01-01"),
-          nationality: "US",
-          identifierNumber: `123456789_${i}_1`,
-          issuedCountry: "US",
-          idValidUntil: new Date("2030-01-01"),
-        },
-        {
-          orderId: order.id,
-          seatId: outboundSeats[1].id, // Assign seat from outbound flight
-          type: "Dewasa",
-          title: "Ms",
-          name: `Jane_${i}_1`,
-          familyName: `Doe_${i}_1`,
-          dateOfBirth: new Date("1992-02-02"),
-          nationality: "US",
-          identifierNumber: `987654321_${i}_1`,
-          issuedCountry: "US",
-          idValidUntil: new Date("2030-02-02"),
-        },
-        {
-          orderId: order.id,
-          seatId: returnSeats[0].id, // Assign seat from return flight (if applicable)
-          type: "Anak",
-          title: "Mr",
-          name: `Child_${i}_1`,
-          familyName: `Doe_${i}_1`,
-          dateOfBirth: new Date("2015-06-15"),
-          nationality: "US",
-          identifierNumber: `567891234_${i}_1`,
-          issuedCountry: "US",
-          idValidUntil: new Date("2030-06-15"),
-        },
-      ];
-
-      // Save passengers to the database (excluding the infant)
-      await prisma.passenger.createMany({
-        data: passengers,
-      });
-
-      orders.push(order);
-    }
-
-    console.log(`${orders.length} orders seeded successfully!`);
-  } catch (error) {
-    console.error("Error seeding orders:", error);
-  }
-}
-
 async function main() {
   try {
     await seedAccounts();
-    await seedNotifications();
     await seedDiscounts();
     await seedCities();
     await seedAirports();
@@ -1063,7 +854,6 @@ async function main() {
     await seedAirplanes();
     await seedFlights();
     await seedTickets();
-    await seedOrders();
 
     console.log("Seeding completed successfully!");
   } catch (e) {
