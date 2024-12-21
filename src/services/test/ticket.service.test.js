@@ -1331,7 +1331,7 @@ describe("Ticket Service", () => {
   
       // Verify findUnique call
       expect(prismaMock.ticket.findUnique).toHaveBeenCalledWith({
-        where: { id: 1 },
+        where: { id: 1 }, include: { Flights: true },
       });
   
       // Verify ticket deletion
@@ -1363,7 +1363,7 @@ describe("Ticket Service", () => {
   
       // Verify findUnique call
       expect(prismaMock.ticket.findUnique).toHaveBeenCalledWith({
-        where: { id: 1 },
+        where: { id: 1 }, include: { Flights: true },
       });
   
       // Verify ticket deletion
