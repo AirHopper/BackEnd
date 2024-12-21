@@ -665,13 +665,12 @@ export const store = async (payload) => {
 // TODO Delete ticket
 export const destroy = async (id) => {
   try {
-    if (isNaN(id)) {
-      throw new AppError("Invalid ticket ID", 400);
-    }
-
     const ticketExists = await prisma.ticket.findUnique({
       where: {
         id,
+      },
+      include: {
+        Flights: true,
       },
     });
 

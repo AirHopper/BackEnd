@@ -542,8 +542,8 @@ async function seedFlights() {
         routeId: 1, // JFK -> LAX
         class: "Economy",
         airplaneId: 1, // Boeing 737
-        departureTime: "2024-12-10T08:00:00.000Z",
-        arrivalTime: "2024-12-10T11:00:00.000Z",
+        departureTime: "2025-01-10T08:00:00.000Z",
+        arrivalTime: "2025-01-10T11:00:00.000Z",
         baggage: 20,
         cabinBaggage: 7,
         entertainment: true,
@@ -554,8 +554,8 @@ async function seedFlights() {
         routeId: 2, // JFK -> SIN
         class: "Business",
         airplaneId: 2, // Airbus A380
-        departureTime: "2024-12-11T14:00:00.000Z",
-        arrivalTime: "2024-12-12T04:00:00.000Z",
+        departureTime: "2025-01-11T14:00:00.000Z",
+        arrivalTime: "2025-01-12T04:00:00.000Z",
         baggage: 30,
         cabinBaggage: 10,
         entertainment: true,
@@ -566,8 +566,8 @@ async function seedFlights() {
         routeId: 3, // LAX -> SIN
         class: "Economy",
         airplaneId: 3, // Boeing 787 Dreamliner
-        departureTime: "2024-12-13T10:00:00.000Z",
-        arrivalTime: "2024-12-14T03:00:00.000Z",
+        departureTime: "2025-01-13T10:00:00.000Z",
+        arrivalTime: "2025-01-14T03:00:00.000Z",
         baggage: 25,
         cabinBaggage: 8,
         entertainment: true,
@@ -578,8 +578,8 @@ async function seedFlights() {
         routeId: 4, // SIN -> CGK
         class: "Economy",
         airplaneId: 4, // Boeing 737 MAX
-        departureTime: "2024-12-15T07:00:00.000Z",
-        arrivalTime: "2024-12-15T09:30:00.000Z",
+        departureTime: "2025-01-15T07:00:00.000Z",
+        arrivalTime: "2025-01-15T09:30:00.000Z",
         baggage: 20,
         cabinBaggage: 7,
         entertainment: false,
@@ -590,8 +590,8 @@ async function seedFlights() {
         routeId: 5, // CGK -> DPS
         class: "Economy",
         airplaneId: 5, // Airbus A320
-        departureTime: "2024-12-16T12:00:00.000Z",
-        arrivalTime: "2024-12-16T13:30:00.000Z",
+        departureTime: "2025-01-16T12:00:00.000Z",
+        arrivalTime: "2025-01-16T13:30:00.000Z",
         baggage: 15,
         cabinBaggage: 7,
         entertainment: false,
@@ -602,8 +602,8 @@ async function seedFlights() {
         routeId: 6, // JFK -> CGK
         class: "Economy",
         airplaneId: 5, // Airbus A320
-        departureTime: "2024-12-11T05:00:00.000Z",
-        arrivalTime: "2024-12-11T13:00:00.000Z",
+        departureTime: "2025-01-11T05:00:00.000Z",
+        arrivalTime: "2025-01-11T13:00:00.000Z",
         baggage: 25,
         cabinBaggage: 8,
         entertainment: true,
@@ -614,8 +614,8 @@ async function seedFlights() {
         routeId: 10, // LAX -> DPS
         class: "Economy",
         airplaneId: 4, // Boeing 737 MAX
-        departureTime: "2024-12-14T08:00:00.000Z",
-        arrivalTime: "2024-12-14T17:00:00.000Z",
+        departureTime: "2025-01-14T08:00:00.000Z",
+        arrivalTime: "2025-01-14T17:00:00.000Z",
         baggage: 30,
         cabinBaggage: 10,
         entertainment: true,
@@ -626,8 +626,8 @@ async function seedFlights() {
         routeId: 8, // JFK -> DPS
         class: "Economy",
         airplaneId: 1, // Boeing 737
-        departureTime: "2024-12-12T08:00:00.000Z",
-        arrivalTime: "2024-12-12T17:00:00.000Z",
+        departureTime: "2025-01-12T08:00:00.000Z",
+        arrivalTime: "2025-01-12T17:00:00.000Z",
         baggage: 30,
         cabinBaggage: 10,
         entertainment: true,
@@ -638,8 +638,8 @@ async function seedFlights() {
         routeId: 4,
         class: "Economy",
         airplaneId: 4,
-        departureTime: "2024-12-17T08:00:00.000Z",
-        arrivalTime: "2024-12-17T11:00:00.000Z",
+        departureTime: "2025-01-17T08:00:00.000Z",
+        arrivalTime: "2025-01-17T11:00:00.000Z",
         baggage: 20,
         cabinBaggage: 7,
         entertainment: true,
@@ -650,8 +650,8 @@ async function seedFlights() {
         routeId: 6,
         class: "Economy",
         airplaneId: 4,
-        departureTime: "2024-12-16T08:00:00.000Z",
-        arrivalTime: "2024-12-16T11:00:00.000Z",
+        departureTime: "2025-01-16T08:00:00.000Z",
+        arrivalTime: "2025-01-16T11:00:00.000Z",
         baggage: 20,
         cabinBaggage: 7,
         entertainment: true,
@@ -666,8 +666,8 @@ async function seedFlights() {
         routeId: 5, // CGK -> DPS
         class: "Economy",
         airplaneId: 4, // Boeing 737 MAX
-        departureTime: "2024-12-16T10:00:00.000Z",
-        arrivalTime: "2024-12-16T12:30:00.000Z",
+        departureTime: "2025-01-16T10:00:00.000Z",
+        arrivalTime: "2025-01-16T12:30:00.000Z",
         baggage: 15,
         cabinBaggage: 7,
         entertainment: false,
@@ -678,8 +678,8 @@ async function seedFlights() {
         routeId: 7, // DPS -> SIN
         class: "Economy",
         airplaneId: 5, // Airbus A320
-        departureTime: "2024-12-16T13:00:00.000Z", // DPS -> SIN, after CGK -> DPS arrival
-        arrivalTime: "2024-12-16T15:00:00.000Z",
+        departureTime: "2025-01-16T13:00:00.000Z", // DPS -> SIN, after CGK -> DPS arrival
+        arrivalTime: "2025-01-16T15:00:00.000Z",
         baggage: 15,
         cabinBaggage: 7,
         entertainment: false,
@@ -691,8 +691,8 @@ async function seedFlights() {
         routeId: 2, // JFK -> SIN
         class: "Economy",
         airplaneId: 3, // Boeing 787 Dreamliner
-        departureTime: "2024-12-11T01:00:00.000Z", // Same day, later than JFK->LAX arrival
-        arrivalTime: "2024-12-11T09:00:00.000Z", // Adjust to match SIN arrival
+        departureTime: "2025-01-11T01:00:00.000Z", // Same day, later than JFK->LAX arrival
+        arrivalTime: "2025-01-11T09:00:00.000Z", // Adjust to match SIN arrival
         baggage: 20,
         cabinBaggage: 7,
         entertainment: true,
@@ -703,8 +703,8 @@ async function seedFlights() {
         routeId: 4, // SIN -> CGK
         class: "Economy",
         airplaneId: 4, // Boeing 737 MAX
-        departureTime: "2024-12-11T10:00:00.000Z", // SIN -> CGK, after JFK -> SIN arrival
-        arrivalTime: "2024-12-11T14:30:00.000Z",
+        departureTime: "2025-01-11T10:00:00.000Z", // SIN -> CGK, after JFK -> SIN arrival
+        arrivalTime: "2025-01-11T14:30:00.000Z",
         baggage: 20,
         cabinBaggage: 7,
         entertainment: false,
@@ -717,8 +717,8 @@ async function seedFlights() {
         routeId: 3, // LAX -> SIN
         class: "Economy",
         airplaneId: 3, // Boeing 787 Dreamliner
-        departureTime: "2024-12-14T08:00:00.000Z", // LAX -> SIN
-        arrivalTime: "2024-12-14T15:00:00.000Z", // Adjust to match SIN arrival
+        departureTime: "2025-01-14T08:00:00.000Z", // LAX -> SIN
+        arrivalTime: "2025-01-14T15:00:00.000Z", // Adjust to match SIN arrival
         baggage: 25,
         cabinBaggage: 8,
         entertainment: true,
@@ -729,8 +729,8 @@ async function seedFlights() {
         routeId: 5, // SIN -> DPS
         class: "Economy",
         airplaneId: 5, // Airbus A320
-        departureTime: "2024-12-14T17:00:00.000Z", // SIN -> DPS, after LAX -> SIN arrival
-        arrivalTime: "2024-12-14T20:30:00.000Z",
+        departureTime: "2025-01-14T17:00:00.000Z", // SIN -> DPS, after LAX -> SIN arrival
+        arrivalTime: "2025-01-14T20:30:00.000Z",
         baggage: 25,
         cabinBaggage: 8,
         entertainment: false,
@@ -743,8 +743,8 @@ async function seedFlights() {
         routeId: 2, // JFK -> SIN
         class: "Economy",
         airplaneId: 3, // Boeing 787 Dreamliner
-        departureTime: "2024-12-12T02:00:00.000Z", // Same day as JFK -> LAX
-        arrivalTime: "2024-12-12T11:00:00.000Z", // Adjust to match SIN arrival
+        departureTime: "2025-01-12T02:00:00.000Z", // Same day as JFK -> LAX
+        arrivalTime: "2025-01-12T11:00:00.000Z", // Adjust to match SIN arrival
         baggage: 30,
         cabinBaggage: 10,
         entertainment: true,
@@ -755,8 +755,8 @@ async function seedFlights() {
         routeId: 5, // SIN -> DPS
         class: "Economy",
         airplaneId: 5, // Airbus A320
-        departureTime: "2024-12-12T12:00:00.000Z", // SIN -> DPS, after JFK -> SIN arrival
-        arrivalTime: "2024-12-12T15:00:00.000Z",
+        departureTime: "2025-01-12T12:00:00.000Z", // SIN -> DPS, after JFK -> SIN arrival
+        arrivalTime: "2025-01-12T15:00:00.000Z",
         baggage: 30,
         cabinBaggage: 10,
         entertainment: false,
@@ -769,8 +769,8 @@ async function seedFlights() {
         routeId: 1, // JFK -> LAX
         class: "Economy",
         airplaneId: 1, // Boeing 737
-        departureTime: "2024-12-16T08:00:00.000Z",
-        arrivalTime: "2024-12-16T11:00:00.000Z",
+        departureTime: "2025-01-16T08:00:00.000Z",
+        arrivalTime: "2025-01-16T11:00:00.000Z",
         baggage: 20,
         cabinBaggage: 7,
         entertainment: true,
@@ -781,8 +781,8 @@ async function seedFlights() {
         routeId: 3, // LAX -> SIN
         class: "Economy",
         airplaneId: 3, // Boeing 787 Dreamliner
-        departureTime: "2024-12-16T12:00:00.000Z", // LAX -> SIN
-        arrivalTime: "2024-12-16T19:00:00.000Z", // Adjust to match SIN arrival
+        departureTime: "2025-01-16T12:00:00.000Z", // LAX -> SIN
+        arrivalTime: "2025-01-16T19:00:00.000Z", // Adjust to match SIN arrival
         baggage: 25,
         cabinBaggage: 8,
         entertainment: true,
@@ -793,8 +793,8 @@ async function seedFlights() {
         routeId: 4, // SIN -> CGK
         class: "Economy",
         airplaneId: 4, // Boeing 737 MAX
-        departureTime: "2024-12-16T19:30:00.000Z", // SIN -> CGK, after LAX -> SIN arrival
-        arrivalTime: "2024-12-16T22:30:00.000Z",
+        departureTime: "2025-01-16T19:30:00.000Z", // SIN -> CGK, after LAX -> SIN arrival
+        arrivalTime: "2025-01-16T22:30:00.000Z",
         baggage: 20,
         cabinBaggage: 7,
         entertainment: false,
