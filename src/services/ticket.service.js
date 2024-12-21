@@ -8,6 +8,15 @@ function toDateStringMinus7Hours(dateInput) {
   return date.toDateString(); // Convert to a string
 }
 
+// Helper function to get the current date in UTC+7
+function getUTC7Date() {
+  const now = new Date();
+  const utc7Offset = 7 * 60 * 60 * 1000; // UTC+7 in milliseconds
+  const utc7 = new Date(now.getTime() + utc7Offset);
+
+  return new Date(utc7);
+}
+
 // Helper function to get the current date in UTC+7 with time set to 00:00
 function getUTC7DateStart() {
   const now = new Date();
@@ -266,6 +275,13 @@ export const getAll = async ({
         ...[
           {
             isActive: true,
+          },
+        ],
+        ...[
+          {
+            departureTime: {
+              gte: getUTC7Date(), // Filter for tickets with departure time before the current date
+            },
           },
         ],
       ],
