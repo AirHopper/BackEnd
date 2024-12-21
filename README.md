@@ -1,4 +1,5 @@
 # ✈️ AirHopper Backend API
+[![codecov](https://codecov.io/gh/AirHopper/BackEnd/graph/badge.svg?token=VH2I0CG2CC)](https://codecov.io/gh/AirHopper/BackEnd)
 
 AirHopper adalah API pemesanan tiket pesawat online yang dirancang untuk memberikan pengalaman perjalanan yang mudah dan nyaman. Dengan dukungan teknologi modern seperti Express, Prisma, dan Swagger, kami menyediakan layanan backend yang cepat, aman, dan dapat diandalkan.
 
