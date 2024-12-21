@@ -19,7 +19,15 @@ export const createPayment = async (request, account) => {
                 last_name: lastName,
                 email: account.email,
                 phone: account.user.phoneNumber
-            }
+            },
+            // Danger! if item_details.price != transaction_details.gross_amount, it will cause error
+            // item_details: request.detailPrice.map(detail => {
+            //     return {
+            //         name: detail.type,
+            //         price: Math.ceil(detail.totalPrice / detail.amount),
+            //         quantity: detail.amount,
+            //     }
+            // })
         }
 
         const midtransToken = await snap.createTransactionToken(parameter);
