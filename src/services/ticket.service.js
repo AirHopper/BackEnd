@@ -161,7 +161,6 @@ export const getAll = async ({
       airline,
     } = search || {};
 
-    console.log(new Date(flightDate), getUTC7DateStart());
     // Throw error if flightDate is before today in UTC+7
     if (flightDate && new Date(flightDate) < getUTC7DateStart()) {
       throw new AppError("Flight date must be today or later in UTC+7", 400);
