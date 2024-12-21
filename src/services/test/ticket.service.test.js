@@ -586,11 +586,21 @@ describe("Ticket Service", () => {
     });
 
     it("should apply search filters correctly", async () => {
+      const now = new Date();
+      const utc7Offset = 7 * 60 * 60 * 1000; // UTC+7 in milliseconds
+      const utcTime = now.getTime() + utc7Offset; // Adjust current time to UTC+7
+      const todayUTC7 = new Date(utcTime);
+
+      // Set the time to 10:00 AM UTC+7
+      todayUTC7.setUTCHours(3, 0, 0, 0); // 3:00 AM UTC corresponds to 10:00 AM UTC+7
+
+      const departureTime = todayUTC7.toISOString(); // Convert to ISO string
+
       const tickets = [
         {
           id: 1,
           totalPrice: 150,
-          departureTime: "2023-12-12T10:00:00Z",
+          departureTime: departureTime,
           Route: {
             DepartureAirport: {
               name: "Airport A",
@@ -632,7 +642,7 @@ describe("Ticket Service", () => {
         search: {
           departureCity: "City A",
           arrivalCity: "City B",
-          flightDate: "2023-12-12",
+          flightDate: departureTime,
         },
       });
 
@@ -645,6 +655,26 @@ describe("Ticket Service", () => {
         "arrival.city.name",
         "City B"
       );
+    });
+
+    it("should throw an error if search flight date before current date", async () => {
+      // Mock `prismaMock` to reject the `findMany` call
+      prismaMock.ticket.findMany.mockImplementation(() => {
+        throw new AppError("Flight date must be today or later in UTC+7", 400);
+      });
+
+      // Ensure the function throws when flightDate is in the past
+      await expect(
+        ticketService.getAll({
+          page: 1,
+          limit: 10,
+          search: {
+            departureCity: "City A",
+            arrivalCity: "City B",
+            flightDate: "2023-12-12", // A date in the past
+          },
+        })
+      ).rejects.toThrow("Flight date must be today or later in UTC+7");
     });
 
     it("should apply sorting correctly", async () => {
@@ -845,12 +875,12 @@ describe("Ticket Service", () => {
           },
         ],
       };
-    
+
       // Mock the result of the findUnique query
       prismaMock.ticket.findUnique.mockResolvedValue(ticket);
-    
+
       const result = await ticketService.getById(1);
-    
+
       // Define the expected response structure for the ticket by ID
       const expectedResponse = {
         id: 1,
@@ -962,10 +992,10 @@ describe("Ticket Service", () => {
           },
         ],
       };
-    
+
       // Compare the result to the expected response
       expect(result).toEqual(expectedResponse);
-    });    
+    });
 
     it("should throw an error if ticket is not found", async () => {
       prismaMock.ticket.findUnique.mockResolvedValue(null);
@@ -1034,7 +1064,7 @@ describe("Ticket Service", () => {
             },
             arrivalTime: "2023-12-12T13:30:00Z", // Assuming the arrival time is for the second flight
             departureTime: "2023-12-12T08:00:00Z", // Assuming the departure time is for the first flight
-            isTransits: true, 
+            isTransits: true,
           }),
         })
       );
@@ -1312,102 +1342,106 @@ describe("Ticket Service", () => {
   describe("destroy", () => {
     it("should delete a ticket and its associated flight if it's the only ticket for that flight", async () => {
       const ticket = { id: 1, Flights: [{ id: 100 }] }; // Ticket linked to one flight
-  
+
       // Mock the findUnique call to return the ticket
       prismaMock.ticket.findUnique.mockResolvedValue(ticket);
-  
+
       // Mock the ticket deletion
       prismaMock.ticket.delete.mockResolvedValue(ticket);
-  
+
       // Mock the flight deletion
       prismaMock.flight.delete.mockResolvedValue({ id: 100 });
-  
+
       const result = await ticketService.destroy(1);
-  
+
       // Check result message
       expect(result).toEqual({
         message: "Ticket deleted successfully",
       });
-  
+
       // Verify findUnique call
       expect(prismaMock.ticket.findUnique).toHaveBeenCalledWith({
-        where: { id: 1 }, include: { Flights: true },
+        where: { id: 1 },
+        include: { Flights: true },
       });
-  
+
       // Verify ticket deletion
       expect(prismaMock.ticket.delete).toHaveBeenCalledWith({
         where: { id: 1 },
       });
-  
+
       // Verify flight deletion
       expect(prismaMock.flight.delete).toHaveBeenCalledWith({
         where: { id: 100 },
       });
     });
-  
+
     it("should delete a ticket but not delete the flight if there are multiple tickets for that flight", async () => {
       const ticket = { id: 1, Flights: [{ id: 100 }, { id: 101 }] }; // Linked to multiple flights
-  
+
       // Mock the findUnique call to return the ticket
       prismaMock.ticket.findUnique.mockResolvedValue(ticket);
-  
+
       // Mock the ticket deletion
       prismaMock.ticket.delete.mockResolvedValue(ticket);
-  
+
       const result = await ticketService.destroy(1);
-  
+
       // Check result message
       expect(result).toEqual({
         message: "Ticket deleted successfully",
       });
-  
+
       // Verify findUnique call
       expect(prismaMock.ticket.findUnique).toHaveBeenCalledWith({
-        where: { id: 1 }, include: { Flights: true },
+        where: { id: 1 },
+        include: { Flights: true },
       });
-  
+
       // Verify ticket deletion
       expect(prismaMock.ticket.delete).toHaveBeenCalledWith({
         where: { id: 1 },
       });
-  
+
       // Ensure flight.delete is NOT called
       expect(prismaMock.flight.delete).not.toHaveBeenCalled();
     });
-  
+
     it("should throw an error if the ticket does not exist", async () => {
       // Mock the findUnique call to return null
       prismaMock.ticket.findUnique.mockResolvedValue(null);
-  
+
       await expect(ticketService.destroy(999)).rejects.toThrow(AppError);
-  
+
       // Ensure proper error logging
       expect(console.error).toHaveBeenCalledWith(
         "Error deleting ticket:",
         expect.any(AppError)
       );
     });
-  
+
     it("should throw an error if the ticket ID is invalid", async () => {
-      await expect(ticketService.destroy("invalid-id")).rejects.toThrow(AppError);
-  
+      await expect(ticketService.destroy("invalid-id")).rejects.toThrow(
+        AppError
+      );
+
       expect(console.error).toHaveBeenCalledWith(
         "Error deleting ticket:",
         expect.any(AppError)
       );
     });
-  
+
     it("should handle errors during deletion gracefully", async () => {
       const ticket = { id: 1, Flights: [{ id: 100 }] };
-  
+
       // Mock the findUnique call to return a valid ticket
       prismaMock.ticket.findUnique.mockResolvedValue(ticket);
-  
+
       // Simulate an error during ticket deletion
       prismaMock.ticket.delete.mockRejectedValue(new Error("Database error"));
-  
+
       await expect(ticketService.destroy(1)).rejects.toThrow("Database error");
-  
+
       expect(console.error).toHaveBeenCalledWith(
         "Error deleting ticket:",
         expect.any(Error)
