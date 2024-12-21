@@ -15,7 +15,7 @@ const createOrderSchema = z.object({
 		type: z.string(),
 		title: z.string(),
 		name: z.string(),
-		familyName: z.string(),
+		familyName: z.string().nullable().optional(),
 		dateOfBirth: z.string().datetime(),
 		nationality: z.string(),
 		identifierNumber: z.string(),
