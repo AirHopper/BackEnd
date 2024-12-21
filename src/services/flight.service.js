@@ -600,13 +600,15 @@ export const destroy = async (id) => {
 
     const ticketIds = flightExists.Ticket.map((ticket) => ticket.id);
 
-    await prisma.ticket.deleteMany({
-      where: {
-        id: {
-          in: ticketIds,
+    if (ticketIds.length > 0) {
+      await prisma.ticket.deleteMany({
+        where: {
+          id: {
+            in: ticketIds,
+          },
         },
-      },
-    });
+      });
+    }
 
     return {
       message: "Flight and connected Tickets deleted successfully",
