@@ -44,13 +44,6 @@ jobs:
         run: npm run test
 
       # Step 6: Upload coverage to Codecov
-      # - name: Upload coverage to Codecov
-      #   uses: codecov/codecov-action@v3
-      #   with:
-      #     files: ./coverage/lcov.info
-      #     flags: unittests
-      #     token: ${{ secrets.CODECOV_TOKEN }}
-
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
