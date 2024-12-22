@@ -34,7 +34,7 @@ describe("Terminal Service", () => {
         data: {
           name: payload.name,
           type: payload.type,
-          Agirport: { connect: { iataCode: payload.airportId } },
+          Airport: { connect: { iataCode: payload.airportId } },
         },
       });
     });
