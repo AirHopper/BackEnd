@@ -10,7 +10,7 @@ export const createTerminal = async (data) => {
       data: {
         name,
         type,
-        Agirport: { connect: { iataCode: airportId } },
+        Airport: { connect: { iataCode: airportId } },
       },
     });
 
