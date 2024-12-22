@@ -5,6 +5,9 @@ import AppError from "../utils/AppError.js";
 function toDateStringMinus7Hours(dateInput) {
   const date = new Date(dateInput); // Ensure it's a Date object
   date.setHours(date.getHours() - 7); // Subtract 7 hours
+
+  console.log(date);
+
   return date.toDateString(); // Convert to a string
 }
 
