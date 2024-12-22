@@ -326,6 +326,9 @@ export const getAll = async ({
       where: searchFilters,
       include: {
         Flights: {
+          orderBy: {
+            departureTime: "asc",
+          },
           include: {
             Route: {
               include: {
@@ -521,6 +524,9 @@ export const getById = async (id) => {
       },
       include: {
         Flights: {
+          orderBy: {
+            departureTime: "asc",
+          },
           include: {
             Route: {
               include: {
