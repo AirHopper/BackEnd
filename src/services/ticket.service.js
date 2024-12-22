@@ -1,27 +1,28 @@
 import prisma from "../utils/prisma.js";
 import AppError from "../utils/AppError.js";
 
-// Helper function to convert date to string with UTC+7 timezone
-function toDateStringMinus7Hours(dateInput) {
+// Helper function to convert date to string with UTC+8 timezone
+function toDateStringMinus8Hours(dateInput) {
   const date = new Date(dateInput); // Ensure it's a Date object
-  date.setHours(date.getHours() - 7); // Subtract 7 hours
+  date.setHours(date.getHours() - 8); // Subtract 8 hours
+
   return date.toDateString(); // Convert to a string
 }
 
-// Helper function to get the current date in UTC+7
-function getUTC7Date() {
+// Helper function to get the current date in UTC+8
+function getUTC8Date() {
   const now = new Date();
-  const utc7Offset = 7 * 60 * 60 * 1000; // UTC+7 in milliseconds
-  const utc7 = new Date(now.getTime() + utc7Offset);
+  const utc8Offset = 8 * 60 * 60 * 1000; // UTC+8 in milliseconds
+  const utc8 = new Date(now.getTime() + utc8Offset);
 
-  return new Date(utc7);
+  return new Date(utc8);
 }
 
-// Helper function to get the current date in UTC+7 with time set to 00:00
-function getUTC7DateStart() {
+// Helper function to get the current date in UTC+8 with time set to 00:00
+function getUTC8DateStart() {
   const now = new Date();
-  const utc7Offset = 7 * 60 * 60 * 1000; // UTC+7 in milliseconds
-  const utcMidnight = new Date(now.getTime() + utc7Offset).setUTCHours(
+  const utc8Offset = 8 * 60 * 60 * 1000; // UTC+8 in milliseconds
+  const utcMidnight = new Date(now.getTime() + utc8Offset).setUTCHours(
     0,
     0,
     0,
@@ -74,11 +75,11 @@ async function validateFlights({ routeId, flightIds }) {
   const lastFlight = flights[flights.length - 1];
 
   // Ensure all flights are on the same day and class type
-  const firstFlightDate = toDateStringMinus7Hours(flights[0].departureTime);
+  const firstFlightDate = toDateStringMinus8Hours(flights[0].departureTime);
   const classType = firstFlight.class;
 
   for (const flight of flights) {
-    const flightDate = toDateStringMinus7Hours(flight.departureTime);
+    const flightDate = toDateStringMinus8Hours(flight.departureTime);
 
     if (flightDate !== firstFlightDate) {
       throw new AppError("All flights must be on the same day", 400);
@@ -170,9 +171,9 @@ export const getAll = async ({
       airline,
     } = search || {};
 
-    // Throw error if flightDate is before today in UTC+7
-    if (flightDate && new Date(flightDate) < getUTC7DateStart()) {
-      throw new AppError("Flight date must be today or later in UTC+7", 400);
+    // Throw error if flightDate is before today in UTC+8
+    if (flightDate && new Date(flightDate) < getUTC8DateStart()) {
+      throw new AppError("Flight date must be today or later in UTC+8", 400);
     }
 
     // Parse departureCity and arrivalCity to replace '+'
@@ -280,7 +281,7 @@ export const getAll = async ({
         ...[
           {
             departureTime: {
-              gte: getUTC7Date(), // Filter for tickets with departure time before the current date
+              gte: getUTC8Date(), // Filter for tickets with departure time before the current date
             },
           },
         ],
