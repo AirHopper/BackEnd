@@ -1,18 +1,32 @@
 import prisma from "../utils/prisma.js";
 import AppError from "../utils/AppError.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 // Helper function to convert date to string with UTC+7 timezone
 function toDateStringMinus7Hours(dateInput) {
   const date = new Date(dateInput); // Ensure it's a Date object
-  date.setHours(date.getHours() - 7); // Subtract 7 hours
+
+  if (process.env.NODE_ENV === "development") {
+    date.setHours(date.getHours() - 7); // Subtract 7 hours
+  }
+
   return date.toDateString(); // Convert to a string
 }
 
 // Helper function to get the current date in UTC+7
 function getUTC7Date() {
   const now = new Date();
-  const utc7Offset = 7 * 60 * 60 * 1000; // UTC+7 in milliseconds
-  const utc7 = new Date(now.getTime() + utc7Offset);
+
+  let utc7;
+
+  if (process.env.NODE_ENV === "development") {
+    const utc7Offset = 7 * 60 * 60 * 1000; // UTC+7 in milliseconds
+    utc7 = new Date(now.getTime() + utc7Offset);
+  } else {
+    utc7 = new Date(now.getTime());
+  }
 
   return new Date(utc7);
 }
@@ -20,13 +34,15 @@ function getUTC7Date() {
 // Helper function to get the current date in UTC+7 with time set to 00:00
 function getUTC7DateStart() {
   const now = new Date();
-  const utc7Offset = 7 * 60 * 60 * 1000; // UTC+7 in milliseconds
-  const utcMidnight = new Date(now.getTime() + utc7Offset).setUTCHours(
-    0,
-    0,
-    0,
-    0
-  );
+  let utcMidnight;
+
+  if (process.env.NODE_ENV === "development") {
+    const utc7Offset = 7 * 60 * 60 * 1000; // UTC+7 in milliseconds
+    utcMidnight = new Date(now.getTime() + utc7Offset).setUTCHours(0, 0, 0, 0);
+  } else {
+    utcMidnight = new Date(now.getTime()).setUTCHours(0, 0, 0, 0);
+  }
+
   return new Date(utcMidnight);
 }
 
