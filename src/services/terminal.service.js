@@ -22,11 +22,21 @@ export const createTerminal = async (data) => {
 };
 
 // Get all terminals
-export const getAllTerminals = async () => {
+export const getAllTerminals = async (airportId=null) => {
   try {
+    let where = {};
+
+    if (airportId) {
+      where = {
+        airportId: { contains: airportId },
+      };
+    }
+
     const terminals = await prisma.terminal.findMany({
-      include: { Airport: true }, 
+      where,
+      include: { Airport: true },
     });
+
     return terminals;
   } catch (error) {
     console.error("Error fetching terminals:", error);

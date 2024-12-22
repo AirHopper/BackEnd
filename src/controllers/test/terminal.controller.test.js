@@ -17,6 +17,7 @@ import {
       req = {
         body: {},
         params: {},
+        query: {},
       };
       res = {
         status: jest.fn().mockReturnThis(),
@@ -65,10 +66,12 @@ import {
           { id: 1, name: "Terminal 1", type: "Domestic" },
           { id: 2, name: "Terminal 2", type: "International" },
         ];
-        terminalService.getAllTerminals.mockResolvedValue(terminals);
-  
+        req.query.airportId = "123"; // Add query parameter to the existing mock
+        terminalService.getAllTerminals.mockResolvedValue(terminals); // Mock service
+    
         await getAllTerminals(req, res, next);
-  
+    
+        expect(terminalService.getAllTerminals).toHaveBeenCalledWith("123"); // Ensure airportId is passed
         expect(res.status).toHaveBeenCalledWith(200);
         expect(res.json).toHaveBeenCalledWith({
           success: true,
@@ -77,17 +80,20 @@ import {
           error: null,
         });
       });
-  
+    
       test("should handle error when retrieving terminals", async () => {
         const errorMessage = "Failed to fetch terminals";
-        terminalService.getAllTerminals.mockRejectedValue(new Error(errorMessage));
-  
+        req.query.airportId = "123"; // Add query parameter to the existing mock
+        terminalService.getAllTerminals.mockRejectedValue(new Error(errorMessage)); // Mock service
+    
         await getAllTerminals(req, res, next);
-  
+    
+        expect(terminalService.getAllTerminals).toHaveBeenCalledWith("123"); // Ensure airportId is passed
         expect(next).toHaveBeenCalledWith(expect.any(Error));
         expect(next).toHaveBeenCalledWith(expect.objectContaining({ message: errorMessage }));
       });
     });
+    
   
     describe("getTerminalById", () => {
       test("should return a terminal by ID with 200 status", async () => {

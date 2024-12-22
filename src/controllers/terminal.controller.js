@@ -13,7 +13,9 @@ export const createTerminal = async (req, res, next) => {
 // Get all terminals
 export const getAllTerminals = async (req, res, next) => {
   try {
-    const terminals = await terminalService.getAllTerminals();
+    const { airportId } = req.query;
+
+    const terminals = await terminalService.getAllTerminals(airportId);
     res.status(200).json({success:true, message:"Terminals fetched successfully", data: terminals, error: null});
   } catch (error) {
     next(error);
