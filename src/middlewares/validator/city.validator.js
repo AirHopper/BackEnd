@@ -13,7 +13,7 @@ const createCitySchema = z.object({
     .min(2, "Country code must be 2-3 characters long")
     .max(3, "Country code must be 2-3 characters long"),
   continent: z.enum(
-    ["Afrika", "Asia", "Eropa", "Amerika", "Australia"],
+    ["Afrika", "Asia", "Europa", "Amerika", "Australia"],
     "Invalid continent"
   ),
 });
