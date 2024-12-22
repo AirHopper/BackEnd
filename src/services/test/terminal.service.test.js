@@ -82,6 +82,40 @@ describe("Terminal Service", () => {
       expect(result).toEqual(terminals);
       expect(prismaMock.terminal.findMany).toHaveBeenCalledWith({
         include: { Airport: true },
+        where: {},
+      });
+    });
+
+    it("should fetch all terminals with search", async () => {
+      const terminals = [
+        {
+          id: 1,
+          name: "Terminal 1",
+          type: "Domestic",
+          airportId: "JFK",
+          Airport: { iataCode: "JFK" },
+        },
+        {
+          id: 2,
+          name: "Terminal 2",
+          type: "International",
+          airportId: "JFK",
+          Airport: { iataCode: "JFK"},
+        },
+      ];
+
+      const airportId = "JFK";
+
+      prismaMock.terminal.findMany.mockResolvedValue(terminals); // Mock Prisma behavior
+
+      const result = await terminalService.getAllTerminals(airportId); // Pass airportId to the service
+
+      expect(result).toEqual(terminals); // Ensure the returned data matches the mock data
+      expect(prismaMock.terminal.findMany).toHaveBeenCalledWith({
+        include: { Airport: true }, // Ensure the query includes related Airport data
+        where: {
+          airportId: { contains: airportId }, // Ensure the query filters by airportId
+        },
       });
     });
 
@@ -116,14 +150,20 @@ describe("Terminal Service", () => {
       expect(result).toEqual(terminal);
       expect(prismaMock.terminal.findUnique).toHaveBeenCalledWith({
         where: { id: 1 },
-        include: { Airport: true, FlightsDeparture: true, FlightsArrival: true },
+        include: {
+          Airport: true,
+          FlightsDeparture: true,
+          FlightsArrival: true,
+        },
       });
     });
 
     it("should throw an error if the terminal is not found", async () => {
       prismaMock.terminal.findUnique.mockResolvedValue(null);
 
-      await expect(terminalService.getTerminalById(1)).rejects.toThrow(AppError);
+      await expect(terminalService.getTerminalById(1)).rejects.toThrow(
+        AppError
+      );
       expect(console.error).toHaveBeenCalledWith(
         "Error fetching terminal:",
         expect.any(Error)
