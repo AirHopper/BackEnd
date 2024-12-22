@@ -29,4 +29,36 @@ const sendEmail = (email, subject, html) => {
   );
 };
 
-export { sendEmail };
+const sendReceiptPayment = (email, orderId, pdfUrl) => {
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: mailerUser,
+      pass: mailerPassword,
+    },
+  });
+  transporter.sendMail(
+    {
+      from: mailerUser,
+      to: email,
+      subject: "[Air Hopper] Receipt Payment",
+      text: `Receipt for order ${orderId} in Air Hopper`,
+      attachments: [
+        {
+          filename: `order_${orderId}.pdf`,
+          path: pdfUrl
+        }
+      ]
+    },
+    (error, info) => {
+      if (error) {
+        console.log(error);
+        return error;
+      } else {
+        return info;
+      }
+    }
+  );
+};
+
+export { sendEmail, sendReceiptPayment };

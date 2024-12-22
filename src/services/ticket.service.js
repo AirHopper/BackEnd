@@ -1,33 +1,48 @@
 import prisma from "../utils/prisma.js";
 import AppError from "../utils/AppError.js";
+import dotenv from "dotenv";
 
-// Helper function to convert date to string with UTC+8 timezone
-function toDateStringMinus8Hours(dateInput) {
+dotenv.config();
+
+// Helper function to convert date to string with UTC+7 timezone
+function toDateStringMinus7Hours(dateInput) {
   const date = new Date(dateInput); // Ensure it's a Date object
-  date.setHours(date.getHours() - 8); // Subtract 8 hours
+
+  if (process.env.NODE_ENV === "development") {
+    date.setHours(date.getHours() - 7); // Subtract 7 hours
+  }
 
   return date.toDateString(); // Convert to a string
 }
 
-// Helper function to get the current date in UTC+8
-function getUTC8Date() {
+// Helper function to get the current date in UTC+7
+function getUTC7Date() {
   const now = new Date();
-  const utc8Offset = 8 * 60 * 60 * 1000; // UTC+8 in milliseconds
-  const utc8 = new Date(now.getTime() + utc8Offset);
 
-  return new Date(utc8);
+  let utc7;
+
+  if (process.env.NODE_ENV === "development") {
+    const utc7Offset = 7 * 60 * 60 * 1000; // UTC+7 in milliseconds
+    utc7 = new Date(now.getTime() + utc7Offset);
+  } else {
+    utc7 = new Date(now.getTime());
+  }
+
+  return new Date(utc7);
 }
 
-// Helper function to get the current date in UTC+8 with time set to 00:00
-function getUTC8DateStart() {
+// Helper function to get the current date in UTC+7 with time set to 00:00
+function getUTC7DateStart() {
   const now = new Date();
-  const utc8Offset = 8 * 60 * 60 * 1000; // UTC+8 in milliseconds
-  const utcMidnight = new Date(now.getTime() + utc8Offset).setUTCHours(
-    0,
-    0,
-    0,
-    0
-  );
+  let utcMidnight;
+
+  if (process.env.NODE_ENV === "development") {
+    const utc7Offset = 7 * 60 * 60 * 1000; // UTC+7 in milliseconds
+    utcMidnight = new Date(now.getTime() + utc7Offset).setUTCHours(0, 0, 0, 0);
+  } else {
+    utcMidnight = new Date(now.getTime()).setUTCHours(0, 0, 0, 0);
+  }
+
   return new Date(utcMidnight);
 }
 
@@ -75,11 +90,11 @@ async function validateFlights({ routeId, flightIds }) {
   const lastFlight = flights[flights.length - 1];
 
   // Ensure all flights are on the same day and class type
-  const firstFlightDate = toDateStringMinus8Hours(flights[0].departureTime);
+  const firstFlightDate = toDateStringMinus7Hours(flights[0].departureTime);
   const classType = firstFlight.class;
 
   for (const flight of flights) {
-    const flightDate = toDateStringMinus8Hours(flight.departureTime);
+    const flightDate = toDateStringMinus7Hours(flight.departureTime);
 
     if (flightDate !== firstFlightDate) {
       throw new AppError("All flights must be on the same day", 400);
@@ -171,9 +186,9 @@ export const getAll = async ({
       airline,
     } = search || {};
 
-    // Throw error if flightDate is before today in UTC+8
-    if (flightDate && new Date(flightDate) < getUTC8DateStart()) {
-      throw new AppError("Flight date must be today or later in UTC+8", 400);
+    // Throw error if flightDate is before today in UTC+7
+    if (flightDate && new Date(flightDate) < getUTC7DateStart()) {
+      throw new AppError("Flight date must be today or later in UTC+7", 400);
     }
 
     // Parse departureCity and arrivalCity to replace '+'
@@ -281,7 +296,7 @@ export const getAll = async ({
         ...[
           {
             departureTime: {
-              gte: getUTC8Date(), // Filter for tickets with departure time before the current date
+              gte: getUTC7Date(), // Filter for tickets with departure time before the current date
             },
           },
         ],

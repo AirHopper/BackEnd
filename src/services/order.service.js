@@ -1337,7 +1337,7 @@ export const addQrCodeAndPdfUrlOrder = async (order) => {
     try {
         const qrCodeUrl = await createQrCodeUrlByOrderId(order.id);
         const pdfUrl = await createPdfUrlByOrderId(order, qrCodeUrl);
-        return prisma.order.update({
+        await prisma.order.update({
             where: {
                 id: order.id
             },
@@ -1346,6 +1346,8 @@ export const addQrCodeAndPdfUrlOrder = async (order) => {
                 pdfUrl
             }
         });
+
+        return pdfUrl;
     } catch (error) {
         console.error('Error adding QR code and PDF URL:', error);
         throw error;
