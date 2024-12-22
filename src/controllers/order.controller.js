@@ -80,7 +80,9 @@ export const create = async (req, res, next) => {
             const returnTicket = await getById(req.body.returnTicketId);
             if (!returnTicket) throw new AppError('Return ticket not found', 404);
         }
-
+        
+        const duplicateIdentiferNumber = req.body.passengers.map(passenger => passenger.identifierNumber).find((item, index, self) => self.indexOf(item) !== index);
+        if (duplicateIdentiferNumber) throw new AppError(`Duplicate identifier number`, 400);
         const seats = req.body.passengers.flatMap(passenger => passenger.seatId);
         const occupiedSeat = await checkSeatAvailability(seats); // return undefined if seat is not occupied, while return the seat if it is occupied
         if (occupiedSeat) throw new AppError(`Seat ${occupiedSeat.seatNumber} on flight id ${occupiedSeat.flightId} is occupied`, 400);
