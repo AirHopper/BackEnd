@@ -31,7 +31,7 @@ export const getAllAirports = async () => {
       include: {
         City: true,
         _count: {
-          select: { departureRoutes: true, arrivalRoutes: true },
+          select: { departureRoutes: true, arrivalRoutes: true, Terminals: true },
         },
       },
     });
@@ -61,9 +61,11 @@ export const getAirportByIataCode = async (iataCode) => {
 
     const totalDeparture = airport.departureRoutes.length;
     const totalArrival = airport.arrivalRoutes.length;
+    const totalTerminals = airport.Terminals.length;
 
     airport.totalDepartureRoutes = totalDeparture;
     airport.totalArrivalRoutes = totalArrival;
+    airport.totalTerminals = totalTerminals;
 
     return airport;
   } catch (error) {
