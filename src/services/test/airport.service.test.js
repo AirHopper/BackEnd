@@ -110,7 +110,7 @@ describe("Airport Service", () => {
         include: {
           City: true,
           _count: {
-            select: { departureRoutes: true, arrivalRoutes: true },
+            select: { departureRoutes: true, arrivalRoutes: true, Terminals: true},
           },
         },
       });
