@@ -55,6 +55,7 @@ const drawFlightTable = (doc, items, startX, startY) => {
     y += rowHeight;
 
     items.forEach((item) => {
+	if (item.class.includes("_")) item.class = item.class.replace("_", " ");
         const row = [item.name, item.class, item.seatNumber];
         row.forEach((text, i) => {
             const colX = startX + columnWidths.slice(0, i).reduce((a, b) => a + b, 0);
